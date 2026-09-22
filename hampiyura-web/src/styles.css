@@ -185,6 +185,16 @@ p{font-size:1.1rem;line-height:1.6;max-width:620px;color:var(--color-text)}
 .mini-mapa-ubicacion{border:1px solid var(--color-border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);max-width:420px}
 .mini-mapa-ubicacion-lienzo{height:220px;width:100%;cursor:default}
 
+/* ProductosDirectorioPage -- misma línea que el resto de filtros/formularios ya migrados (bordes
+   var(--color-border), radios var(--radius-sm), sin reinventar un input propio). */
+.filtro-bar{display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center;margin:var(--space-5) 0}
+.filtro-bar input,.filtro-bar select{
+  font:inherit;font-size:var(--font-size-small);
+  padding:.6em .9em;border-radius:var(--radius-sm);
+  border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text);
+  min-width:180px;
+}
+
 /* Leaflet trae sus propios controles/popups en blanco fijo (no conocen los tokens de la app) --
    en tema oscuro eso queda como un recorte blanco chocante sobre el resto de la pantalla, así que
    se re-tiñen con los mismos tokens. En tema claro no hace falta tocar nada (blanco ya combina).
