@@ -187,14 +187,37 @@ p{font-size:1.1rem;line-height:1.6;max-width:620px;color:var(--color-text)}
 
 /* Leaflet trae sus propios controles/popups en blanco fijo (no conocen los tokens de la app) --
    en tema oscuro eso queda como un recorte blanco chocante sobre el resto de la pantalla, así que
-   se re-tiñen con los mismos tokens. En tema claro no hace falta tocar nada (blanco ya combina). */
+   se re-tiñen con los mismos tokens. En tema claro no hace falta tocar nada (blanco ya combina).
+   Dos bugs reales encontrados en la re-auditoría de identidad visual (medidos en navegador, no
+   solo leyendo CSS):
+   1) .leaflet-control-attribution (fondo) perdía SIEMPRE contra el propio
+      ".leaflet-container .leaflet-control-attribution" de Leaflet (dos clases, más específico que
+      la una clase de acá) -- el texto quedaba claro sobre blanco (ratio ~2:1). Se sube la
+      especificidad para igualar la de Leaflet. De paso, con el fondo ya ganando, el mismo texto
+      medía 3.88:1 (bajo el estándar AAA de 7:1 del resto del proyecto) porque el fondo era
+      semitransparente (.8) y dejaba pasar el color del tile de mapa debajo, variable según la
+      zona -- se sube la opacidad a .92 (fondo predecible, casi no depende del tile) y se cambia
+      de --color-text-muted a --color-text (9.52:1 medido, ver script de verificación).
+   2) Todo el bloque dependía solo de prefers-color-scheme (preferencia del sistema) -- el toggle
+      manual de tema (Frente 6) no lo tocaba, así que elegir oscuro con sistema en claro dejaba el
+      mapa con popups/controles blancos sin retintar (y viceversa). Mismo patrón de guard que ya
+      se usa en tokens.css: el bloque queda dos veces, una guardada con :not([data-theme="light"])
+      dentro del @media (sigue al sistema si no hay preferencia guardada) y otra bajo
+      [data-theme="dark"] sin condición de @media (cubre la elección manual). */
 @media (prefers-color-scheme:dark){
-  .leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--color-surface);color:var(--color-text)}
-  .leaflet-bar a{background:var(--color-surface);color:var(--color-text);border-color:var(--color-border)}
-  .leaflet-bar a:hover{background:var(--color-bg)}
-  .leaflet-control-attribution{background:rgba(23,51,43,.8);color:var(--color-text-muted)}
-  .leaflet-control-attribution a{color:var(--color-text)}
+  :root:not([data-theme="light"]) .leaflet-popup-content-wrapper,:root:not([data-theme="light"]) .leaflet-popup-tip{background:var(--color-surface);color:var(--color-text)}
+  :root:not([data-theme="light"]) .leaflet-bar a{background:var(--color-surface);color:var(--color-text);border-color:var(--color-border)}
+  :root:not([data-theme="light"]) .leaflet-bar a:hover{background:var(--color-bg)}
+  :root:not([data-theme="light"]) .leaflet-container .leaflet-control-attribution{background:rgba(23,51,43,.92)}
+  :root:not([data-theme="light"]) .leaflet-control-attribution{color:var(--color-text)}
+  :root:not([data-theme="light"]) .leaflet-control-attribution a{color:var(--color-text)}
 }
+:root[data-theme="dark"] .leaflet-popup-content-wrapper,:root[data-theme="dark"] .leaflet-popup-tip{background:var(--color-surface);color:var(--color-text)}
+:root[data-theme="dark"] .leaflet-bar a{background:var(--color-surface);color:var(--color-text);border-color:var(--color-border)}
+:root[data-theme="dark"] .leaflet-bar a:hover{background:var(--color-bg)}
+:root[data-theme="dark"] .leaflet-container .leaflet-control-attribution{background:rgba(23,51,43,.92)}
+:root[data-theme="dark"] .leaflet-control-attribution{color:var(--color-text)}
+:root[data-theme="dark"] .leaflet-control-attribution a{color:var(--color-text)}
 
 /* Popup de marcador (ver crearPopup() en MapaCultivoPage.tsx): el nombre de la planta es un botón
    real con estilo de enlace -- abre la ficha completa vía el mismo callback de navegación por
