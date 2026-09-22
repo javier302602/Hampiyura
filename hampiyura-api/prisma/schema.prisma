@@ -1,0 +1,334 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+enum Rol {
+  Visitante
+  UsuarioRegistrado
+  PortadorConocimiento
+  EspecialistaAgronomo
+  EspecialistaConservacion
+  EspecialistaSalud
+  Productor
+  Administrador
+}
+enum EstadoValidacion {
+  Pendiente
+  EnRevision
+  Validado
+  Observado
+  Rechazado
+}
+enum EstadoCuenta {
+  PendienteActivacion
+  Activo
+  Suspendido
+}
+enum EstadoReporte {
+  Pendiente
+  Revisado
+  Desestimado
+}
+enum TipoTokenAccion {
+  Activacion
+  RecuperacionContrasena
+}
+enum TipoConsulta {
+  PreguntaGeneral
+  ReporteInformacionIncorrecta
+  SolicitudRevisionPublicacion
+  SolicitudValidacionInformacion
+  ReportePlantaEnPeligro
+  ReporteProblemaCultivo
+  ConsultaSobrePublicacion
+}
+enum EstadoConsulta {
+  Pendiente
+  EnRevision
+  Respondida
+  Cerrada
+}
+enum PrioridadConsulta {
+  Normal
+  Alta
+}
+enum AreaEspecialidad {
+  Agronomia
+  PlantasMedicinales
+  Conservacion
+  Salud
+}
+model Usuario {
+  id String @id @default(uuid())
+  nombre String
+  correo String @unique
+  contraseñaHash String
+  rol Rol
+  idioma String
+  nivelConocimiento String
+  region String
+  estado EstadoCuenta
+  cultivos Cultivo[]
+  validaciones ValidacionContenido[]
+  notificaciones Notificacion[]
+  tokensAccion TokenAccion[]
+  reportes Reporte[]
+  publicaciones Publicacion[]
+  preparaciones Preparacion[]
+  productos Producto[]
+  estadosConservacion EstadoConservacion[]
+  accionesConservacion AccionConservacion[]
+  ubicacionesCultivo UbicacionCultivo[]
+}
+model TokenAccion {
+  id String @id @default(uuid())
+  usuarioId String
+  tipo TipoTokenAccion
+  token String @unique
+  expiracion DateTime
+  usado Boolean @default(false)
+  usuario Usuario @relation(fields: [usuarioId], references: [id])
+}
+model Planta {
+  id String @id @default(uuid())
+  nombreComun String
+  nombreCientifico String
+  familia String
+  region String
+  habitat String
+  imagenPrincipal String?
+  cultivos Cultivo[]
+  partesUso ParteUso[]
+  publicaciones Publicacion[]
+  estadosConservacion EstadoConservacion[]
+  accionesConservacion AccionConservacion[]
+  ubicacionesCultivo UbicacionCultivo[]
+}
+model Cultivo {
+  id String @id @default(uuid())
+  plantaId String
+  autorId String
+  zonaCultivo String
+  condicionesClimaticas String
+  tipoSuelo String
+  altitudAprox String
+  aguaNecesaria String
+  exposicionSolar String
+  epocaSiembra String
+  metodoPropagacion String
+  tiempoCrecimiento String
+  cuidados String
+  plagasComunes String
+  epocaCosecha String
+  recomendacionesSobreexplotacion String
+  consejosRecoleccion String
+  mesesSiembra Int[]
+  mesesCosecha Int[]
+  fuente String
+  estadoValidacion EstadoValidacion
+  planta Planta @relation(fields: [plantaId], references: [id])
+  autor Usuario @relation(fields: [autorId], references: [id])
+  ubicaciones UbicacionCultivo[]
+}
+model Uso {
+  id String @id @default(uuid())
+  nombre String @unique
+  descripcion String?
+  partesUso ParteUso[]
+}
+model ParteUso {
+  id String @id @default(uuid())
+  plantaId String
+  autorId String
+  parte String
+  usoId String
+  tipoConocimiento String
+  preparacionId String?
+  contraindicaciones String?
+  fuente String
+  estadoValidacion EstadoValidacion
+  planta Planta @relation(fields: [plantaId], references: [id])
+  uso Uso @relation(fields: [usoId], references: [id])
+  preparaciones Preparacion[]
+}
+model Preparacion {
+  id String @id @default(uuid())
+  parteUsoId String
+  autorId String
+  ingredientes String
+  pasos String
+  herramientas String
+  tiempoPreparacion String
+  formaTradicionalElaboracion String
+  formaConservacion String
+  advertencias String
+  contraindicaciones String?
+  fuente String
+  localidad String
+  fecha DateTime
+  estadoValidacion EstadoValidacion
+  parteUso ParteUso @relation(fields: [parteUsoId], references: [id])
+  autor Usuario @relation(fields: [autorId], references: [id])
+}
+model Publicacion {
+  id String @id @default(uuid())
+  plantaId String
+  autorId String
+  nombreComun String
+  descripcion String
+  enfermedadesTratadas String
+  formaPreparacion String
+  imagenes String[]
+  tipoConocimiento String
+  fuente String
+  fechaPublicacion DateTime
+  estadoValidacion EstadoValidacion
+  planta Planta @relation(fields: [plantaId], references: [id])
+  autor Usuario @relation(fields: [autorId], references: [id])
+  comentarios Comentario[]
+  valoraciones Valoracion[]
+}
+model Comentario {
+  id String @id @default(uuid())
+  publicacionId String
+  autorId String
+  texto String
+  fecha DateTime
+  comentarioPadreId String?
+  publicacion Publicacion @relation(fields: [publicacionId], references: [id], onDelete: Cascade)
+  comentarioPadre Comentario? @relation("RespuestasComentario", fields: [comentarioPadreId], references: [id])
+  respuestas Comentario[] @relation("RespuestasComentario")
+}
+model Valoracion {
+  id String @id @default(uuid())
+  publicacionId String
+  autorId String
+  estrellas Int
+  publicacion Publicacion @relation(fields: [publicacionId], references: [id], onDelete: Cascade)
+  @@unique([publicacionId, autorId])
+}
+model Consulta {
+  id String @id @default(uuid())
+  autorId String?
+  tipo TipoConsulta
+  descripcion String
+  estado EstadoConsulta
+  prioridad PrioridadConsulta
+  areaAsignada AreaEspecialidad?
+  asignadoA String?
+  fechaCreacion DateTime
+  fechaActualizacion DateTime
+  fechaPrimeraRespuestaEquipo DateTime?
+  mensajes MensajeConsulta[]
+}
+model MensajeConsulta {
+  id String @id @default(uuid())
+  consultaId String
+  autorId String
+  contenido String
+  esEquipo Boolean @default(false)
+  fecha DateTime
+  consulta Consulta @relation(fields: [consultaId], references: [id], onDelete: Cascade)
+}
+model ValidacionContenido {
+  id String @id @default(uuid())
+  tipoEntidad String
+  entidadId String
+  estado EstadoValidacion
+  comentarioValidador String?
+  fecha DateTime
+  autorId String
+  validadorId String?
+  validador Usuario @relation(fields: [autorId], references: [id])
+}
+model Reporte {
+  id String @id @default(uuid())
+  tipoEntidad String
+  entidadId String
+  autorId String
+  motivo String
+  fecha DateTime
+  estado EstadoReporte
+  autor Usuario @relation(fields: [autorId], references: [id])
+}
+model EstadoConservacion {
+  id String @id @default(uuid())
+  plantaId String
+  autorId String
+  categoria String
+  zona String
+  amenazas String
+  nivelRiesgo String
+  disponibilidadTemporada String
+  recomendacionesConservacion String
+  metodosPropagacion String
+  alternativasCultivo String
+  fuenteOficial String
+  fecha DateTime
+  estadoValidacion EstadoValidacion
+  planta Planta @relation(fields: [plantaId], references: [id])
+  autor Usuario @relation(fields: [autorId], references: [id])
+}
+model AccionConservacion {
+  id String @id @default(uuid())
+  plantaId String
+  autorId String
+  descripcion String
+  responsable String
+  evidencias String
+  estadoSeguimiento String
+  fecha DateTime
+  planta Planta @relation(fields: [plantaId], references: [id])
+  autor Usuario @relation(fields: [autorId], references: [id])
+}
+// RF-271: mapa de distribución. RN-07 -- latitud/longitud son opcionales y quedan en null cuando
+// la planta está en riesgo (aplicado en el caso de uso, nunca a nivel de columna obligatoria).
+model UbicacionCultivo {
+  id String @id @default(uuid())
+  cultivoId String
+  plantaId String
+  autorId String
+  zona String
+  latitud Float?
+  longitud Float?
+  fecha DateTime
+  cultivo Cultivo @relation(fields: [cultivoId], references: [id])
+  planta Planta @relation(fields: [plantaId], references: [id])
+  autor Usuario @relation(fields: [autorId], references: [id])
+}
+model Producto {
+  id String @id @default(uuid())
+  productorId String
+  nombre String
+  descripcion String?
+  plantasIds String[]
+  ingredientes String?
+  presentacion String?
+  cantidad String?
+  precioReferencial String?
+  fotografias String[]
+  localidad String
+  informacionProceso String
+  fechaElaboracion DateTime?
+  contactoVendedor String
+  documentacionCertificacion String?
+  requiereRevisionReforzada Boolean @default(false)
+  etiquetaValidadoDocumental Boolean @default(false)
+  etiquetaCertificado Boolean @default(false)
+  estadoValidacion EstadoValidacion
+  productor Usuario @relation(fields: [productorId], references: [id])
+}
+model Notificacion {
+  id String @id @default(uuid())
+  usuarioId String
+  tipo String
+  mensaje String
+  leida Boolean
+  fecha DateTime
+  entidadTipo String?
+  entidadId String?
+  usuario Usuario @relation(fields: [usuarioId], references: [id])
+}

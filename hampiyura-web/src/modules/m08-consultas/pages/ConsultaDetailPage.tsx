@@ -1,0 +1,103 @@
+import { FormEvent, useEffect, useState } from 'react';
+import { obtenerConsulta, agregarMensajeConsulta, cerrarConsulta, reabrirConsulta, ETIQUETAS_TIPO_CONSULTA, type ConsultaConHilo } from '../api/consultas.api';
+import IndicadorPrioridad from '../components/IndicadorPrioridad';
+import { getSession, esValidador } from '../../../shared/auth/session';
+
+// Pantalla compartida entre "Mis consultas" (RF-263) y la bandeja del equipo (RF-264) -- mismo
+// hilo de mensajes (RF-266), no se duplica la pantalla para cada caso, solo cambian los botones
+// disponibles según quién mira (autor vs. equipo).
+function ConsultaDetailPage({ consultaId, onVolver }: { consultaId: string; onVolver: () => void }) {
+  const [consulta, setConsulta] = useState<ConsultaConHilo | null>(null);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [contenido, setContenido] = useState('');
+  const [enviando, setEnviando] = useState(false);
+  const sesion = getSession();
+
+  function cargar() {
+    setCargando(true);
+    setError(null);
+    obtenerConsulta(consultaId).then(setConsulta).catch((err) => setError(err instanceof Error ? err.message : 'No se pudo cargar la consulta.')).finally(() => setCargando(false));
+  }
+  useEffect(cargar, [consultaId]);
+
+  async function manejarEnviarMensaje(e: FormEvent) {
+    e.preventDefault();
+    if (!contenido.trim()) return;
+    setEnviando(true);
+    setError(null);
+    try { await agregarMensajeConsulta(consultaId, contenido.trim()); setContenido(''); cargar(); }
+    catch (err) { setError(err instanceof Error ? err.message : 'No se pudo enviar el mensaje.'); }
+    finally { setEnviando(false); }
+  }
+  async function manejarCerrar() {
+    setError(null);
+    try { await cerrarConsulta(consultaId); cargar(); }
+    catch (err) { setError(err instanceof Error ? err.message : 'No se pudo cerrar la consulta.'); }
+  }
+  async function manejarReabrir() {
+    setError(null);
+    try { await reabrirConsulta(consultaId); cargar(); }
+    catch (err) { setError(err instanceof Error ? err.message : 'No se pudo reabrir la consulta.'); }
+  }
+
+  if (cargando) return <p>Cargando consulta…</p>;
+  if (error && !consulta) return <p>{error}</p>;
+  if (!consulta) return <p>No se encontró la consulta.</p>;
+
+  const esAutor = !!sesion && sesion.userId === consulta.autorId;
+  const esEquipo = !!sesion && esValidador(sesion.rol);
+  const puedeActuar = esAutor || esEquipo;
+  const estaCerrada = consulta.estado === 'Cerrada';
+
+  function etiquetaAutorMensaje(m: ConsultaConHilo['mensajes'][number]): string {
+    if (m.esEquipo) return 'Equipo';
+    if (sesion && m.autorId === sesion.userId) return 'Tú';
+    return 'Autor';
+  }
+
+  return (
+    <section>
+      <button onClick={onVolver}>← Volver</button>
+      <h2>{ETIQUETAS_TIPO_CONSULTA[consulta.tipo]}</h2>
+      <div style={{ display: 'flex', gap: '.4rem', flexWrap: 'wrap' }}>
+        <span className="badge badge-estado">{consulta.estado}</span>
+        {consulta.areaAsignada && <span className="badge badge-estado">Área: {consulta.areaAsignada}</span>}
+      </div>
+      <IndicadorPrioridad prioridad={consulta.prioridad} />
+      <p>{consulta.descripcion}</p>
+      <span className="comentario-meta">Creada: {new Date(consulta.fechaCreacion).toLocaleString()}</span>
+
+      <h3>Mensajes</h3>
+      {consulta.mensajes.length === 0 && <p>Todavía no hay mensajes en esta consulta.</p>}
+      {consulta.mensajes.map((m) => (
+        <div key={m.id} className="comentario">
+          <strong>{etiquetaAutorMensaje(m)}</strong>
+          <p style={{ margin: '.2em 0' }}>{m.contenido}</p>
+          <span className="comentario-meta">{new Date(m.fecha).toLocaleString()}</span>
+        </div>
+      ))}
+
+      {error && <p className="error-formulario">{error}</p>}
+
+      {puedeActuar && !estaCerrada && (
+        <form onSubmit={manejarEnviarMensaje} className="formulario">
+          <label>
+            {esEquipo ? 'Responder' : 'Agregar mensaje'}
+            <textarea value={contenido} onChange={(e) => setContenido(e.target.value)} required />
+          </label>
+          <button type="submit" disabled={enviando || !contenido.trim()}>{enviando ? 'Enviando…' : esEquipo ? 'Responder' : 'Enviar mensaje'}</button>
+        </form>
+      )}
+
+      {puedeActuar && (
+        <div style={{ marginTop: '1rem', display: 'flex', gap: '.5rem' }}>
+          {!estaCerrada && <button onClick={manejarCerrar}>Cerrar consulta</button>}
+          {estaCerrada && <button onClick={manejarReabrir}>Reabrir consulta</button>}
+        </div>
+      )}
+    </section>
+  );
+}
+
+export default ConsultaDetailPage;
