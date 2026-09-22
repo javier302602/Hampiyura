@@ -1,2 +1,17 @@
-<html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><link rel="icon" type="image/svg+xml" href="/favicon.svg"/><meta name="theme-color" content="#f4f1e8" media="(prefers-color-scheme: light)"/><meta name="theme-color" content="#0f2620" media="(prefers-color-scheme: dark)"/><title>HAMPIYURA</title></head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>
+<html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><link rel="icon" type="image/svg+xml" href="/favicon.svg"/><meta name="theme-color" content="#f4f1e8" media="(prefers-color-scheme: light)"/><meta name="theme-color" content="#0f2620" media="(prefers-color-scheme: dark)"/><title>HAMPIYURA</title>
+<script>
+// Corre antes del primer paint para que el tema guardado (o el del sistema, la primera vez) se
+// aplique de una vez -- sin esto, el toggle manual de tema.ts causaría un parpadeo del tema
+// contrario mientras React monta y recién ahí aplica el atributo.
+(function () {
+  try {
+    var guardado = localStorage.getItem('hampiyura.tema');
+    var tema = guardado === 'light' || guardado === 'dark'
+      ? guardado
+      : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', tema);
+  } catch (e) {}
+})();
+</script>
+</head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>
 

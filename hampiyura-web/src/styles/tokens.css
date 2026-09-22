@@ -72,8 +72,21 @@
   color-scheme:light dark;
 }
 
+/* Fija color-scheme al tema elegido a mano -- sin esto, controles nativos (scrollbar, inputs)
+   seguirían el color-scheme:light dark de arriba, es decir el sistema, aunque data-theme diga
+   lo contrario. */
+:root[data-theme="light"]{ color-scheme:light; }
+:root[data-theme="dark"]{ color-scheme:dark; }
+
+/* Modo oscuro -- valores idénticos a los que ya existían (nada de paleta nueva). Antes solo
+   dependían de prefers-color-scheme (preferencia del sistema); ahora también se puede forzar
+   manualmente con el atributo data-theme que pone theme.ts en <html> (ThemeToggle, Frente 6).
+   El bloque queda dos veces a propósito, mismo patrón recomendado para theming manual+sistema:
+   :not([data-theme="light"]) dentro del @media cubre "sin preferencia guardada todavía, sigue al
+   sistema"; el bloque [data-theme="dark"] de abajo cubre "el usuario eligió oscuro explícitamente",
+   incluso si el sistema está en claro. */
 @media (prefers-color-scheme:dark){
-  :root{
+  :root:not([data-theme="light"]){
     --color-bg:#0f2620;
     --color-surface:#17332b;
     --color-text:#eef2ea;
@@ -101,4 +114,35 @@
     --shadow-md:0 8px 20px rgba(0,0,0,.32);
     --shadow-lg:0 16px 34px rgba(0,0,0,.4);
   }
+}
+
+/* Mismo bloque que arriba, aplicado sin condición de @media -- cubre "el usuario eligió oscuro
+   a mano" aunque el sistema operativo esté en claro. */
+:root[data-theme="dark"]{
+  --color-bg:#0f2620;
+  --color-surface:#17332b;
+  --color-text:#eef2ea;
+  --color-text-muted:#a9b8ae;
+  --color-border:#2d4a3f;
+  --color-accent:#e0955c;
+  --color-accent-contrast:#17352b;
+  --color-accent-hover:#c97f46;
+  --color-accent-soft:#2e2015;
+
+  --color-success:#6fcf97;   --color-success-bg:#123524;
+  --color-warning:#f0b35c;  --color-warning-bg:#3a2a14;
+  --color-info:#7ab8e6;     --color-info-bg:#16283a;
+  --color-danger:#f0827c;   --color-danger-bg:#3a1a18;
+
+  --jungle-1:#071813;
+  --jungle-2:#123a2c;
+  --water-accent:#3f8fc2;
+  --hero-scrim:rgba(15,38,32,.82);
+  --hero-photo-overlay:rgba(15,38,32,.22);
+  --hero-pattern:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%20viewBox%3D'0%200%20160%20160'%3E%3Cg%20fill%3D'%236fae7f'%20fill-opacity%3D'0.14'%3E%3Cpath%20d%3D'M34%2C14%20C16%2C34%2016%2C64%2034%2C90%20C52%2C64%2052%2C34%2034%2C14%20Z'%2F%3E%3Cpath%20d%3D'M34%2C14%20L34%2C90'%20stroke%3D'%236fae7f'%20stroke-opacity%3D'0.14'%20stroke-width%3D'1.5'%20fill%3D'none'%2F%3E%3Cpath%20d%3D'M118%2C40%20C100%2C58%20100%2C84%20118%2C106%20C136%2C84%20136%2C58%20118%2C40%20Z'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M118%2C40%20L118%2C106'%20stroke%3D'%236fae7f'%20stroke-opacity%3D'0.14'%20stroke-width%3D'1.5'%20fill%3D'none'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M66%2C110%20C50%2C128%2050%2C150%2066%2C168%20C82%2C150%2082%2C128%2066%2C110%20Z'%20transform%3D'rotate(-18%2066%20139)'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  --ambient-pattern:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%20viewBox%3D'0%200%20160%20160'%3E%3Cg%20fill%3D'%236fae7f'%20fill-opacity%3D'0.06'%3E%3Cpath%20d%3D'M34%2C14%20C16%2C34%2016%2C64%2034%2C90%20C52%2C64%2052%2C34%2034%2C14%20Z'%2F%3E%3Cpath%20d%3D'M34%2C14%20L34%2C90'%20stroke%3D'%236fae7f'%20stroke-opacity%3D'0.06'%20stroke-width%3D'1.5'%20fill%3D'none'%2F%3E%3Cpath%20d%3D'M118%2C40%20C100%2C58%20100%2C84%20118%2C106%20C136%2C84%20136%2C58%20118%2C40%20Z'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M118%2C40%20L118%2C106'%20stroke%3D'%236fae7f'%20stroke-opacity%3D'0.14'%20stroke-width%3D'1.5'%20fill%3D'none'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M66%2C110%20C50%2C128%2050%2C150%2066%2C168%20C82%2C150%2082%2C128%2066%2C110%20Z'%20transform%3D'rotate(-18%2066%20139)'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+
+  --shadow-sm:0 2px 6px rgba(0,0,0,.28);
+  --shadow-md:0 8px 20px rgba(0,0,0,.32);
+  --shadow-lg:0 16px 34px rgba(0,0,0,.4);
 }

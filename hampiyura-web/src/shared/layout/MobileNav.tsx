@@ -3,6 +3,7 @@ import type { Session } from '../auth/session';
 import { clearSession, esAdministrador, esValidador } from '../auth/session';
 import SearchBar from '../../modules/m12-busqueda-recomendaciones/components/SearchBar';
 import Button from '../ui/Button';
+import ThemeToggle from '../theme/ThemeToggle';
 import type { NavCallbacks } from './Header';
 
 interface Props extends NavCallbacks {
@@ -26,7 +27,10 @@ function MobileNav({ sesion, puedeGestionar, onCerrar, ...nav }: Props) {
       <div className="mobile-nav-drawer" role="dialog" aria-modal="true" aria-label="Menú de navegación">
         <div className="mobile-nav-drawer-header">
           <strong>Menú</strong>
-          <button className="icon-btn" onClick={onCerrar} aria-label="Cerrar menú"><X size={18} aria-hidden="true" /></button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+            <ThemeToggle />
+            <button className="icon-btn" onClick={onCerrar} aria-label="Cerrar menú"><X size={18} aria-hidden="true" /></button>
+          </div>
         </div>
 
         <SearchBar tono="surface" onBuscar={(f) => { onCerrar(); nav.onBuscar(f); }} />

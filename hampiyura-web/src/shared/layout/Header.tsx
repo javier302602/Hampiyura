@@ -6,6 +6,7 @@ import SearchBar from '../../modules/m12-busqueda-recomendaciones/components/Sea
 import NotificacionesIndicador from '../../modules/m14-notificaciones/components/NotificacionesIndicador';
 import useDropdown from '../hooks/useDropdown';
 import Button from '../ui/Button';
+import ThemeToggle from '../theme/ThemeToggle';
 import MobileNav from './MobileNav';
 import type { FiltrosBusqueda } from '../../modules/m12-busqueda-recomendaciones/api/busqueda.api';
 
@@ -109,6 +110,9 @@ function Header(props: NavCallbacks) {
               Publicar producto
             </Button>
             <NotificacionesIndicador onAbrir={props.onAbrirNotificaciones} />
+            {/* Toggle manual de tema (Frente 6) -- cerca del menú de cuenta, como se pidió. Antes
+                la app solo respondía a prefers-color-scheme del sistema, sin ningún control visible. */}
+            <ThemeToggle onBrand />
             <UserMenu onIrALogin={props.onIrALogin} onIrARegistro={props.onIrARegistro} onIrAPerfil={props.onIrAPerfil} onIrAMisConsultas={props.onIrAMisConsultas} />
           </div>
           <button className="site-header-hamburger icon-btn icon-btn-on-brand" onClick={() => setMenuMovilAbierto(true)} aria-label="Abrir menú">

@@ -38,16 +38,23 @@
   color:var(--brand-on-brand);background:color-mix(in srgb, var(--brand-on-brand) 12%, transparent);
 }
 
-.site-header-actions{display:flex;align-items:center;gap:var(--space-2);flex-shrink:0}
-.site-header-actions-desktop{display:flex;align-items:center;gap:var(--space-2)}
+/* Bug real encontrado al verificar el toggle de tema (Frente 6): .site-header-actions tenía
+   flex-shrink:0 con ~1108px de contenido (buscador de 3 campos a ancho fijo + botones + íconos)
+   que nunca cabía junto al logo y la nav dentro de .site-header-inner (max-width:1200px) -- ya
+   desbordaba antes de este cambio (verificado con scrollWidth vs clientWidth en varios anchos de
+   viewport, hasta 2200px), agregar un ícono más solo lo hizo cruzar el umbral de causar scroll
+   horizontal real en vez de quedar "casi ajustado". El fix real es dejar que el buscador se
+   comprima (ancho flexible con piso razonable) en vez de exigir 160/150/150px fijos siempre. */
+.site-header-actions{display:flex;align-items:center;gap:var(--space-2);flex-shrink:1;min-width:0}
+.site-header-actions-desktop{display:flex;align-items:center;gap:var(--space-2);flex-shrink:0}
 
 /* SearchBar.tsx: .site-header-search-group envuelve los 3 controles (nombre/enfermedad/categoría,
    RF-108); .site-header-search es solo el primer campo (con ícono). Los 3 comparten look sobre la
    franja de marca. */
-.site-header-search-group{display:flex;align-items:center;gap:var(--space-2)}
-.site-header-search{position:relative;display:flex;align-items:center}
+.site-header-search-group{display:flex;align-items:center;gap:var(--space-2);flex-shrink:1;min-width:0}
+.site-header-search{position:relative;display:flex;align-items:center;flex:1 1 80px;min-width:0}
 .site-header-search-icon{position:absolute;left:.7em;color:var(--brand-on-brand-muted);pointer-events:none}
-.site-header-search input{padding-left:2em}
+.site-header-search input{padding-left:2em;width:100%}
 .site-header-search-group input,.site-header-search-group select{
   font:inherit;font-size:var(--font-size-small);
   padding:.55em .9em;border-radius:var(--radius-pill);
@@ -55,8 +62,7 @@
   background:color-mix(in srgb, var(--brand-on-brand) 10%, transparent);
   color:var(--brand-on-brand);
 }
-.site-header-search-group input{width:160px}
-.site-header-search-group select{width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.site-header-search-group select{flex:1 1 70px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .site-header-search-group input::placeholder{color:var(--brand-on-brand-muted)}
 .site-header-search-group input:focus,.site-header-search-group select:focus{outline:2px solid var(--color-accent);outline-offset:1px;background:var(--color-surface);color:var(--color-text)}
 .site-header-search-group select option{color:var(--color-text)}
@@ -125,7 +131,15 @@
 .mobile-nav-drawer-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-3)}
 .mobile-nav-drawer-divider{height:1px;background:var(--color-border);margin:var(--space-2) 0}
 
-@media (max-width:900px){
+/* Antes el corte a hamburguesa era 900px -- pero el contenido de escritorio (logo + nav + buscador
+   de 3 campos + 2 CTAs + notif/tema/cuenta) nunca cupo de verdad en anchos "de laptop" típicos
+   (1280/1366/1440): con flex-shrink:0 desbordaba con scroll horizontal real (bug encontrado al
+   verificar el toggle de tema, Frente 6); dejando que el buscador se comprima en su lugar lo hacía
+   desaparecer a 0px, peor todavía. 1536px es el punto real donde todo cabe sin comprimir nada (
+   medido con scrollWidth vs clientWidth) -- por debajo de eso se usa el drawer móvil, que ya
+   contiene exactamente lo mismo (nav, buscador, CTAs, toggle de tema, sesión) y ya estaba
+   verificado. */
+@media (max-width:1536px){
   .site-header-nav,.site-header-search-group,.site-header-actions-desktop{display:none}
   .site-header-hamburger{display:inline-flex}
 }
