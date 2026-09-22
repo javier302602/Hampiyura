@@ -15,13 +15,36 @@ async function main() {
   });
 
   // Catálogo de usos/finalidades (RF-256): son categorías genéricas de estandarización,
-  // no afirmaciones sobre ninguna planta real. Nombres tomados directamente de los ejemplos
-  // del propio SDS (cap. 11.4), no inventados en esta sesión.
+  // no afirmaciones sobre ninguna planta real. `nombre` es @unique en el schema, por lo que
+  // `skipDuplicates` hace este seed idempotente -- reejecutarlo no duplica ni pisa las filas
+  // que ya existan (incluidas las 3 originales de Digestivo/Respiratorio/Antiinflamatorio).
   await prisma.uso.createMany({
     data: [
       { id: randomUUID(), nombre: 'Digestivo' },
       { id: randomUUID(), nombre: 'Respiratorio' },
       { id: randomUUID(), nombre: 'Antiinflamatorio' },
+      { id: randomUUID(), nombre: 'Analgésico' },
+      { id: randomUUID(), nombre: 'Antipirético/Febrífugo' },
+      { id: randomUUID(), nombre: 'Antimicrobiano/Antibacteriano' },
+      { id: randomUUID(), nombre: 'Antifúngico' },
+      { id: randomUUID(), nombre: 'Antiparasitario' },
+      { id: randomUUID(), nombre: 'Antiviral' },
+      { id: randomUUID(), nombre: 'Cicatrizante' },
+      { id: randomUUID(), nombre: 'Dermatológico' },
+      { id: randomUUID(), nombre: 'Hepatoprotector' },
+      { id: randomUUID(), nombre: 'Cardiovascular' },
+      { id: randomUUID(), nombre: 'Diurético' },
+      { id: randomUUID(), nombre: 'Sedante/Relajante' },
+      { id: randomUUID(), nombre: 'Antioxidante' },
+      { id: randomUUID(), nombre: 'Inmunoestimulante' },
+      { id: randomUUID(), nombre: 'Ginecológico/Reproductivo' },
+      { id: randomUUID(), nombre: 'Urológico' },
+      { id: randomUUID(), nombre: 'Oftálmico' },
+      { id: randomUUID(), nombre: 'Odontológico' },
+      { id: randomUUID(), nombre: 'Veterinario' },
+      { id: randomUUID(), nombre: 'Cosmético' },
+      { id: randomUUID(), nombre: 'Alimenticio/Nutricional' },
+      { id: randomUUID(), nombre: 'Ritual/Espiritual' },
     ],
     skipDuplicates: true,
   });
