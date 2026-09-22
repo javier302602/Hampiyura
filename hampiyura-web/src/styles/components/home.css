@@ -1,0 +1,26 @@
+/* pages/HomePage.tsx -- página de inicio nueva, separada del catálogo (antes "/" redirigía directo
+   a /m02-catalogo-plantas). Composición: Hero (styles.css) -> secciones abajo. */
+.home-section{margin-top:var(--space-9)}
+.home-section:first-of-type{margin-top:var(--space-8)}
+
+.section-header{display:flex;align-items:flex-end;justify-content:space-between;gap:var(--space-4);flex-wrap:wrap;margin-bottom:var(--space-6)}
+.section-header-text{display:grid;gap:var(--space-2);max-width:640px}
+.section-header-eyebrow{font-size:var(--font-size-label);text-transform:uppercase;letter-spacing:.08em;color:var(--color-accent);font-weight:var(--font-weight-bold);margin:0}
+.section-header-title{font-size:var(--font-size-h2);font-weight:var(--font-weight-bold);color:var(--color-text);margin:0;line-height:var(--line-height-tight)}
+.section-header-desc{font-size:var(--font-size-body);color:var(--color-text-muted);margin:0}
+
+/* Tarjetas de "Explora el conocimiento vivo" -- ícono + título + descripción, distinto del patrón
+   foto-protagonista de PlantCard porque estas 4 son accesos a módulos, no fichas de contenido. */
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--space-5)}
+.feature-card{padding:var(--space-5);display:grid;gap:var(--space-3);text-decoration:none;color:inherit}
+.feature-card-icon{
+  width:44px;height:44px;border-radius:var(--radius-md);
+  background:var(--color-accent-soft);color:var(--color-accent-hover);
+  display:flex;align-items:center;justify-content:center;
+}
+.feature-card-title{font-size:var(--font-size-h3);font-weight:var(--font-weight-bold);margin:0;color:var(--color-text)}
+.feature-card-desc{font-size:var(--font-size-small);color:var(--color-text-muted);margin:0}
+
+@media (max-width:640px){
+  .home-section{margin-top:var(--space-7)}
+}

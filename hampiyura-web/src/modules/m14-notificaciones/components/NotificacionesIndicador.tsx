@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { Bell } from 'lucide-react';
 import { listarNotificaciones, suscribirseACambiosDeNotificaciones } from '../api/notificaciones.api';
 import { getSession, suscribirseACambiosDeSesion } from '../../../shared/auth/session';
+import IconButton from '../../../shared/ui/IconButton';
 
 // Solo visible con sesión activa -- se oculta por completo para un usuario anónimo.
 function NotificacionesIndicador({ onAbrir }: { onAbrir: () => void }) {
@@ -19,9 +21,13 @@ function NotificacionesIndicador({ onAbrir }: { onAbrir: () => void }) {
   if (!sesion) return null;
 
   return (
-    <button className="boton-notificaciones" onClick={onAbrir}>
-      🔔 Notificaciones{noLeidas > 0 && <span className="contador-notificaciones">{noLeidas}</span>}
-    </button>
+    <IconButton
+      icon={<Bell size={18} />}
+      label="Notificaciones"
+      badge={noLeidas}
+      onBrand
+      onClick={onAbrir}
+    />
   );
 }
 

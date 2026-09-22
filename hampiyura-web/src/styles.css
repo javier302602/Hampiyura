@@ -1,58 +1,18 @@
-:root{
-  /* Paleta base (idéntica a los valores que ya existían antes de este cambio -- tokenizada, no
-     re-diseñada, para no alterar cómo se ve hoy ninguna pantalla en tema claro). */
-  --color-bg:#f4f1e8;
-  --color-surface:#ffffff;
-  --color-text:#17352b;
-  --color-text-muted:#666666;
-  --color-border:#ded8c8;
-  --color-accent:#b56837;
-  --color-accent-contrast:#ffffff;
-
-  /* Paleta "Amazonía" para los nuevos fondos (RF de identidad visual, sin tocar los colores de
-     texto/badges/alertas ya existentes). */
-  --jungle-1:#0f2f26;
-  --jungle-2:#1e5c46;
-  --water-accent:#2f7ba8;
-  --hero-scrim:rgba(244,241,232,.82);
-   --hero-photo-overlay:rgba(244,241,232,.18);
-   --hero-photo:url("https://upload.wikimedia.org/wikipedia/commons/2/2e/Sangre_de_grado_%28Croton_lechleri%29_en_el_jard%C3%ADn_bot%C3%A1nico_de_Takiwasi.jpg");
-  --hero-pattern:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%20viewBox%3D'0%200%20160%20160'%3E%3Cg%20fill%3D'%230f2f26'%20fill-opacity%3D'0.16'%3E%3Cpath%20d%3D'M34%2C14%20C16%2C34%2016%2C64%2034%2C90%20C52%2C64%2052%2C34%2034%2C14%20Z'%2F%3E%3Cpath%20d%3D'M34%2C14%20L34%2C90'%20stroke%3D'%230f2f26'%20stroke-opacity%3D'0.16'%20stroke-width%3D'1.5'%20fill%3D'none'%2F%3E%3Cpath%20d%3D'M118%2C40%20C100%2C58%20100%2C84%20118%2C106%20C136%2C84%20136%2C58%20118%2C40%20Z'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M118%2C40%20L118%2C106'%20stroke%3D'%230f2f26'%20stroke-opacity%3D'0.16'%20stroke-width%3D'1.5'%20fill%3D'none'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M66%2C110%20C50%2C128%2050%2C150%2066%2C168%20C82%2C150%2082%2C128%2066%2C110%20Z'%20transform%3D'rotate(-18%2066%20139)'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
-  --ambient-pattern:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%20viewBox%3D'0%200%20160%20160'%3E%3Cg%20fill%3D'%230f2f26'%20fill-opacity%3D'0.05'%3E%3Cpath%20d%3D'M34%2C14%20C16%2C34%2016%2C64%2034%2C90%20C52%2C64%2052%2C34%2034%2C14%20Z'%2F%3E%3Cpath%20d%3D'M34%2C14%20L34%2C90'%20stroke%3D'%230f2f26'%20stroke-opacity%3D'0.05'%20stroke-width%3D'1.5'%20fill%3D'none'%2F%3E%3Cpath%20d%3D'M118%2C40%20C100%2C58%20100%2C84%20118%2C106%20C136%2C84%20136%2C58%20118%2C40%20Z'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M118%2C40%20L118%2C106'%20stroke%3D'%230f2f26'%20stroke-opacity%3D'0.05'%20stroke-width%3D'1.5'%20fill%3D'none'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M66%2C110%20C50%2C128%2050%2C150%2066%2C168%20C82%2C150%2082%2C128%2066%2C110%20Z'%20transform%3D'rotate(-18%2066%20139)'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
-
-  color-scheme:light dark;
-  font-family:Inter,system-ui,sans-serif;
-  color:var(--color-text);
-  background:var(--color-bg);
-}
-
-/* Tema oscuro: no existía ningún mecanismo de tema en el proyecto (ni toggle manual, ni
-   prefers-color-scheme, ni variables de color) -- este bloque es nuevo. Se activa solo con la
-   preferencia del sistema operativo/navegador del visitante, sin agregar ningún botón ni estado
-   de la aplicación. Paleta verificada con contraste ≥ WCAG AA (ver nota en el resumen). */
-@media (prefers-color-scheme:dark){
-  :root{
-    --color-bg:#0f2620;
-    --color-surface:#17332b;
-    --color-text:#eef2ea;
-    --color-text-muted:#a9b8ae;
-    --color-border:#2d4a3f;
-    --color-accent:#e0955c;
-    --color-accent-contrast:#17352b;
-
-    --jungle-1:#071813;
-    --jungle-2:#123a2c;
-    --water-accent:#3f8fc2;
-    --hero-scrim:rgba(15,38,32,.82);
-   --hero-photo-overlay:rgba(15,38,32,.22);
-   --hero-photo:url("https://upload.wikimedia.org/wikipedia/commons/2/2e/Sangre_de_grado_%28Croton_lechleri%29_en_el_jard%C3%ADn_bot%C3%A1nico_de_Takiwasi.jpg");
-    --hero-pattern:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%20viewBox%3D'0%200%20160%20160'%3E%3Cg%20fill%3D'%236fae7f'%20fill-opacity%3D'0.14'%3E%3Cpath%20d%3D'M34%2C14%20C16%2C34%2016%2C64%2034%2C90%20C52%2C64%2052%2C34%2034%2C14%20Z'%2F%3E%3Cpath%20d%3D'M34%2C14%20L34%2C90'%20stroke%3D'%236fae7f'%20stroke-opacity%3D'0.14'%20stroke-width%3D'1.5'%20fill%3D'none'%2F%3E%3Cpath%20d%3D'M118%2C40%20C100%2C58%20100%2C84%20118%2C106%20C136%2C84%20136%2C58%20118%2C40%20Z'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M118%2C40%20L118%2C106'%20stroke%3D'%236fae7f'%20stroke-opacity%3D'0.14'%20stroke-width%3D'1.5'%20fill%3D'none'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M66%2C110%20C50%2C128%2050%2C150%2066%2C168%20C82%2C150%2082%2C128%2066%2C110%20Z'%20transform%3D'rotate(-18%2066%20139)'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
-    --ambient-pattern:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%20viewBox%3D'0%200%20160%20160'%3E%3Cg%20fill%3D'%236fae7f'%20fill-opacity%3D'0.06'%3E%3Cpath%20d%3D'M34%2C14%20C16%2C34%2016%2C64%2034%2C90%20C52%2C64%2052%2C34%2034%2C14%20Z'%2F%3E%3Cpath%20d%3D'M34%2C14%20L34%2C90'%20stroke%3D'%236fae7f'%20stroke-opacity%3D'0.06'%20stroke-width%3D'1.5'%20fill%3D'none'%2F%3E%3Cpath%20d%3D'M118%2C40%20C100%2C58%20100%2C84%20118%2C106%20C136%2C84%20136%2C58%20118%2C40%20Z'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M118%2C40%20L118%2C106'%20stroke%3D'%236fae7f'%20stroke-opacity%3D'0.06'%20stroke-width%3D'1.5'%20fill%3D'none'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M66%2C110%20C50%2C128%2050%2C150%2066%2C168%20C82%2C150%2082%2C128%2066%2C110%20Z'%20transform%3D'rotate(-18%2066%20139)'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
-  }
-}
+@import "./styles/tokens.css";
+@import "./styles/components/button.css";
+@import "./styles/components/badge.css";
+@import "./styles/components/card.css";
+@import "./styles/components/states.css";
+@import "./styles/components/header.css";
+@import "./styles/components/footer.css";
+@import "./styles/components/home.css";
 
 *{box-sizing:border-box}
-body{margin:0;background:var(--color-bg)}
+body{margin:0;background:var(--color-bg);font-family:Inter,system-ui,sans-serif;color:var(--color-text)}
+
+/* Oculta visualmente pero deja disponible para lectores de pantalla -- reemplaza el patrón de
+   "solo placeholder, sin <label>" encontrado en SearchBar/SelectorUbicacionMapa/etc. (auditoría). */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
 /* Fondo decorativo de página (visible en los márgenes fuera de <main>, que queda centrado a
    900px): degradados suaves en la paleta de selva, anclados a las esquinas y difuminados antes de
@@ -66,11 +26,17 @@ body{
   background-attachment:fixed;
 }
 
-/* <main> es dueño de TODO el contenido de texto de la app (ver shared/layout/Layout.tsx) -- se le
+/* <main> es dueño de TODO el contenido de texto de la app (ver shared/layout/AppShell.tsx) -- se le
    da un fondo sólido propio (mismo color que antes) para que ningún texto suelto (fuera de tarjeta
-   o formulario) quede nunca sobre el degradado de arriba, sin importar el ancho de pantalla. */
+   o formulario) quede nunca sobre el degradado de arriba, sin importar el ancho de pantalla.
+   Padding horizontal fijo en --space-6 (32px = el 2rem que ya usaba antes de tokenizarse): varias
+   secciones (.hero, .mapa-cultivo-layout) escapan de este ancho con márgenes negativos que asumen
+   ese valor exacto -- si cambia, hay que actualizar esas secciones en el mismo cambio. El padding
+   vertical en vh quedó obsoleto: era compensación para que .hero pudiera pegarse al borde superior
+   de la ventana cuando el header vivía DENTRO de este <main>; ahora el header es una barra propia
+   fuera de <main> (AppShell), así que el padding vertical vuelve a ser un valor fijo normal. */
 main{
-  max-width:900px;margin:0 auto;padding:12vh 2rem;
+  max-width:900px;margin:0 auto;padding:var(--space-8) var(--space-6) var(--space-9);
   background:var(--color-bg);
   position:relative;
 }
@@ -101,37 +67,34 @@ p{font-size:1.1rem;line-height:1.6;max-width:620px;color:var(--color-text)}
   margin-left:-1rem;margin-right:-1rem;
 }
 
-/* Encabezado ("hero", ver Layout.tsx): el único bloque con un degradado de selva más marcado.
-   Va bajo un velo semitransparente del color base (--hero-scrim) para garantizar que el texto
-    (mismo color/tamaño de siempre) mantenga el mismo contraste que ya tenía sobre fondo plano. */
+/* Hero de HomePage.tsx (público, sin navegación -- la nav vive en Header.tsx, fuera de <main>,
+   desde esta etapa). Antes este mismo bloque cargaba arriba de TODAS las rutas y contenía la fila
+   de botones de navegación; ahora es puramente el bloque de marketing de la portada. El margen
+   negativo cancela exactamente el padding de <main> (--space-8 arriba, --space-6 a los lados) para
+   quedar a ancho completo y pegado al Header, sin el viejo hack de vh (ver nota en la regla de
+   <main>). Sigue bajo un velo semitransparente (--hero-scrim) para que el texto mantenga contraste
+   sobre la foto. */
 .hero{
   position:relative;
-  margin:-12vh -2rem 2rem;
-  padding:calc(12vh + 1.5rem) 2rem 2.5rem;
-  border-radius:0 0 32px 32px;
-   min-height:clamp(520px,68vh,700px);
-   display:flex;flex-direction:column;justify-content:center;
+  margin:calc(-1 * var(--space-8)) calc(-1 * var(--space-6)) var(--space-6);
+  padding:var(--space-8) var(--space-6) var(--space-7);
+  border-radius:0 0 var(--radius-lg) var(--radius-lg);
+  min-height:clamp(440px,58vh,620px);
+  display:flex;flex-direction:column;justify-content:center;
   background-image:
       linear-gradient(90deg,var(--hero-scrim) 0%,var(--hero-scrim) 43%,var(--hero-photo-overlay) 100%),
       var(--hero-photo),
     var(--hero-pattern),
     radial-gradient(1000px 480px at 12% -25%, var(--jungle-2) 0%, transparent 60%),
     radial-gradient(800px 460px at 100% 0%, var(--water-accent) 0%, transparent 55%);
-   background-position:center,center right,center,center,center;
-   background-size:auto,cover,auto,auto,auto;
-   background-repeat:no-repeat,no-repeat,repeat,no-repeat,no-repeat;
+  background-position:center,center right,center,center,center;
+  background-size:auto,cover,auto,auto,auto;
+  background-repeat:no-repeat,no-repeat,repeat,no-repeat,no-repeat;
 }
 .hero-contenido{max-width:650px;position:relative;z-index:1}
 .hero-contenido p:not(.eyebrow){font-size:clamp(1.1rem,2vw,1.35rem);max-width:560px}
-.hero-acciones{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;position:relative;z-index:1}
-/* Fondo derivado de --color-surface (no blanco fijo): en tema claro --color-surface es blanco, así
-   que se ve idéntico a antes; en tema oscuro pasa a ser oscuro, evitando texto casi blanco sobre
-   una píldora casi blanca (bug real encontrado en verificación: contraste ~1.1:1 en Mapa/Usos/
-   Publicaciones/Productos, que no llevan accion-principal/secundaria y heredaban este estilo base). */
-.hero-acciones button{border:1px solid var(--color-border);border-radius:999px;padding:.55em 1em;font:inherit;font-weight:700;cursor:pointer;color:var(--color-text);background:color-mix(in srgb, var(--color-surface) 72%, transparent)}
-.hero-acciones .accion-principal,.accion-principal{background:var(--color-accent);color:var(--color-accent-contrast);border-color:var(--color-accent)}
-.hero-acciones .accion-secundaria,.accion-secundaria{background:var(--color-surface);color:var(--color-text);border-color:var(--color-border)}
-.hero-credit{font-size:.75rem;color:var(--color-text-muted);margin:.8rem 0 0;position:relative;z-index:1}
+.hero-cta-row{display:flex;gap:var(--space-3);align-items:center;flex-wrap:wrap;position:relative;z-index:1;margin-top:var(--space-5)}
+.hero-credit{font-size:var(--font-size-caption);color:var(--color-text-muted);margin:var(--space-3) 0 0;position:relative;z-index:1}
 
 .tarjeta-clicable{cursor:pointer;transition:transform .1s ease,box-shadow .1s ease}
 .tarjeta-clicable:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.08)}

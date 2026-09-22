@@ -1,0 +1,131 @@
+/* shared/layout/Header.tsx + MobileNav.tsx -- reemplaza la fila plana de 9+ botones que antes vivía
+   dentro de .hero (ver auditoría, hallazgo #2). Franja de marca fija (--brand-900) en ambos temas,
+   igual que el footer -- no es una superficie de contenido que deba invertirse con el tema, es la
+   identidad visual constante de la app (mismo criterio ya usado para .hero-scrim). */
+.site-header{
+  position:sticky;top:0;z-index:500;
+  background:var(--brand-900);
+  color:var(--brand-on-brand);
+  border-bottom:1px solid color-mix(in srgb, var(--brand-on-brand) 12%, transparent);
+}
+.site-header-inner{
+  max-width:1200px;margin:0 auto;
+  padding:var(--space-3) var(--space-6);
+  display:flex;align-items:center;gap:var(--space-5);
+}
+.site-header-logo{
+  display:flex;align-items:center;gap:var(--space-2);
+  color:var(--brand-on-brand);text-decoration:none;
+  font-weight:var(--font-weight-bold);font-size:1.15rem;letter-spacing:.01em;
+  flex-shrink:0;
+}
+.site-header-logo-mark{
+  width:32px;height:32px;border-radius:var(--radius-sm);
+  background:var(--color-accent);color:var(--color-accent-contrast);
+  display:flex;align-items:center;justify-content:center;font-weight:var(--font-weight-bold);
+}
+
+.site-header-nav{display:flex;align-items:center;gap:var(--space-1);flex:1}
+.site-header-nav a,.site-header-nav button{
+  color:var(--brand-on-brand-muted);text-decoration:none;
+  font:inherit;font-weight:var(--font-weight-medium);font-size:var(--font-size-small);
+  background:none;border:none;cursor:pointer;
+  padding:.55em .8em;border-radius:var(--radius-sm);
+  display:inline-flex;align-items:center;gap:.3em;
+  transition:background-color .15s ease,color .15s ease;
+}
+.site-header-nav a:hover,.site-header-nav button:hover,.site-header-nav a.activo{
+  color:var(--brand-on-brand);background:color-mix(in srgb, var(--brand-on-brand) 12%, transparent);
+}
+
+.site-header-actions{display:flex;align-items:center;gap:var(--space-2);flex-shrink:0}
+.site-header-actions-desktop{display:flex;align-items:center;gap:var(--space-2)}
+
+/* SearchBar.tsx: .site-header-search-group envuelve los 3 controles (nombre/enfermedad/categoría,
+   RF-108); .site-header-search es solo el primer campo (con ícono). Los 3 comparten look sobre la
+   franja de marca. */
+.site-header-search-group{display:flex;align-items:center;gap:var(--space-2)}
+.site-header-search{position:relative;display:flex;align-items:center}
+.site-header-search-icon{position:absolute;left:.7em;color:var(--brand-on-brand-muted);pointer-events:none}
+.site-header-search input{padding-left:2em}
+.site-header-search-group input,.site-header-search-group select{
+  font:inherit;font-size:var(--font-size-small);
+  padding:.55em .9em;border-radius:var(--radius-pill);
+  border:1px solid color-mix(in srgb, var(--brand-on-brand) 25%, transparent);
+  background:color-mix(in srgb, var(--brand-on-brand) 10%, transparent);
+  color:var(--brand-on-brand);
+}
+.site-header-search-group input{width:160px}
+.site-header-search-group select{width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.site-header-search-group input::placeholder{color:var(--brand-on-brand-muted)}
+.site-header-search-group input:focus,.site-header-search-group select:focus{outline:2px solid var(--color-accent);outline-offset:1px;background:var(--color-surface);color:var(--color-text)}
+.site-header-search-group select option{color:var(--color-text)}
+
+/* Variante "surface" -- misma barra de búsqueda, dentro del drawer móvil (fondo claro). */
+.site-header-search-group-surface{flex-direction:column;align-items:stretch;gap:var(--space-2);width:100%}
+.site-header-search-group-surface input,.site-header-search-group-surface select{
+  width:100%;border-color:var(--color-border);background:var(--color-bg);color:var(--color-text);
+}
+.site-header-search-group-surface input::placeholder{color:var(--color-text-muted)}
+.site-header-search-group-surface input:focus,.site-header-search-group-surface select:focus{background:var(--color-surface);color:var(--color-text)}
+.site-header-search-group-surface .site-header-search-icon{color:var(--color-text-muted)}
+
+.site-header-hamburger{display:none}
+
+/* Menú desplegable genérico (UserMenu, "Gestión") -- posicionado respecto al botón que lo abre. */
+.dropdown{position:relative}
+.dropdown-panel{
+  position:absolute;right:0;top:calc(100% + var(--space-2));
+  min-width:220px;z-index:600;
+  background:var(--color-surface);color:var(--color-text);
+  border:1px solid var(--color-border);border-radius:var(--radius-md);
+  box-shadow:var(--shadow-lg);
+  padding:var(--space-2);
+  display:grid;gap:2px;
+}
+.dropdown-panel a,.dropdown-panel button{
+  display:flex;align-items:center;gap:var(--space-2);
+  width:100%;text-align:left;font:inherit;font-size:var(--font-size-small);font-weight:var(--font-weight-medium);
+  background:none;border:none;color:var(--color-text);cursor:pointer;
+  padding:.6em .8em;border-radius:var(--radius-sm);text-decoration:none;
+}
+.dropdown-panel a:hover,.dropdown-panel button:hover{background:var(--color-bg)}
+.dropdown-panel-divider{height:1px;background:var(--color-border);margin:var(--space-1) 0}
+.dropdown-panel-label{padding:.4em .8em;font-size:var(--font-size-caption);color:var(--color-text-muted);text-transform:uppercase;letter-spacing:.05em}
+
+.user-menu-trigger{display:flex;align-items:center;gap:var(--space-2);background:none;border:none;cursor:pointer;padding:.2em .4em .2em .2em;border-radius:var(--radius-pill);color:var(--brand-on-brand)}
+.user-menu-trigger:hover{background:color-mix(in srgb, var(--brand-on-brand) 12%, transparent)}
+.user-menu-name{font-size:var(--font-size-small);font-weight:var(--font-weight-medium);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.avatar{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  background:var(--color-accent);color:var(--color-accent-contrast);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:var(--font-weight-bold);font-size:var(--font-size-small);
+}
+
+/* Drawer móvil -- <768px reemplaza la nav de escritorio y agrupa todo lo que hoy es una fila de
+   botones sin agrupar. */
+.mobile-nav-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:700}
+.mobile-nav-drawer{
+  position:fixed;top:0;right:0;bottom:0;width:min(320px,86vw);z-index:800;
+  background:var(--color-surface);color:var(--color-text);
+  box-shadow:var(--shadow-lg);
+  padding:var(--space-5);
+  display:flex;flex-direction:column;gap:var(--space-2);
+  overflow-y:auto;
+}
+.mobile-nav-drawer a,.mobile-nav-drawer button{
+  display:flex;align-items:center;gap:var(--space-3);
+  font:inherit;font-weight:var(--font-weight-medium);font-size:var(--font-size-body);
+  color:var(--color-text);text-decoration:none;background:none;border:none;cursor:pointer;
+  padding:.75em .5em;border-radius:var(--radius-sm);text-align:left;width:100%;
+}
+.mobile-nav-drawer a:hover,.mobile-nav-drawer button:hover{background:var(--color-bg)}
+.mobile-nav-drawer-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-3)}
+.mobile-nav-drawer-divider{height:1px;background:var(--color-border);margin:var(--space-2) 0}
+
+@media (max-width:900px){
+  .site-header-nav,.site-header-search-group,.site-header-actions-desktop{display:none}
+  .site-header-hamburger{display:inline-flex}
+}

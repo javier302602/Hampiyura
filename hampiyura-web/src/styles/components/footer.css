@@ -1,0 +1,31 @@
+/* shared/layout/Footer.tsx -- no existía footer antes. Misma franja de marca que el Header (bookend
+   visual), constante en ambos temas. Contiene también la herramienta de desarrollo (paste-JWT) que
+   antes vivía flotando dentro del hero -- se reubica aquí para no competir con la navegación real. */
+.site-footer{background:var(--brand-900);color:var(--brand-on-brand-muted);margin-top:var(--space-9)}
+.site-footer-inner{max-width:1200px;margin:0 auto;padding:var(--space-8) var(--space-6) var(--space-6)}
+.site-footer-grid{display:grid;grid-template-columns:2fr repeat(3,1fr);gap:var(--space-6);margin-bottom:var(--space-7)}
+.site-footer-brand{display:grid;gap:var(--space-3);max-width:320px}
+.site-footer-brand-name{display:flex;align-items:center;gap:var(--space-2);color:var(--brand-on-brand);font-weight:var(--font-weight-bold);font-size:1.1rem}
+/* Color explícito -- sin esto, la regla global p{color:var(--color-text)} (styles.css) le gana a
+   la herencia de .site-footer y el texto queda casi invisible sobre el fondo oscuro (bug real
+   encontrado en la verificación de contraste: ratio 1.09:1). */
+.site-footer-tagline{font-size:var(--font-size-small);margin:0;color:var(--brand-on-brand-muted)}
+.site-footer-col h3{font-size:var(--font-size-label);text-transform:uppercase;letter-spacing:.06em;color:var(--brand-on-brand);margin:0 0 var(--space-3)}
+.site-footer-col ul{list-style:none;margin:0;padding:0;display:grid;gap:var(--space-2)}
+.site-footer-col a,.site-footer-col button{color:var(--brand-on-brand-muted);text-decoration:none;font:inherit;font-size:var(--font-size-small);background:none;border:none;padding:0;cursor:pointer;text-align:left}
+.site-footer-col a:hover,.site-footer-col button:hover{color:var(--brand-on-brand)}
+.site-footer-bottom{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-3);
+  padding-top:var(--space-5);border-top:1px solid color-mix(in srgb, var(--brand-on-brand) 14%, transparent);
+  font-size:var(--font-size-caption);
+}
+.site-footer-dev summary{cursor:pointer;color:var(--brand-on-brand-muted);font-size:var(--font-size-caption)}
+.site-footer-dev summary:hover{color:var(--brand-on-brand)}
+.site-footer-dev[open] summary{color:var(--brand-on-brand)}
+
+@media (max-width:820px){
+  .site-footer-grid{grid-template-columns:1fr 1fr}
+}
+@media (max-width:520px){
+  .site-footer-grid{grid-template-columns:1fr}
+}

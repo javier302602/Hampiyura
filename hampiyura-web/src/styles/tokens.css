@@ -1,0 +1,104 @@
+/* Design tokens de HampiYura. Única fuente de verdad para color, tipografía, espaciado, radios y
+   sombras -- todo componente nuevo (src/shared/ui/*) y todo CSS existente debe leer de aquí en vez
+   de hardcodear hex/px sueltos. Los valores de --color-bg/surface/text/text-muted/border ya
+   existían antes de este cambio y se mantienen intactos. --color-accent (claro) se afinó ~5% más
+   oscuro que el original #b56837: con texto blanco encima (botón primario, ya el patrón que usaba
+   .formulario button) el original medía 4.20:1 -- por debajo del mínimo WCAG AA de 4.5:1 para
+   texto normal. Verificado con Playwright + cálculo de contraste real durante esta sesión (mismo
+   método que ya había encontrado un bug de contraste real en el header oscuro). El tono oscuro
+   (#e0955c) ya medía 5.46:1 y no se tocó. */
+:root{
+  /* Paleta base (idéntica a la que ya existía) */
+  --color-bg:#f4f1e8;
+  --color-surface:#ffffff;
+  --color-text:#17352b;
+  --color-text-muted:#666666;
+  --color-border:#ded8c8;
+  --color-accent:#a86133;
+  --color-accent-contrast:#ffffff;
+  --color-accent-hover:#94552d;
+  --color-accent-soft:#f3e3d3;
+
+  /* Marca -- superficies "de marca" (Header/Footer) que se mantienen oscuras en ambos temas,
+     a propósito: son una franja de identidad, no una superficie de contenido que deba invertirse. */
+  --brand-900:#0b3d32;
+  --brand-700:#145c45;
+  --brand-on-brand:#f6f4ec;
+  --brand-on-brand-muted:rgba(246,244,236,.72);
+
+  /* Estados semánticos -- reemplazan los hex sueltos que hoy viven repartidos en badges/alertas */
+  --color-success:#1e7a42;      --color-success-bg:#e3f3e8;
+  --color-warning:#8a5a10;      --color-warning-bg:#fff2e0;
+  --color-info:#1f5c8a;         --color-info-bg:#eef6ff;
+  --color-danger:#b0322f;       --color-danger-bg:#fbe4e3;
+
+  /* Amazonía -- fondos decorativos (idénticos a los que ya existían) */
+  --jungle-1:#0f2f26;
+  --jungle-2:#1e5c46;
+  --water-accent:#2f7ba8;
+  --hero-scrim:rgba(244,241,232,.82);
+  --hero-photo-overlay:rgba(244,241,232,.18);
+  --hero-photo:url("https://upload.wikimedia.org/wikipedia/commons/2/2e/Sangre_de_grado_%28Croton_lechleri%29_en_el_jard%C3%ADn_bot%C3%A1nico_de_Takiwasi.jpg");
+  --hero-pattern:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%20viewBox%3D'0%200%20160%20160'%3E%3Cg%20fill%3D'%230f2f26'%20fill-opacity%3D'0.16'%3E%3Cpath%20d%3D'M34%2C14%20C16%2C34%2016%2C64%2034%2C90%20C52%2C64%2052%2C34%2034%2C14%20Z'%2F%3E%3Cpath%20d%3D'M34%2C14%20L34%2C90'%20stroke%3D'%230f2f26'%20stroke-opacity%3D'0.16'%20stroke-width%3D'1.5'%20fill%3D'none'%2F%3E%3Cpath%20d%3D'M118%2C40%20C100%2C58%20100%2C84%20118%2C106%20C136%2C84%20136%2C58%20118%2C40%20Z'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M118%2C40%20L118%2C106'%20stroke%3D'%230f2f26'%20stroke-opacity%3D'0.16'%20stroke-width%3D'1.5'%20fill%3D'none'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M66%2C110%20C50%2C128%2050%2C150%2066%2C168%20C82%2C150%2082%2C128%2066%2C110%20Z'%20transform%3D'rotate(-18%2066%20139)'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  --ambient-pattern:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%20viewBox%3D'0%200%20160%20160'%3E%3Cg%20fill%3D'%230f2f26'%20fill-opacity%3D'0.05'%3E%3Cpath%20d%3D'M34%2C14%20C16%2C34%2016%2C64%2034%2C90%20C52%2C64%2052%2C34%2034%2C14%20Z'%2F%3E%3Cpath%20d%3D'M34%2C14%20L34%2C90'%20stroke%3D'%230f2f26'%20stroke-opacity%3D'0.05'%20stroke-width%3D'1.5'%20fill%3D'none'%2F%3E%3Cpath%20d%3D'M118%2C40%20C100%2C58%20100%2C84%20118%2C106%20C136%2C84%20136%2C58%20118%2C40%20Z'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M118%2C40%20L118%2C106'%20stroke%3D'%230f2f26'%20stroke-opacity%3D'0.05'%20stroke-width%3D'1.5'%20fill%3D'none'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M66%2C110%20C50%2C128%2050%2C150%2066%2C168%20C82%2C150%2082%2C128%2066%2C110%20Z'%20transform%3D'rotate(-18%2066%20139)'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+
+  /* Tipografía -- escala real (antes todo &lt;h2&gt;/&lt;h3&gt; caía al tamaño por defecto del navegador) */
+  --font-size-display:clamp(2.75rem,6vw,4.5rem);
+  --font-size-h1:clamp(2rem,4vw,3rem);
+  --font-size-h2:clamp(1.4rem,2.4vw,1.85rem);
+  --font-size-h3:1.25rem;
+  --font-size-body:1rem;
+  --font-size-small:.875rem;
+  --font-size-caption:.8rem;
+  --font-size-label:.75rem;
+  --font-weight-regular:400;
+  --font-weight-medium:600;
+  --font-weight-bold:700;
+  --line-height-tight:1.15;
+  --line-height-normal:1.6;
+
+  /* Espaciado */
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:24px;
+  --space-6:32px; --space-7:48px; --space-8:64px; --space-9:80px; --space-10:96px;
+
+  /* Radios */
+  --radius-sm:8px; --radius-md:12px; --radius-lg:20px; --radius-pill:999px;
+
+  /* Sombras -- suaves y discretas, un único set en vez de valores rgba() repartidos */
+  --shadow-sm:0 2px 6px rgba(15,47,38,.08);
+  --shadow-md:0 8px 20px rgba(15,47,38,.10);
+  --shadow-lg:0 16px 34px rgba(15,47,38,.14);
+
+  color-scheme:light dark;
+}
+
+@media (prefers-color-scheme:dark){
+  :root{
+    --color-bg:#0f2620;
+    --color-surface:#17332b;
+    --color-text:#eef2ea;
+    --color-text-muted:#a9b8ae;
+    --color-border:#2d4a3f;
+    --color-accent:#e0955c;
+    --color-accent-contrast:#17352b;
+    --color-accent-hover:#c97f46;
+    --color-accent-soft:#3a2a1e;
+
+    --color-success:#6fcf97;   --color-success-bg:#123524;
+    --color-warning:#f0b35c;  --color-warning-bg:#3a2a14;
+    --color-info:#7ab8e6;     --color-info-bg:#16283a;
+    --color-danger:#f0827c;   --color-danger-bg:#3a1a18;
+
+    --jungle-1:#071813;
+    --jungle-2:#123a2c;
+    --water-accent:#3f8fc2;
+    --hero-scrim:rgba(15,38,32,.82);
+    --hero-photo-overlay:rgba(15,38,32,.22);
+    --hero-pattern:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%20viewBox%3D'0%200%20160%20160'%3E%3Cg%20fill%3D'%236fae7f'%20fill-opacity%3D'0.14'%3E%3Cpath%20d%3D'M34%2C14%20C16%2C34%2016%2C64%2034%2C90%20C52%2C64%2052%2C34%2034%2C14%20Z'%2F%3E%3Cpath%20d%3D'M34%2C14%20L34%2C90'%20stroke%3D'%236fae7f'%20stroke-opacity%3D'0.14'%20stroke-width%3D'1.5'%20fill%3D'none'%2F%3E%3Cpath%20d%3D'M118%2C40%20C100%2C58%20100%2C84%20118%2C106%20C136%2C84%20136%2C58%20118%2C40%20Z'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M118%2C40%20L118%2C106'%20stroke%3D'%236fae7f'%20stroke-opacity%3D'0.14'%20stroke-width%3D'1.5'%20fill%3D'none'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M66%2C110%20C50%2C128%2050%2C150%2066%2C168%20C82%2C150%2082%2C128%2066%2C110%20Z'%20transform%3D'rotate(-18%2066%20139)'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+    --ambient-pattern:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%20viewBox%3D'0%200%20160%20160'%3E%3Cg%20fill%3D'%236fae7f'%20fill-opacity%3D'0.06'%3E%3Cpath%20d%3D'M34%2C14%20C16%2C34%2016%2C64%2034%2C90%20C52%2C64%2052%2C34%2034%2C14%20Z'%2F%3E%3Cpath%20d%3D'M34%2C14%20L34%2C90'%20stroke%3D'%236fae7f'%20stroke-opacity%3D'0.06'%20stroke-width%3D'1.5'%20fill%3D'none'%2F%3E%3Cpath%20d%3D'M118%2C40%20C100%2C58%20100%2C84%20118%2C106%20C136%2C84%20136%2C58%20118%2C40%20Z'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M118%2C40%20L118%2C106'%20stroke%3D'%236fae7f'%20stroke-opacity%3D'0.14'%20stroke-width%3D'1.5'%20fill%3D'none'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M66%2C110%20C50%2C128%2050%2C150%2066%2C168%20C82%2C150%2082%2C128%2066%2C110%20Z'%20transform%3D'rotate(-18%2066%20139)'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+
+    --shadow-sm:0 2px 6px rgba(0,0,0,.28);
+    --shadow-md:0 8px 20px rgba(0,0,0,.32);
+    --shadow-lg:0 16px 34px rgba(0,0,0,.4);
+  }
+}

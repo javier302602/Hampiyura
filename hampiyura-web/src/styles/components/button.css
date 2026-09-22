@@ -1,0 +1,64 @@
+/* shared/ui/Button.tsx + IconButton.tsx. Un único sistema de botón con jerarquía real: primary
+   (acento terracota, LA acción principal de cada pantalla) / secondary (contorno, para lo demás) /
+   ghost (texto, acciones terciarias tipo "Cancelar"/"Volver") / danger (acciones destructivas). */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:var(--space-2);
+  font:inherit;font-weight:var(--font-weight-bold);font-size:var(--font-size-body);
+  border-radius:var(--radius-pill);padding:.65em 1.3em;border:1px solid transparent;
+  cursor:pointer;white-space:nowrap;
+  transition:background-color .15s ease,border-color .15s ease,color .15s ease,transform .1s ease,box-shadow .15s ease;
+}
+.btn:active{transform:translateY(1px)}
+.btn:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px}
+.btn:disabled,.btn[aria-disabled="true"]{opacity:.6;cursor:default;transform:none}
+
+.btn-sm{padding:.45em 1em;font-size:var(--font-size-small)}
+.btn-lg{padding:.8em 1.6em;font-size:var(--font-size-h3)}
+
+.btn-primary{background:var(--color-accent);color:var(--color-accent-contrast);border-color:var(--color-accent)}
+.btn-primary:not(:disabled):hover{background:var(--color-accent-hover);border-color:var(--color-accent-hover)}
+
+.btn-secondary{background:var(--color-surface);color:var(--color-text);border-color:var(--color-border)}
+.btn-secondary:not(:disabled):hover{border-color:var(--color-accent);color:var(--color-accent)}
+
+/* Variante para usarse sobre el hero (foto de fondo, no la superficie normal): mismo look que
+   secondary pero con relleno translúcido derivado del token de tema en vez de --color-surface fijo
+   (mismo mecanismo que ya corrigió el bug de contraste del hero en la sesión anterior). */
+.btn-on-brand{background:color-mix(in srgb, var(--color-surface) 88%, transparent);color:var(--color-text);border-color:transparent}
+.btn-on-brand:not(:disabled):hover{background:var(--color-surface)}
+
+.btn-ghost{background:none;color:var(--color-text-muted);border-color:transparent;padding-left:.6em;padding-right:.6em}
+.btn-ghost:not(:disabled):hover{color:var(--color-text);background:color-mix(in srgb, var(--color-text) 6%, transparent)}
+
+.btn-danger{background:none;color:var(--color-danger);border-color:var(--color-danger)}
+.btn-danger:not(:disabled):hover{background:var(--color-danger-bg)}
+
+.btn-icon-only{padding:.55em;border-radius:var(--radius-pill)}
+
+.icon-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:2.4em;height:2.4em;border-radius:var(--radius-pill);
+  border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text);
+  cursor:pointer;position:relative;transition:background-color .15s ease,border-color .15s ease;
+}
+.icon-btn:hover{border-color:var(--color-accent);color:var(--color-accent)}
+.icon-btn:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px}
+.icon-btn-on-brand{background:color-mix(in srgb, var(--brand-on-brand) 14%, transparent);border-color:color-mix(in srgb, var(--brand-on-brand) 30%, transparent);color:var(--brand-on-brand)}
+.icon-btn-on-brand:hover{background:color-mix(in srgb, var(--brand-on-brand) 24%, transparent);color:var(--brand-on-brand)}
+
+.icon-btn-badge{
+  position:absolute;top:-4px;right:-4px;
+  min-width:18px;height:18px;padding:0 4px;border-radius:var(--radius-pill);
+  background:var(--color-danger);color:#fff;
+  font-size:10px;font-weight:var(--font-weight-bold);line-height:18px;text-align:center;
+  border:2px solid var(--brand-900);
+}
+
+.btn-spinner{
+  width:1em;height:1em;border-radius:50%;
+  border:2px solid currentColor;border-top-color:transparent;
+  animation:btn-spin .7s linear infinite;
+  flex-shrink:0;
+}
+@media (prefers-reduced-motion:reduce){ .btn-spinner{animation-duration:1.6s} }
+@keyframes btn-spin{ to{ transform:rotate(360deg) } }

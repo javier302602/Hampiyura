@@ -1,0 +1,38 @@
+/* shared/ui/EmptyState.tsx, LoadingState.tsx, ErrorState.tsx -- reemplazan el patrón histórico de
+   <p>Cargando…</p> / <p>{error}</p> / <p>Todavía no hay…</p> repetido sin estilo en casi todas las
+   páginas (ver auditoría). Se usan desde HomePage en esta etapa; el resto de las páginas se migra
+   módulo por módulo en las siguientes etapas -- por eso conviven con los <p> sueltos que aún no se
+   tocaron. */
+.state-block{
+  display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--space-3);
+  padding:var(--space-7) var(--space-5);
+  border-radius:var(--radius-lg);
+  border:1px dashed var(--color-border);
+  background:var(--color-surface);
+  color:var(--color-text-muted);
+}
+.state-block-icon{
+  width:48px;height:48px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--color-accent-soft);color:var(--color-accent-hover);
+}
+.state-block-error .state-block-icon{background:var(--color-danger-bg);color:var(--color-danger)}
+.state-block-title{font-size:var(--font-size-h3);font-weight:var(--font-weight-bold);color:var(--color-text);margin:0}
+.state-block-desc{margin:0;max-width:440px;font-size:var(--font-size-small)}
+
+.loading-spinner{
+  width:28px;height:28px;border-radius:50%;
+  border:3px solid var(--color-border);border-top-color:var(--color-accent);
+  animation:btn-spin .8s linear infinite;
+}
+@media (prefers-reduced-motion:reduce){ .loading-spinner{animation-duration:1.8s} }
+
+/* Skeleton de tarjeta -- usado mientras cargan listas de PlantCard/etc, evita el salto de layout
+   que hoy produce el <p>Cargando…</p> desapareciendo de golpe. */
+.skeleton-card{border-radius:var(--radius-lg);overflow:hidden;background:var(--color-surface);border:1px solid var(--color-border)}
+.skeleton-shimmer{background:linear-gradient(90deg,var(--color-border) 0%,color-mix(in srgb, var(--color-border) 50%, var(--color-surface)) 50%,var(--color-border) 100%);background-size:200% 100%;animation:skeleton-shimmer 1.4s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){ .skeleton-shimmer{animation:none} }
+@keyframes skeleton-shimmer{ 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+.skeleton-media{aspect-ratio:4/3;width:100%}
+.skeleton-line{height:14px;border-radius:4px;margin:var(--space-4) var(--space-5) 0}
+.skeleton-line-sm{width:60%;margin-bottom:var(--space-5)}

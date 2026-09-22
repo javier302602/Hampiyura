@@ -1,0 +1,19 @@
+/* shared/ui/Badge.tsx -- reemplazo consolidado del popurrí histórico (.badge-tradicional/
+   -documentado/-cientifico/-pendiente/-estado, .sello-verificado, .advertencia-no-verificado,
+   .nota-cientifico, .aviso-legal usados para ~12 significados distintos sin relación entre sí --
+   ver auditoría). Las clases viejas SIGUEN existiendo más abajo en styles.css porque el resto de
+   los módulos (m04/m05/m10/etc.) todavía las usa y no se toca en esta etapa; el remapeo módulo por
+   módulo a este componente pasa en las siguientes etapas. Esto es la base nueva, ya con variantes
+   de color por severidad reales (algo que .badge-estado nunca tuvo). */
+.badge-ui{
+  display:inline-flex;align-items:center;gap:.4em;
+  padding:.3em .85em;border-radius:var(--radius-pill);
+  font-size:var(--font-size-small);font-weight:var(--font-weight-bold);letter-spacing:.01em;
+  border:1px solid transparent;
+}
+.badge-ui-neutral{background:var(--color-bg);color:var(--color-text);border-color:var(--color-border)}
+.badge-ui-success{background:var(--color-success-bg);color:var(--color-success)}
+.badge-ui-warning{background:var(--color-warning-bg);color:var(--color-warning)}
+.badge-ui-info{background:var(--color-info-bg);color:var(--color-info)}
+.badge-ui-danger{background:var(--color-danger-bg);color:var(--color-danger)}
+.badge-ui-accent{background:var(--color-accent-soft);color:var(--color-accent-hover)}
