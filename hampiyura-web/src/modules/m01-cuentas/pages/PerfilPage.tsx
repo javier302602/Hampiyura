@@ -1,6 +1,26 @@
 import { FormEvent, useEffect, useState } from 'react';
+import { ArrowLeft, ShieldCheck } from 'lucide-react';
 import { obtenerPerfil, cambiarContrasena, type Perfil } from '../api/cuentas.api';
 import ReglasContrasena, { contraseñaEsSegura } from '../components/ReglasContrasena';
+import { Avatar, Badge, Button, Card, ErrorState, LoadingState, SectionHeader } from '../../../shared/ui';
+import type { BadgeVariant } from '../../../shared/ui/Badge';
+
+const ETIQUETA_ROL: Record<string, string> = {
+  Visitante: 'Visitante',
+  UsuarioRegistrado: 'Usuario registrado',
+  PortadorConocimiento: 'Portador de conocimiento',
+  EspecialistaAgronomo: 'Especialista en agronomía',
+  EspecialistaConservacion: 'Especialista en conservación',
+  EspecialistaSalud: 'Especialista en salud',
+  Productor: 'Productor',
+  Administrador: 'Administrador',
+};
+
+const ESTADO_CUENTA: Record<string, { etiqueta: string; variant: BadgeVariant }> = {
+  Activo: { etiqueta: 'Cuenta activa', variant: 'success' },
+  PendienteActivacion: { etiqueta: 'Pendiente de activación', variant: 'warning' },
+  Suspendido: { etiqueta: 'Suspendida', variant: 'danger' },
+};
 
 function FormularioCambiarContrasena() {
   const [contraseñaActual, setContraseñaActual] = useState('');
@@ -45,10 +65,19 @@ function FormularioCambiarContrasena() {
       </label>
       {exito && <p className="sello-verificado">✔ Contraseña actualizada correctamente.</p>}
       {error && <p className="error-formulario">{error}</p>}
-      <button type="submit" disabled={enviando || !contraseñaEsSegura(contraseñaNueva) || contraseñaNueva !== confirmacion}>
-        {enviando ? 'Guardando…' : 'Cambiar contraseña'}
-      </button>
+      <Button type="submit" variant="primary" loading={enviando} disabled={!contraseñaEsSegura(contraseñaNueva) || contraseñaNueva !== confirmacion}>
+        Cambiar contraseña
+      </Button>
     </form>
+  );
+}
+
+function FilaPerfil({ etiqueta, valor }: { etiqueta: string; valor: string }) {
+  return (
+    <div className="perfil-fila">
+      <span className="perfil-fila-etiqueta">{etiqueta}</span>
+      <span className="perfil-fila-valor">{valor}</span>
+    </div>
   );
 }
 
@@ -61,22 +90,48 @@ function PerfilPage({ onVolver }: { onVolver: () => void }) {
     obtenerPerfil().then(setPerfil).catch(() => setError('No se pudo cargar tu perfil.')).finally(() => setCargando(false));
   }, []);
 
-  if (cargando) return <p>Cargando perfil…</p>;
-  if (error) return <p>{error}</p>;
-  if (!perfil) return <p>No se encontró tu perfil.</p>;
-
   return (
     <section>
-      <button onClick={onVolver}>← Volver al catálogo</button>
-      <h2>Mi perfil</h2>
-      <p><strong>{perfil.nombre}</strong></p>
-      <p>Correo: {perfil.correo}</p>
-      <p>Rol: {perfil.rol}</p>
-      <p>Estado de la cuenta: {perfil.estado}</p>
-      <p>Región: {perfil.region} · Idioma: {perfil.idioma} · Nivel de conocimiento: {perfil.nivelConocimiento}</p>
+      <Button variant="ghost" iconLeft={<ArrowLeft size={16} aria-hidden="true" />} onClick={onVolver}>Volver al catálogo</Button>
+      <SectionHeader eyebrow="Mi cuenta" title="Mi perfil" description="Tus datos, tu rol dentro de la comunidad y la seguridad de tu cuenta." />
 
-      <h3>Cambiar contraseña</h3>
-      <FormularioCambiarContrasena />
+      {cargando && <LoadingState label="Cargando tu perfil" />}
+      {error && <ErrorState description={error} />}
+
+      {perfil && (
+        <div className="perfil-grid">
+          <Card className="perfil-tarjeta-principal">
+            <div className="card-ui-body">
+              <div className="perfil-encabezado">
+                <Avatar nombre={perfil.nombre} />
+                <div>
+                  <h3 className="perfil-nombre">{perfil.nombre}</h3>
+                  <p className="perfil-correo">{perfil.correo}</p>
+                </div>
+              </div>
+              <div className="perfil-badges">
+                <Badge variant="accent" icon={<ShieldCheck size={14} aria-hidden="true" />}>{ETIQUETA_ROL[perfil.rol] ?? perfil.rol}</Badge>
+                <Badge variant={ESTADO_CUENTA[perfil.estado]?.variant ?? 'neutral'}>{ESTADO_CUENTA[perfil.estado]?.etiqueta ?? perfil.estado}</Badge>
+              </div>
+              <div className="perfil-filas">
+                <FilaPerfil etiqueta="Región" valor={perfil.region || 'Sin especificar'} />
+                <FilaPerfil etiqueta="Idioma" valor={perfil.idioma || 'Sin especificar'} />
+                <FilaPerfil etiqueta="Nivel de conocimiento" valor={perfil.nivelConocimiento || 'Sin especificar'} />
+                {perfil.aceptoComisionEn && (
+                  <FilaPerfil etiqueta="Comisión de venta (5%)" valor={`Aceptada el ${new Date(perfil.aceptoComisionEn).toLocaleDateString('es-PE')}`} />
+                )}
+              </div>
+            </div>
+          </Card>
+
+          <Card>
+            <div className="card-ui-body">
+              <h3 className="perfil-nombre">Cambiar contraseña</h3>
+              <FormularioCambiarContrasena />
+            </div>
+          </Card>
+        </div>
+      )}
     </section>
   );
 }

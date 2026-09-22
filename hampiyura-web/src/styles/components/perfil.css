@@ -1,0 +1,20 @@
+/* PerfilPage -- antes era una lista de <p> sueltos sin ningún componente del design system
+   (ver auditoría, frente 5); ahora reusa Card/Avatar/Badge, esto solo agrega el layout propio
+   de la pantalla que esos componentes no cubren por sí solos. */
+.perfil-grid{display:grid;gap:var(--space-5);grid-template-columns:1fr;max-width:640px;margin-top:var(--space-5)}
+
+.perfil-encabezado{display:flex;align-items:center;gap:var(--space-4)}
+.perfil-encabezado .avatar{width:56px;height:56px;font-size:var(--font-size-h3)}
+.perfil-nombre{font-size:var(--font-size-h3);font-weight:var(--font-weight-bold);margin:0;color:var(--color-text)}
+.perfil-correo{margin:0;color:var(--color-text-muted);font-size:var(--font-size-small)}
+
+.perfil-badges{display:flex;gap:var(--space-2);flex-wrap:wrap}
+
+.perfil-filas{display:grid;gap:var(--space-2);border-top:1px solid var(--color-border);padding-top:var(--space-4)}
+.perfil-fila{display:flex;justify-content:space-between;gap:var(--space-3);font-size:var(--font-size-small)}
+.perfil-fila-etiqueta{color:var(--color-text-muted)}
+.perfil-fila-valor{color:var(--color-text);font-weight:var(--font-weight-medium);text-align:right}
+
+@media (min-width:720px){
+  .perfil-grid{grid-template-columns:1fr 1fr;max-width:none;align-items:start}
+}
