@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ChevronDown, FlaskConical, Inbox, LayoutDashboard, Leaf, Menu, Sprout } from 'lucide-react';
+import { ChevronDown, FlaskConical, Inbox, LayoutDashboard, Leaf, Menu, Sprout, Users } from 'lucide-react';
 import { esAdministrador, esValidador, getSession, suscribirseACambiosDeSesion } from '../auth/session';
 import UserMenu from '../../modules/m01-cuentas/components/UserMenu';
 import SearchBar from '../../modules/m12-busqueda-recomendaciones/components/SearchBar';
@@ -25,6 +25,7 @@ export interface NavCallbacks {
   onIrABandejaValidacion: () => void;
   onIrABandejaConsultas: () => void;
   onIrAPanelAdmin: () => void;
+  onIrAUsuariosAdmin: () => void;
   onIrAHome: () => void;
   onIrACatalogo: () => void;
 }
@@ -78,6 +79,11 @@ function Header(props: NavCallbacks) {
                   {sesion && esAdministrador(sesion.rol) && (
                     <button role="menuitem" onClick={() => { gestion.setAbierto(false); props.onIrAPanelAdmin(); }}>
                       <LayoutDashboard size={16} aria-hidden="true" /> Panel admin
+                    </button>
+                  )}
+                  {sesion && esAdministrador(sesion.rol) && (
+                    <button role="menuitem" onClick={() => { gestion.setAbierto(false); props.onIrAUsuariosAdmin(); }}>
+                      <Users size={16} aria-hidden="true" /> Usuarios
                     </button>
                   )}
                 </div>

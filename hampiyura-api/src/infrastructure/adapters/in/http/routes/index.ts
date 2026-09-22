@@ -7,7 +7,7 @@ import { registrarParteUso, obtenerParteUso, listarPartesUsoPorPlanta } from '..
 import { crearPublicacion, obtenerPublicacion, listarPublicaciones, editarPublicacion, eliminarPublicacion, subirMedia } from '../controllers/m06-publicaciones/publicaciones.controller';
 import { comentarPublicacion, listarComentarios, calificarPublicacion } from '../controllers/m07-comunidad/comunidad.controller';
 import { aprobar, observar, rechazar, listarPendientes, reportar, listarReportes, actualizarEstadoReporte } from '../controllers/m09-validacion.controller';
-import { obtenerPanel, listarUsuarios, suspenderUsuario, reactivarUsuario, eliminarPlanta, obtenerAuditoria } from '../controllers/m13-analitica-estadisticas/administracion.controller';
+import { obtenerPanel, listarUsuarios, suspenderUsuario, reactivarUsuario, cambiarRolUsuario, eliminarPlanta, obtenerAuditoria } from '../controllers/m13-analitica-estadisticas/administracion.controller';
 import { listarNotificaciones, marcarTodasLeidas, marcarLeida, eliminarNotificacion } from '../controllers/m14-seguridad-notificaciones/notificaciones.controller';
 import { documentarPreparacion, obtenerPreparacion, listarPreparaciones } from '../controllers/m05-preparaciones/preparaciones.controller';
 import { publicarProducto, obtenerProducto, listarProductos, marcarValidadoDocumentalmente, marcarCertificado, verificarAfirmaciones } from '../controllers/m11-productos-emprendimientos/productos.controller';
@@ -33,6 +33,7 @@ router.post('/reportes',requireAuth,reportar); router.get('/reportes',requireVal
 router.get('/admin/panel',requireAdmin,obtenerPanel);
 router.get('/admin/usuarios',requireAdmin,listarUsuarios);
 router.patch('/admin/usuarios/:id/suspender',requireAdmin,suspenderUsuario); router.patch('/admin/usuarios/:id/reactivar',requireAdmin,reactivarUsuario);
+router.patch('/admin/usuarios/:id/rol',requireAdmin,cambiarRolUsuario);
 router.delete('/admin/plantas/:id',requireAdmin,eliminarPlanta);
 router.get('/admin/auditoria',requireAdmin,obtenerAuditoria);
 router.get('/notificaciones',requireAuth,listarNotificaciones); router.patch('/notificaciones/marcar-leidas',requireAuth,marcarTodasLeidas); router.patch('/notificaciones/:id/marcar-leida',requireAuth,marcarLeida); router.delete('/notificaciones/:id',requireAuth,eliminarNotificacion);

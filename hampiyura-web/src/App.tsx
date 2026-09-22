@@ -23,6 +23,7 @@ import ConsultaDetailPage from './modules/m08-consultas/pages/ConsultaDetailPage
 import BandejaConsultasPage from './modules/m08-consultas/pages/BandejaConsultasPage';
 import BandejaValidacionPage from './modules/m09-validacion-moderacion/pages/BandejaValidacionPage';
 import PanelAdminPage from './modules/m13-analitica-estadisticas/pages/PanelAdminPage';
+import UsuariosAdminPage from './modules/m13-analitica-estadisticas/pages/UsuariosAdminPage';
 import AppShell from './shared/layout/AppShell';
 import RequireRole from './shared/auth/RequireRole';
 import { esAdministrador, esValidador } from './shared/auth/session';
@@ -32,7 +33,8 @@ const RUTAS = {
   home: '/', catalogo: '/m02-catalogo-plantas', mapa: '/m03-cultivo/mapa', usos: '/m04-usos-partes',
   publicaciones: '/m06-publicaciones', consultas: '/m08-consultas', validacion: '/m09-validacion-moderacion/bandeja',
   productos: '/m11-productos-emprendimientos', busqueda: '/m12-busqueda-recomendaciones/resultados',
-  admin: '/m13-analitica-estadisticas/panel', notificaciones: '/m14-notificaciones', cuentas: '/m01-cuentas',
+  admin: '/m13-analitica-estadisticas/panel', adminUsuarios: '/m13-analitica-estadisticas/usuarios',
+  notificaciones: '/m14-notificaciones', cuentas: '/m01-cuentas',
 } as const;
 
 function RutaPlanta() {
@@ -87,6 +89,7 @@ function App() {
       onIrABandejaValidacion={() => navigate(RUTAS.validacion)}
       onIrABandejaConsultas={() => navigate(`${RUTAS.consultas}/bandeja`)}
       onIrAPanelAdmin={() => navigate(RUTAS.admin)}
+      onIrAUsuariosAdmin={() => navigate(RUTAS.adminUsuarios)}
       onIrAHome={() => navigate(RUTAS.home)}
       onIrACatalogo={() => navigate(RUTAS.catalogo)}
     >
@@ -116,7 +119,7 @@ function App() {
         <Route path={RUTAS.busqueda} element={<RutaBusqueda />} />
         <Route path={RUTAS.notificaciones} element={<NotificacionesPage onVolver={() => navigate(RUTAS.catalogo)} onAbrirConsulta={(id) => navigate(`${RUTAS.consultas}/${encodeURIComponent(id)}`)} />} />
         <Route path={`${RUTAS.cuentas}/login`} element={<LoginPage onIngreso={() => navigate(RUTAS.home)} onIrARegistro={() => navigate(`${RUTAS.cuentas}/registro`)} onIrARecuperar={() => navigate(`${RUTAS.cuentas}/recuperar`)} onIrAActivar={() => navigate(`${RUTAS.cuentas}/activar`)} />} />
-        <Route path={`${RUTAS.cuentas}/registro`} element={<RegistroPage onIrALogin={() => navigate(`${RUTAS.cuentas}/login`)} />} />
+        <Route path={`${RUTAS.cuentas}/registro`} element={<RegistroPage onIrALogin={() => navigate(`${RUTAS.cuentas}/login`)} onIrAActivar={() => navigate(`${RUTAS.cuentas}/activar`)} />} />
         <Route path={`${RUTAS.cuentas}/activar`} element={<ActivarCuentaPage onActivada={() => navigate(`${RUTAS.cuentas}/login`)} />} />
         <Route path={`${RUTAS.cuentas}/recuperar`} element={<RecuperarContrasenaPage onIrARestablecer={() => navigate(`${RUTAS.cuentas}/restablecer`)} />} />
         <Route path={`${RUTAS.cuentas}/restablecer`} element={<RestablecerContrasenaPage onRestablecida={() => navigate(`${RUTAS.cuentas}/login`)} />} />
@@ -127,6 +130,7 @@ function App() {
         <Route path={`${RUTAS.consultas}/:consultaId`} element={<RutaConsulta />} />
         <Route path={RUTAS.validacion} element={<RequireRole permitido={esValidador}><BandejaValidacionPage /></RequireRole>} />
         <Route path={RUTAS.admin} element={<RequireRole permitido={esAdministrador}><PanelAdminPage /></RequireRole>} />
+        <Route path={RUTAS.adminUsuarios} element={<RequireRole permitido={esAdministrador}><UsuariosAdminPage /></RequireRole>} />
         <Route path="*" element={<Navigate to={RUTAS.home} replace />} />
       </Routes>
     </AppShell>

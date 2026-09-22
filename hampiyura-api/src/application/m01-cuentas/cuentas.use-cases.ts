@@ -16,17 +16,19 @@ const EXPIRACION_RECUPERACION_MIN = 15;
 
 function validarConfirmacion(nueva: string, confirmacion: string) { if (nueva !== confirmacion) throw new ValidationError('La confirmación de contraseña no coincide'); }
 
-export interface AuthInput { nombre?:string; correo:string; contraseña:string; contraseñaConfirmacion:string; rol?:Usuario['props']['rol']; }
-// CG-005 (21/09/2026): el registro dejó de requerir verificación de correo antes de dar acceso --
-// la cuenta queda 'Activo' de inmediato (antes: 'PendienteActivacion', sin poder entrar hasta
-// activarla). Revierte un criterio Must original del SDS v1 (RF-01), decisión de equipo: el
-// registro no debe tener fricción para nadie.
+export interface AuthInput { nombre?:string; correo:string; contraseña:string; contraseñaConfirmacion:string; tipoRegistro?:'personal'|'empresa'; }
+// CG-005 (21/09/2026): el registro PERSONAL dejó de requerir verificación de correo antes de dar
+// acceso -- la cuenta queda 'Activo' de inmediato. Revierte un criterio Must original del SDS v1
+// (RF-01), decisión de equipo: el registro no debe tener fricción para nadie.
 //
-// El token/correo de activación NO se elimina: se sigue generando y "enviando" (log de consola en
-// desarrollo, ver ConsoleEmailAdapter) en cada registro, pero ya NO es obligatorio para entrar --
-// queda reservado para un futuro tipo de cuenta con beneficios, aún sin definir (ver CG-005). Así,
-// cualquier flujo de prueba que todavía quiera ejercitar ActivarCuentaUseCase tiene un token real
-// disponible en el log, sin tener que ir a la base de datos a buscarlo.
+// El mecanismo de token de activación no se eliminó: CG-005 lo dejó reservado para "un futuro tipo
+// de cuenta con beneficios, aún sin definir". Esa cuenta es el registro de EMPRESA/emprendimiento
+// (rol Productor): a diferencia del registro personal, queda 'PendienteActivacion' y necesita el
+// token (enviado por email -- en desarrollo, log de consola vía ConsoleEmailAdapter) antes de poder
+// iniciar sesión, ya que un Productor puede publicar productos/emprendimientos en el directorio
+// público y amerita una verificación mínima. `rol` NUNCA se acepta como input directo del cliente
+// (ver el schema del controller): se deriva acá de `tipoRegistro` para que nadie pueda
+// autoasignarse un rol arbitrario (p. ej. Administrador) manipulando el body de la petición.
 export class RegistrarUsuarioUseCase {
   constructor(private readonly repo:UsuarioRepositoryPort, private readonly tokens:TokenAccionRepositoryPort, private readonly email:EmailPort) {}
   async ejecutar(input:AuthInput):Promise<Usuario> {
@@ -34,11 +36,19 @@ export class RegistrarUsuarioUseCase {
     if (await this.repo.buscarPorCorreo(input.correo)) throw new ValidationError('El correo ya está registrado');
     validarConfirmacion(input.contraseña, input.contraseñaConfirmacion);
     const contraseña = new ContraseñaSegura(input.contraseña);
-    const usuario = new Usuario({id:randomUUID(), nombre:input.nombre, correo:input.correo, contraseñaHash:await bcrypt.hash(contraseña.valor, 10), rol:input.rol ?? 'UsuarioRegistrado', idioma:'es', nivelConocimiento:'Pendiente', region:'Pendiente', estado:'Activo'});
+    const esEmpresa = input.tipoRegistro === 'empresa';
+    const usuario = new Usuario({
+      id:randomUUID(), nombre:input.nombre, correo:input.correo, contraseñaHash:await bcrypt.hash(contraseña.valor, 10),
+      rol: esEmpresa ? 'Productor' : 'UsuarioRegistrado',
+      idioma:'es', nivelConocimiento:'Pendiente', region:'Pendiente',
+      estado: esEmpresa ? 'PendienteActivacion' : 'Activo',
+    });
     await this.repo.guardar(usuario);
-    const token = new TokenAccion({id:randomUUID(), usuarioId:usuario.props.id, tipo:'Activacion', token:randomUUID(), expiracion:new Date(Date.now()+EXPIRACION_ACTIVACION_MIN*MINUTOS), usado:false});
-    await this.tokens.guardar(token);
-    await this.email.enviarActivacion(usuario.props.correo, token.props.token);
+    if (esEmpresa) {
+      const token = new TokenAccion({id:randomUUID(), usuarioId:usuario.props.id, tipo:'Activacion', token:randomUUID(), expiracion:new Date(Date.now()+EXPIRACION_ACTIVACION_MIN*MINUTOS), usado:false});
+      await this.tokens.guardar(token);
+      await this.email.enviarActivacion(usuario.props.correo, token.props.token);
+    }
     return usuario;
   }
 }

@@ -40,7 +40,11 @@ function ActivarCuentaPage({ onActivada }: { onActivada: () => void }) {
 
   return (
     <section>
-      <h2>Activar cuenta</h2>
+      <h2>Activar cuenta de empresa</h2>
+      <p>
+        Este paso solo aplica a cuentas de empresa/emprendimiento (registradas para publicar productos). Las cuentas
+        personales quedan activas de inmediato al registrarse y no necesitan este token.
+      </p>
       <p className="comentario-meta">
         En este entorno de desarrollo no hay envío real de correo: el token de activación se genera al registrarse y
         queda registrado en el log del servidor (adapter de consola), con una línea del tipo

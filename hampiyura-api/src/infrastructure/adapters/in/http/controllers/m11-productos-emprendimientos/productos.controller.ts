@@ -16,7 +16,10 @@ const publicarSchema=z.object({
   fotografias:z.array(z.string()).default([]),
   localidad:z.string().min(1),
   informacionProceso:z.string().min(1),
-  fechaElaboracion:z.string().datetime().optional(),
+  // <input type="date"> del frontend manda "YYYY-MM-DD" (fecha sin hora) -- z.string().datetime()
+  // exige un ISO datetime completo con hora/zona y rechazaba ese formato con un error de Zod poco
+  // claro para quien publica. z.string().date() valida exactamente ese formato.
+  fechaElaboracion:z.string().date().optional(),
   contactoVendedor:z.string().min(1),
 });
 export async function publicarProducto(req:Request,res:Response){

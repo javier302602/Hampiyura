@@ -1,8 +1,19 @@
 import { FormEvent, useState } from 'react';
 import { registrar } from '../api/cuentas.api';
 import ReglasContrasena, { contraseñaEsSegura } from '../components/ReglasContrasena';
+import Button from '../../../shared/ui/Button';
 
-function RegistroPage({ onIrALogin }: { onIrALogin: () => void }) {
+interface Props {
+  onIrALogin: () => void;
+  onIrAActivar: () => void;
+}
+
+// Dos caminos de registro (ver RegistrarUsuarioUseCase en el backend): personal queda Activo de
+// inmediato (sin fricción, CG-005); empresa/emprendimiento crea una cuenta Productor que necesita
+// activarse con el token que llega por correo (en desarrollo, log de consola) antes de poder
+// publicar productos.
+function RegistroPage({ onIrALogin, onIrAActivar }: Props) {
+  const [tipoRegistro, setTipoRegistro] = useState<'personal' | 'empresa'>('personal');
   const [nombre, setNombre] = useState('');
   const [correo, setCorreo] = useState('');
   const [contraseña, setContraseña] = useState('');
@@ -18,7 +29,7 @@ function RegistroPage({ onIrALogin }: { onIrALogin: () => void }) {
     setEnviando(true);
     setError(null);
     try {
-      await registrar({ nombre, correo, contraseña, contraseñaConfirmacion: confirmacion });
+      await registrar({ nombre, correo, contraseña, contraseñaConfirmacion: confirmacion, tipoRegistro });
       setRegistrado(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo completar el registro.');
@@ -31,8 +42,21 @@ function RegistroPage({ onIrALogin }: { onIrALogin: () => void }) {
     return (
       <section>
         <h2>Cuenta creada</h2>
-        <p className="sello-verificado">✔ Tu cuenta ya está activa. Ya puedes iniciar sesión.</p>
-        <button onClick={onIrALogin}>Ir a iniciar sesión</button>
+        {tipoRegistro === 'personal' ? (
+          <>
+            <p className="sello-verificado">✔ Tu cuenta ya está activa. Ya puedes iniciar sesión.</p>
+            <Button variant="primary" onClick={onIrALogin}>Ir a iniciar sesión</Button>
+          </>
+        ) : (
+          <>
+            <p className="nota-cientifico">
+              ℹ Tu cuenta de emprendimiento quedó registrada como <strong>pendiente de activación</strong>. Te enviamos un enlace de
+              activación por correo (en este entorno de desarrollo, revisa el log de la consola del servidor) -- actívala antes de
+              iniciar sesión y poder publicar productos.
+            </p>
+            <Button variant="primary" onClick={onIrAActivar}>Activar mi cuenta de empresa</Button>
+          </>
+        )}
       </section>
     );
   }
@@ -40,9 +64,22 @@ function RegistroPage({ onIrALogin }: { onIrALogin: () => void }) {
   return (
     <section>
       <h2>Crear una cuenta</h2>
+      <div style={{ display: 'flex', gap: 'var(--space-2)', margin: 'var(--space-3) 0' }}>
+        <Button variant={tipoRegistro === 'personal' ? 'primary' : 'secondary'} size="sm" onClick={() => setTipoRegistro('personal')}>
+          Cuenta personal
+        </Button>
+        <Button variant={tipoRegistro === 'empresa' ? 'primary' : 'secondary'} size="sm" onClick={() => setTipoRegistro('empresa')}>
+          Registrar mi emprendimiento
+        </Button>
+      </div>
+      <p className="comentario-meta">
+        {tipoRegistro === 'personal'
+          ? 'Para explorar el catálogo, hacer consultas y participar en la comunidad. Queda activa de inmediato.'
+          : 'Para publicar y vender productos elaborados con plantas amazónicas en el directorio público. Requiere activar la cuenta con un enlace antes de poder publicar.'}
+      </p>
       <form onSubmit={manejarSubmit} className="formulario">
         <label>
-          Nombre
+          {tipoRegistro === 'empresa' ? 'Nombre del emprendimiento o responsable' : 'Nombre'}
           <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} required />
         </label>
         <label>
@@ -59,11 +96,11 @@ function RegistroPage({ onIrALogin }: { onIrALogin: () => void }) {
           <input type="password" value={confirmacion} onChange={(e) => setConfirmacion(e.target.value)} required />
         </label>
         {error && <p className="error-formulario">{error}</p>}
-        <button type="submit" disabled={enviando || !contraseñaEsSegura(contraseña) || contraseña !== confirmacion}>
-          {enviando ? 'Creando cuenta…' : 'Registrarme'}
-        </button>
+        <Button type="submit" variant="primary" loading={enviando} disabled={!contraseñaEsSegura(contraseña) || contraseña !== confirmacion}>
+          {enviando ? 'Creando cuenta…' : tipoRegistro === 'empresa' ? 'Registrar emprendimiento' : 'Registrarme'}
+        </Button>
       </form>
-      <button onClick={onIrALogin}>Ya tengo una cuenta</button>
+      <Button variant="ghost" onClick={onIrALogin}>Ya tengo una cuenta</Button>
     </section>
   );
 }

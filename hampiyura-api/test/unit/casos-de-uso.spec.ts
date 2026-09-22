@@ -81,16 +81,33 @@ describe('M-03 · Cultivo', () => {
 function usuarioActivo(overrides:Partial<Usuario['props']> = {}) { return new Usuario({id:'u1',nombre:'Dato de prueba',correo:'test@example.com',contraseñaHash:'',rol:'UsuarioRegistrado',idioma:'es',nivelConocimiento:'Pendiente',region:'Pendiente',estado:'Activo',...overrides}); }
 
 describe('M-01 · Cuentas', () => {
-  test('CG-005: el registro deja la cuenta Activo de inmediato, y sigue generando/"enviando" (log) un token de activación reservado para uso futuro', async () => {
+  test('CG-005: el registro personal deja la cuenta Activo de inmediato, sin token de activación', async () => {
     const repo:any={buscarPorCorreo:jest.fn().mockResolvedValue(null),guardar:jest.fn()};
     const tokens:any={guardar:jest.fn()};
     const email:any={enviarActivacion:jest.fn(),enviarRecuperacion:jest.fn()};
     const useCase=new RegistrarUsuarioUseCase(repo,tokens,email);
     const usuario=await useCase.ejecutar({nombre:'Dato de prueba',correo:'test@example.com',contraseña:'password123',contraseñaConfirmacion:'password123'});
     expect(repo.guardar).toHaveBeenCalled();
+    expect(usuario.props.rol).toBe('UsuarioRegistrado');
     expect(usuario.props.estado).toBe('Activo');
+    expect(tokens.guardar).not.toHaveBeenCalled();
+    expect(email.enviarActivacion).not.toHaveBeenCalled();
+  });
+
+  // El token de activación (reservado desde CG-005 para "un futuro tipo de cuenta con beneficios,
+  // aún sin definir") ahora es exactamente el registro de empresa/emprendimiento: rol Productor,
+  // PendienteActivacion hasta usar el token que llega por email (log de consola en desarrollo).
+  test('registro de empresa (tipoRegistro:"empresa") crea un Productor PendienteActivacion, con token', async () => {
+    const repo:any={buscarPorCorreo:jest.fn().mockResolvedValue(null),guardar:jest.fn()};
+    const tokens:any={guardar:jest.fn()};
+    const email:any={enviarActivacion:jest.fn(),enviarRecuperacion:jest.fn()};
+    const useCase=new RegistrarUsuarioUseCase(repo,tokens,email);
+    const usuario=await useCase.ejecutar({nombre:'Emprendimiento de prueba',correo:'empresa@example.com',contraseña:'password123',contraseñaConfirmacion:'password123',tipoRegistro:'empresa'});
+    expect(repo.guardar).toHaveBeenCalled();
+    expect(usuario.props.rol).toBe('Productor');
+    expect(usuario.props.estado).toBe('PendienteActivacion');
     expect(tokens.guardar).toHaveBeenCalled();
-    expect(email.enviarActivacion).toHaveBeenCalledWith('test@example.com', expect.any(String));
+    expect(email.enviarActivacion).toHaveBeenCalledWith('empresa@example.com', expect.any(String));
   });
 
   test('registro falla si la confirmación de contraseña no coincide', async () => {

@@ -1,6 +1,10 @@
 import { apiRequest } from '../../../shared/api/client';
 
-export interface RegistroInput { nombre: string; correo: string; contraseña: string; contraseñaConfirmacion: string; }
+// tipoRegistro decide rol/estado en el backend (RegistrarUsuarioUseCase): 'personal' (default)
+// queda Activo de inmediato; 'empresa' queda PendienteActivacion (rol Productor) hasta usar el
+// token de activación -- separa el registro de una persona del de un emprendimiento que va a
+// publicar productos en el directorio público.
+export interface RegistroInput { nombre: string; correo: string; contraseña: string; contraseñaConfirmacion: string; tipoRegistro?: 'personal' | 'empresa'; }
 export interface RegistroResultado { id: string; nombre: string; correo: string; rol: string; estado: string; }
 export function registrar(input: RegistroInput): Promise<RegistroResultado> {
   return apiRequest<RegistroResultado>('/cuentas/registro', { method: 'POST', body: JSON.stringify(input) });

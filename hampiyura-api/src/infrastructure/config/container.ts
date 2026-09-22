@@ -16,7 +16,7 @@ import { RegistrarUsoUseCase, ListarUsosUseCase } from '../../application/m04-us
 import { RegistrarParteUsoUseCase, ObtenerParteUsoUseCase, ListarPartesUsoUseCase } from '../../application/m04-usos-partes/partes-uso.use-cases';
 import { AprobarContenidoUseCase, ObservarContenidoUseCase, RechazarContenidoUseCase, ListarPendientesUseCase } from '../../application/m09-validacion-moderacion/validacion.use-cases';
 import { ReportarContenidoUseCase, ListarReportesPendientesUseCase, ActualizarEstadoReporteUseCase } from '../../application/m09-validacion-moderacion/reportes.use-cases';
-import { ListarUsuariosUseCase, SuspenderUsuarioUseCase, ReactivarUsuarioUseCase, EliminarPlantaUseCase, ObtenerPanelAdminUseCase, ObtenerAuditoriaUseCase } from '../../application/m13-analitica-estadisticas/administracion.use-cases';
+import { ListarUsuariosUseCase, SuspenderUsuarioUseCase, ReactivarUsuarioUseCase, CambiarRolUsuarioUseCase, EliminarPlantaUseCase, ObtenerPanelAdminUseCase, ObtenerAuditoriaUseCase } from '../../application/m13-analitica-estadisticas/administracion.use-cases';
 import { ListarNotificacionesUseCase, MarcarTodasLeidasUseCase, MarcarLeidaUseCase, EliminarNotificacionUseCase } from '../../application/m14-seguridad-notificaciones/notificaciones.use-cases';
 import { CrearPublicacionUseCase, ObtenerPublicacionUseCase, ListarPublicacionesUseCase, EditarPublicacionUseCase, EliminarPublicacionUseCase, SubirMediaUseCase } from '../../application/m06-publicaciones/publicaciones.use-cases';
 import { ComentarPublicacionUseCase, ListarComentariosUseCase, CalificarPublicacionUseCase } from '../../application/m07-comunidad/comunidad.use-cases';
@@ -66,6 +66,7 @@ export const container={
   listarUsuarios:new ListarUsuariosUseCase(usuarios),
   suspenderUsuario:new SuspenderUsuarioUseCase(usuarios),
   reactivarUsuario:new ReactivarUsuarioUseCase(usuarios),
+  cambiarRolUsuario:new CambiarRolUsuarioUseCase(usuarios),
   eliminarPlanta:new EliminarPlantaUseCase(plantas,cultivos,partesUso),
   obtenerPanelAdmin:new ObtenerPanelAdminUseCase(validaciones,usuarios,plantas,publicaciones,reportes),
   obtenerAuditoria:new ObtenerAuditoriaUseCase(validaciones),

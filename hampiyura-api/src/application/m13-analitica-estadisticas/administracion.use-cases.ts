@@ -36,6 +36,22 @@ export class ReactivarUsuarioUseCase implements CambiarEstadoCuentaPort {
   async ejecutar(usuarioId:string):Promise<Usuario> { return cambiarEstado(this.repo, usuarioId, 'Activo'); }
 }
 
+// No existía ninguna forma de cambiar el rol de un usuario salvo editando la base de datos a mano
+// -- este caso de uso llega solo a través de la ruta PATCH /admin/usuarios/:id/rol, que ya exige
+// requireAdmin (role.middleware.ts). Como SOLO un Administrador puede llegar a esta ruta en primer
+// lugar, "solo un Administrador puede crear otros Administrador" queda satisfecho por construcción
+// -- no hace falta una regla aparte para ese caso particular dentro del caso de uso.
+export class CambiarRolUsuarioUseCase {
+  constructor(private readonly repo:UsuarioRepositoryPort) {}
+  async ejecutar(usuarioId:string, nuevoRol:Usuario['props']['rol']):Promise<Usuario> {
+    const usuario = await this.repo.buscarPorId(usuarioId);
+    if (!usuario) throw new NotFoundError(`Usuario no encontrado: ${usuarioId}`);
+    usuario.props.rol = nuevoRol;
+    await this.repo.actualizar(usuario);
+    return usuario;
+  }
+}
+
 // RF-31 (alcance de esta fase): solo eliminar. Editar plantas queda pendiente porque M-02
 // todavía no tiene un endpoint de actualización (ver resumen de la sesión).
 export class EliminarPlantaUseCase implements EliminarPlantaPort {
