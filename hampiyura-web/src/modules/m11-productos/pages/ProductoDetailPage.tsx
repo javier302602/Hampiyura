@@ -3,6 +3,7 @@ import { obtenerProducto, marcarValidadoDocumentalmente, marcarCertificado, type
 import IndicadoresProducto from '../components/IndicadoresProducto';
 import RequireRole from '../../../shared/auth/RequireRole';
 import { esValidador } from '../../../shared/auth/session';
+import MiniMapaUbicacion from '../../m03-cultivo/components/MiniMapaUbicacion';
 
 function PanelCertificacion({ producto, onActualizado }: { producto: ProductoVisible; onActualizado: () => void }) {
   const [documentacion, setDocumentacion] = useState('');
@@ -83,6 +84,21 @@ function ProductoDetailPage({ productoId, onVolver }: { productoId: string; onVo
       <p>Por {producto.productorNombre} · {producto.localidad}</p>
 
       <IndicadoresProducto revisadoPorEquipo={producto.revisadoPorEquipo} validadoDocumental={producto.etiquetaValidadoDocumental} certificado={producto.etiquetaCertificado} />
+
+      {/* Frente 6: el selector de mapa al publicar (Frente 3) ya capturaba el pin, pero antes solo
+          se usaba para geocodificación inversa y se descartaba -- productos publicados desde este
+          cambio guardan latitud/longitud reales; los anteriores no las tienen, y acá no se inventa
+          un punto genérico para rellenar el hueco. */}
+      {producto.latitud != null && producto.longitud != null ? (
+        <div style={{ marginTop: '1rem' }}>
+          <h3>Ubicación</h3>
+          <MiniMapaUbicacion latitud={producto.latitud} longitud={producto.longitud} etiqueta={producto.localidad} />
+        </div>
+      ) : (
+        <p className="comentario-meta" style={{ marginTop: '1rem' }}>
+          Este producto no tiene un punto exacto guardado en el mapa (se publicó con la localidad escrita a mano, sin usar el selector de mapa).
+        </p>
+      )}
 
       {producto.fotografias.length > 0 && (
         <div className="galeria-imagenes">

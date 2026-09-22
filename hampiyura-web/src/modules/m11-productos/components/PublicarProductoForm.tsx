@@ -30,6 +30,7 @@ function PublicarProductoForm({ onPublicado }: { onPublicado: (creado: Producto)
   const [entradaTexto, setEntradaTexto] = useState('');
 
   const [localidad, setLocalidad] = useState('');
+  const [coordenadas, setCoordenadas] = useState<{ lat: number; lon: number } | null>(null);
   const [resolviendoDireccion, setResolviendoDireccion] = useState(false);
   const [informacionProceso, setInformacionProceso] = useState('');
   const [fechaElaboracion, setFechaElaboracion] = useState('');
@@ -73,6 +74,9 @@ function PublicarProductoForm({ onPublicado }: { onPublicado: (creado: Producto)
   // la dirección real del punto exacto, no del texto de búsqueda (que solo centra el mapa y puede
   // no coincidir si después se ajustó el pin a mano).
   function manejarCambioUbicacion(lat: number, lon: number) {
+    // Frente 6: antes lat/lon solo se usaban para geocodificar y se descartaban -- ahora también
+    // se guardan en estado para enviarse junto con el resto del formulario (mini-mapa en la ficha).
+    setCoordenadas({ lat, lon });
     setResolviendoDireccion(true);
     direccionInversa(lat, lon)
       .then((direccion) => { if (direccion) setLocalidad(direccion); })
@@ -111,7 +115,8 @@ function PublicarProductoForm({ onPublicado }: { onPublicado: (creado: Producto)
       const creado = await publicarProducto({
         nombre, descripcion: descripcion.trim() || undefined, plantasUtilizadas, ingredientes: ingredientes.trim() || undefined,
         presentacion: presentacion.trim() || undefined, cantidad: cantidad.trim() || undefined,
-        precioReferencial: precioReferencial.trim() || undefined, fotografias, localidad, informacionProceso,
+        precioReferencial: precioReferencial.trim() || undefined, fotografias, localidad,
+        latitud: coordenadas?.lat, longitud: coordenadas?.lon, informacionProceso,
         fechaElaboracion: fechaElaboracion || undefined, contactoVendedor,
         aceptaComision: aceptaComisionAhora || undefined,
       });

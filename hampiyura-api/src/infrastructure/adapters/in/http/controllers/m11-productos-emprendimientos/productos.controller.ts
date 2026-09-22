@@ -27,6 +27,10 @@ const publicarSchema=z.object({
   precioReferencial:z.string().optional(),
   fotografias:z.array(z.string()).default([]),
   localidad:z.string().min(1),
+  // Frente 6: coordenadas reales del pin del mapa (antes se descartaban) -- opcionales porque
+  // localidad sigue siendo editable a mano sin pasar por el mapa.
+  latitud:z.number().optional(),
+  longitud:z.number().optional(),
   informacionProceso:z.string().min(1),
   // <input type="date"> del frontend manda "YYYY-MM-DD" (fecha sin hora) -- z.string().datetime()
   // exige un ISO datetime completo con hora/zona y rechazaba ese formato con un error de Zod poco

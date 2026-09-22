@@ -25,6 +25,12 @@ export interface Producto {
   precioReferencial?: string;
   fotografias: string[];
   localidad: string;
+  // Frente 6 (mini-mapa por producto): coordenadas reales del pin soltado en el selector de mapa
+  // al publicar -- antes se usaban solo para geocodificación inversa y se descartaban. Opcionales:
+  // localidad sigue siendo texto editable a mano, y productos publicados antes de este cambio no
+  // las tienen.
+  latitud?: number;
+  longitud?: number;
   informacionProceso: string;
   fechaElaboracion?: string;
   contactoVendedor: string;
@@ -51,6 +57,8 @@ export interface PublicarProductoInput {
   precioReferencial?: string;
   fotografias: string[];
   localidad: string;
+  latitud?: number;
+  longitud?: number;
   informacionProceso: string;
   fechaElaboracion?: string;
   contactoVendedor: string;

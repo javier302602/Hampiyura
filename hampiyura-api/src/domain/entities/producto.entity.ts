@@ -29,6 +29,11 @@ export interface ProductoProps {
   precioReferencial?: string;
   fotografias: string[];
   localidad: string;
+  // Frente 6: coordenadas reales del pin soltado en SelectorUbicacionMapa (Frente 3) -- antes se
+  // usaban solo para geocodificación inversa y se descartaban. Opcionales: localidad sigue siendo
+  // texto editable a mano, y los productos publicados antes de este cambio no las tienen.
+  latitud?: number;
+  longitud?: number;
   informacionProceso: string;
   fechaElaboracion?: Date;
   contactoVendedor: string;

@@ -178,6 +178,13 @@ p{font-size:1.1rem;line-height:1.6;max-width:620px;color:var(--color-text)}
   .mapa-cultivo-lista{height:340px}
 }
 
+/* MiniMapaUbicacion (Frente 6, m03-cultivo/components) -- mismo tile layer con relieve que el mapa
+   grande, en una tarjeta compacta y de solo lectura para la ficha de producto. El cursor "default"
+   (no "grab"/"pointer") es intencional: a diferencia de .mapa-cultivo-mapa, este mapa no se arrastra
+   ni se navega. */
+.mini-mapa-ubicacion{border:1px solid var(--color-border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);max-width:420px}
+.mini-mapa-ubicacion-lienzo{height:220px;width:100%;cursor:default}
+
 /* Leaflet trae sus propios controles/popups en blanco fijo (no conocen los tokens de la app) --
    en tema oscuro eso queda como un recorte blanco chocante sobre el resto de la pantalla, así que
    se re-tiñen con los mismos tokens. En tema claro no hace falta tocar nada (blanco ya combina). */

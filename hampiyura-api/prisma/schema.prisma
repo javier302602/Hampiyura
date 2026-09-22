@@ -327,6 +327,13 @@ model Producto {
   precioReferencial String?
   fotografias String[]
   localidad String
+  // Frente 6 (mini-mapa por producto): el selector de mapa de Frente 3 (SelectorUbicacionMapa) ya
+  // capturaba lat/lon del pin, pero solo se usaban para geocodificación inversa (rellenar el texto
+  // de `localidad`) y se descartaban -- nunca se guardaban. Opcionales porque `localidad` sigue
+  // siendo un input de texto editable a mano (no derivado exclusivamente del mapa): un producto
+  // publicado sin tocar el mapa, o publicado antes de este cambio, no tiene coordenadas.
+  latitud Float?
+  longitud Float?
   informacionProceso String
   fechaElaboracion DateTime?
   contactoVendedor String
