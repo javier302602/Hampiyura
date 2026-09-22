@@ -1,5 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { activarCuenta } from '../api/cuentas.api';
+import Button from '../../../shared/ui/Button';
+import AuthLayout from '../components/AuthLayout';
 
 // El token viaja en el enlace que el adapter de correo (de consola, ver resumen) construye como
 // /cuentas/activar?token=... -- si alguien abre la SPA con esa query string se prellena aquí,
@@ -30,22 +32,20 @@ function ActivarCuentaPage({ onActivada }: { onActivada: () => void }) {
 
   if (activada) {
     return (
-      <section>
-        <h2>Cuenta activada</h2>
+      <AuthLayout eyebrow="Listo" title="Cuenta activada">
         <p className="sello-verificado">✔ Tu cuenta fue activada correctamente. Ya puedes iniciar sesión.</p>
-        <button onClick={onActivada}>Ir a iniciar sesión</button>
-      </section>
+        <Button variant="primary" fullWidth onClick={onActivada} style={{ marginTop: 'var(--space-3)' }}>Ir a iniciar sesión</Button>
+      </AuthLayout>
     );
   }
 
   return (
-    <section>
-      <h2>Activar cuenta de empresa</h2>
-      <p>
-        Este paso solo aplica a cuentas de empresa/emprendimiento (registradas para publicar productos). Las cuentas
-        personales quedan activas de inmediato al registrarse y no necesitan este token.
-      </p>
-      <p className="comentario-meta">
+    <AuthLayout
+      eyebrow="Cuentas de empresa"
+      title="Activar cuenta"
+      description="Este paso solo aplica a cuentas de empresa/emprendimiento. Las cuentas personales quedan activas de inmediato y no lo necesitan."
+    >
+      <p className="comentario-meta" style={{ marginBottom: 'var(--space-3)' }}>
         En este entorno de desarrollo no hay envío real de correo: el token de activación se genera al registrarse y
         queda registrado en el log del servidor (adapter de consola), con una línea del tipo
         "[email:activacion] Para &lt;correo&gt; -&gt; enlace: /cuentas/activar?token=&lt;token&gt;".
@@ -56,9 +56,9 @@ function ActivarCuentaPage({ onActivada }: { onActivada: () => void }) {
           <input type="text" value={token} onChange={(e) => setToken(e.target.value)} required />
         </label>
         {error && <p className="error-formulario">{error}</p>}
-        <button type="submit" disabled={enviando || !token.trim()}>{enviando ? 'Activando…' : 'Activar cuenta'}</button>
+        <Button type="submit" variant="primary" fullWidth loading={enviando} disabled={!token.trim()}>{enviando ? 'Activando…' : 'Activar cuenta'}</Button>
       </form>
-    </section>
+    </AuthLayout>
   );
 }
 

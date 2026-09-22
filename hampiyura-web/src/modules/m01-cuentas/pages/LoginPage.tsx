@@ -1,7 +1,9 @@
 import { FormEvent, useState } from 'react';
+import { KeyRound } from 'lucide-react';
 import { login } from '../api/cuentas.api';
 import { setSessionToken } from '../../../shared/auth/session';
 import Button from '../../../shared/ui/Button';
+import AuthLayout from '../components/AuthLayout';
 
 interface Props {
   onIngreso: () => void;
@@ -36,30 +38,38 @@ function LoginPage({ onIngreso, onIrARegistro, onIrARecuperar, onIrAActivar }: P
   }
 
   return (
-    <section>
-      <h2>Iniciar sesión</h2>
+    <AuthLayout
+      eyebrow="Bienvenido de vuelta"
+      title="Iniciar sesión"
+      description="Accede para hacer consultas, proponer plantas o publicar productos con tu cuenta."
+      footer={
+        <>
+          <button type="button" className="auth-link-recuperar" onClick={onIrARecuperar}>
+            <KeyRound size={14} aria-hidden="true" /> ¿Olvidaste tu contraseña?
+          </button>
+          <div className="auth-footer-divider">o</div>
+          <Button variant="secondary" fullWidth onClick={onIrARegistro}>Crear una cuenta</Button>
+          {/* Separado y de menor jerarquía a propósito -- no aplica a cuentas personales (CG-005:
+              quedan activas de inmediato), solo a cuentas de empresa/emprendimiento (rol Productor). */}
+          <p className="auth-footer-note">
+            ¿Registraste una empresa o emprendimiento? <button className="btn btn-ghost btn-sm" style={{ padding: 0 }} onClick={onIrAActivar}>Activa tu cuenta aquí</button>
+          </p>
+        </>
+      }
+    >
       <form onSubmit={manejarSubmit} className="formulario">
         <label>
           Correo
-          <input type="email" value={correo} onChange={(e) => setCorreo(e.target.value)} required />
+          <input type="email" value={correo} onChange={(e) => setCorreo(e.target.value)} required autoFocus />
         </label>
         <label>
           Contraseña
           <input type="password" value={contraseña} onChange={(e) => setContraseña(e.target.value)} required />
         </label>
         {error && <p className="error-formulario">{error}</p>}
-        <Button type="submit" variant="primary" loading={enviando}>{enviando ? 'Ingresando…' : 'Iniciar sesión'}</Button>
+        <Button type="submit" variant="primary" fullWidth loading={enviando}>{enviando ? 'Ingresando…' : 'Iniciar sesión'}</Button>
       </form>
-      <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
-        <Button variant="ghost" onClick={onIrARecuperar}>Olvidé mi contraseña</Button>
-        <Button variant="ghost" onClick={onIrARegistro}>Crear una cuenta</Button>
-      </div>
-      {/* Separado y de menor jerarquía a propósito -- no aplica a cuentas personales (CG-005: quedan
-          activas de inmediato), solo a cuentas de empresa/emprendimiento (rol Productor). */}
-      <p className="comentario-meta" style={{ marginTop: 'var(--space-4)' }}>
-        ¿Registraste una empresa o emprendimiento? <button className="btn btn-ghost btn-sm" style={{ padding: 0 }} onClick={onIrAActivar}>Activa tu cuenta aquí</button>
-      </p>
-    </section>
+    </AuthLayout>
   );
 }
 

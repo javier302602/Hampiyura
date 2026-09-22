@@ -1,0 +1,65 @@
+/* AuthLayout -- Login/Registro/Recuperar/Activar/Restablecer (m01-cuentas) eran <h2> + .formulario
+   sueltos, sin nada de la identidad visual que ya tiene Home (ver auditoría ronda 3, punto 5).
+   Reusa --hero-photo (misma foto de Sangre de grado del hero) en un panel lateral en vez de
+   inventar una foto nueva. */
+.auth-layout{
+  display:grid;grid-template-columns:1fr;
+  margin:calc(-1 * var(--space-8)) calc(-1 * var(--space-6)) var(--space-6);
+  border-radius:0 0 var(--radius-lg) var(--radius-lg);
+  overflow:hidden;
+  min-height:clamp(520px,72vh,720px);
+}
+.auth-panel{
+  padding:var(--space-8) var(--space-6);
+  display:flex;flex-direction:column;justify-content:center;
+  background:var(--color-bg);
+}
+.auth-logo{
+  display:inline-flex;align-items:center;gap:.4em;
+  font-weight:var(--font-weight-bold);color:var(--color-text);
+  margin-bottom:var(--space-5);width:fit-content;
+}
+.auth-title{font-size:clamp(1.9rem,4vw,2.5rem);line-height:1.05;margin:.15em 0 .3em;color:var(--color-text)}
+.auth-desc{color:var(--color-text-muted);max-width:420px;margin:0 0 var(--space-5)}
+.auth-card{max-width:420px;width:100%}
+.auth-card .formulario{margin-top:0}
+
+.auth-footer{max-width:420px;width:100%;margin-top:var(--space-5);display:grid;gap:var(--space-4)}
+.auth-footer-links{display:flex;flex-direction:column;gap:var(--space-2);align-items:flex-start}
+.auth-footer-divider{display:flex;align-items:center;gap:var(--space-3);color:var(--color-text-muted);font-size:var(--font-size-small)}
+.auth-footer-divider::before,.auth-footer-divider::after{content:"";flex:1;height:1px;background:var(--color-border)}
+.auth-footer-note{color:var(--color-text-muted);font-size:var(--font-size-small);margin:0}
+
+.auth-link-recuperar{
+  display:inline-flex;align-items:center;gap:.4em;
+  background:none;border:none;padding:0;cursor:pointer;
+  color:var(--color-accent-hover);font-weight:var(--font-weight-medium);font-size:var(--font-size-small);
+}
+.auth-link-recuperar:hover{text-decoration:underline}
+
+/* El texto de la cita necesita fondo oscuro SIEMPRE, sin importar el tema -- --hero-scrim en modo
+   claro es casi blanco (pensado para tintar el hero, no para legibilidad de texto claro encima),
+   así que acá se usa --jungle-2 (verde oscuro en ambos temas) en vez de --hero-scrim para este
+   degradado. Bug real encontrado en la primera verificación: en claro el texto quedaba invisible
+   sobre la foto lavada -- ver capturas AUTH-login-light antes/después del fix. */
+.auth-photo{
+  display:none;
+  position:relative;
+  align-items:flex-end;
+  padding:var(--space-7);
+  background-image:
+    linear-gradient(180deg, color-mix(in srgb, var(--jungle-2) 20%, transparent) 0%, color-mix(in srgb, var(--jungle-2) 92%, transparent) 100%),
+    var(--hero-photo);
+  background-size:cover;background-position:center;background-repeat:no-repeat;
+}
+.auth-photo-quote{position:relative;z-index:1;max-width:380px}
+.auth-photo-quote p{
+  color:var(--brand-on-brand);font-size:1.15rem;line-height:1.5;font-weight:var(--font-weight-medium);
+  margin:0 0 var(--space-2);
+}
+.auth-photo-credit{color:var(--brand-on-brand-muted);font-size:var(--font-size-caption)}
+
+@media (min-width:860px){
+  .auth-layout{grid-template-columns:1fr 1fr}
+  .auth-photo{display:flex}
+}

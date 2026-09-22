@@ -1,5 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { solicitarRecuperacion } from '../api/cuentas.api';
+import Button from '../../../shared/ui/Button';
+import AuthLayout from '../components/AuthLayout';
 
 function RecuperarContrasenaPage({ onIrARestablecer }: { onIrARestablecer: () => void }) {
   const [correo, setCorreo] = useState('');
@@ -23,29 +25,27 @@ function RecuperarContrasenaPage({ onIrARestablecer }: { onIrARestablecer: () =>
 
   if (enviado) {
     return (
-      <section>
-        <h2>Recuperar contraseña</h2>
+      <AuthLayout eyebrow="Revisa tu correo" title="Recuperar contraseña">
         <p className="comentario-meta">
           Si el correo existe, se generó un token de recuperación (válido 15 minutos). En este entorno de desarrollo
           no se envía un correo real: el token queda registrado en el log del servidor (adapter de consola).
         </p>
-        <button onClick={onIrARestablecer}>Ya tengo el token, continuar</button>
-      </section>
+        <Button variant="primary" fullWidth onClick={onIrARestablecer} style={{ marginTop: 'var(--space-3)' }}>Ya tengo el token, continuar</Button>
+      </AuthLayout>
     );
   }
 
   return (
-    <section>
-      <h2>Recuperar contraseña</h2>
+    <AuthLayout eyebrow="¿Olvidaste tu contraseña?" title="Recuperar contraseña" description="Te ayudamos a generar un token para elegir una nueva.">
       <form onSubmit={manejarSubmit} className="formulario">
         <label>
           Correo
-          <input type="email" value={correo} onChange={(e) => setCorreo(e.target.value)} required />
+          <input type="email" value={correo} onChange={(e) => setCorreo(e.target.value)} required autoFocus />
         </label>
         {error && <p className="error-formulario">{error}</p>}
-        <button type="submit" disabled={enviando}>{enviando ? 'Enviando…' : 'Solicitar recuperación'}</button>
+        <Button type="submit" variant="primary" fullWidth loading={enviando}>{enviando ? 'Enviando…' : 'Solicitar recuperación'}</Button>
       </form>
-    </section>
+    </AuthLayout>
   );
 }
 

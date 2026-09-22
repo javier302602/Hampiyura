@@ -1,0 +1,39 @@
+import { ReactNode } from 'react';
+import { Leaf } from 'lucide-react';
+
+interface Props {
+  eyebrow: string;
+  title: string;
+  description?: string;
+  children: ReactNode;
+  footer?: ReactNode;
+}
+
+// Login/Registro (y por extensión Recuperar/Activar/Restablecer, misma familia) vivían como un
+// <h2> + .formulario suelto, sin nada de la identidad visual que ya tiene Home (foto real, franja
+// de marca) -- ver auditoría ronda 3, punto 5. En vez de reinventar el hero, este layout reusa el
+// mismo token de foto (--hero-photo, Sangre de grado) en un panel lateral: columna de contenido a
+// la izquierda, foto+cita a la derecha. En mobile la foto se oculta (ver auth.css) para no robarle
+// espacio al formulario, que es lo que la persona vino a usar.
+function AuthLayout({ eyebrow, title, description, children, footer }: Props) {
+  return (
+    <div className="auth-layout">
+      <div className="auth-panel">
+        <span className="auth-logo"><Leaf size={16} aria-hidden="true" /> HampiYura</span>
+        <p className="eyebrow">{eyebrow}</p>
+        <h1 className="auth-title">{title}</h1>
+        {description && <p className="auth-desc">{description}</p>}
+        <div className="auth-card">{children}</div>
+        {footer && <div className="auth-footer">{footer}</div>}
+      </div>
+      <div className="auth-photo" aria-hidden="true">
+        <div className="auth-photo-quote">
+          <p>&ldquo;Cada planta documentada es conocimiento tradicional que se preserva para la comunidad.&rdquo;</p>
+          <span className="auth-photo-credit">Sangre de grado (Croton lechleri) · Wikimedia Commons</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default AuthLayout;

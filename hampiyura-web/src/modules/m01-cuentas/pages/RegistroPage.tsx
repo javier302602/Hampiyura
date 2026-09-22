@@ -2,6 +2,7 @@ import { FormEvent, useState } from 'react';
 import { registrar } from '../api/cuentas.api';
 import ReglasContrasena, { contraseñaEsSegura } from '../components/ReglasContrasena';
 import Button from '../../../shared/ui/Button';
+import AuthLayout from '../components/AuthLayout';
 
 interface Props {
   onIrALogin: () => void;
@@ -40,12 +41,11 @@ function RegistroPage({ onIrALogin, onIrAActivar }: Props) {
 
   if (registrado) {
     return (
-      <section>
-        <h2>Cuenta creada</h2>
+      <AuthLayout eyebrow="Un paso más" title="Cuenta creada">
         {tipoRegistro === 'personal' ? (
           <>
             <p className="sello-verificado">✔ Tu cuenta ya está activa. Ya puedes iniciar sesión.</p>
-            <Button variant="primary" onClick={onIrALogin}>Ir a iniciar sesión</Button>
+            <Button variant="primary" fullWidth onClick={onIrALogin} style={{ marginTop: 'var(--space-3)' }}>Ir a iniciar sesión</Button>
           </>
         ) : (
           <>
@@ -54,17 +54,26 @@ function RegistroPage({ onIrALogin, onIrAActivar }: Props) {
               activación por correo (en este entorno de desarrollo, revisa el log de la consola del servidor) -- actívala antes de
               iniciar sesión y poder publicar productos.
             </p>
-            <Button variant="primary" onClick={onIrAActivar}>Activar mi cuenta de empresa</Button>
+            <Button variant="primary" fullWidth onClick={onIrAActivar} style={{ marginTop: 'var(--space-3)' }}>Activar mi cuenta de empresa</Button>
           </>
         )}
-      </section>
+      </AuthLayout>
     );
   }
 
   return (
-    <section>
-      <h2>Crear una cuenta</h2>
-      <div style={{ display: 'flex', gap: 'var(--space-2)', margin: 'var(--space-3) 0' }}>
+    <AuthLayout
+      eyebrow="Únete a la comunidad"
+      title="Crear una cuenta"
+      description="Explora el catálogo, participa en consultas o publica productos elaborados con plantas amazónicas."
+      footer={
+        <>
+          <div className="auth-footer-divider">o</div>
+          <Button variant="secondary" fullWidth onClick={onIrALogin}>Ya tengo una cuenta</Button>
+        </>
+      }
+    >
+      <div style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-3)' }}>
         <Button variant={tipoRegistro === 'personal' ? 'primary' : 'secondary'} size="sm" onClick={() => setTipoRegistro('personal')}>
           Cuenta personal
         </Button>
@@ -72,7 +81,7 @@ function RegistroPage({ onIrALogin, onIrAActivar }: Props) {
           Registrar mi emprendimiento
         </Button>
       </div>
-      <p className="comentario-meta">
+      <p className="comentario-meta" style={{ marginBottom: 'var(--space-3)' }}>
         {tipoRegistro === 'personal'
           ? 'Para explorar el catálogo, hacer consultas y participar en la comunidad. Queda activa de inmediato.'
           : 'Para publicar y vender productos elaborados con plantas amazónicas en el directorio público. Requiere activar la cuenta con un enlace antes de poder publicar.'}
@@ -96,12 +105,11 @@ function RegistroPage({ onIrALogin, onIrAActivar }: Props) {
           <input type="password" value={confirmacion} onChange={(e) => setConfirmacion(e.target.value)} required />
         </label>
         {error && <p className="error-formulario">{error}</p>}
-        <Button type="submit" variant="primary" loading={enviando} disabled={!contraseñaEsSegura(contraseña) || contraseña !== confirmacion}>
+        <Button type="submit" variant="primary" fullWidth loading={enviando} disabled={!contraseñaEsSegura(contraseña) || contraseña !== confirmacion}>
           {enviando ? 'Creando cuenta…' : tipoRegistro === 'empresa' ? 'Registrar emprendimiento' : 'Registrarme'}
         </Button>
       </form>
-      <Button variant="ghost" onClick={onIrALogin}>Ya tengo una cuenta</Button>
-    </section>
+    </AuthLayout>
   );
 }
 
