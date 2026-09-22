@@ -13,10 +13,13 @@
 
 /* Verde de WhatsApp a propósito (no un token del design system) -- es una señal de marca reconocible
    por sí sola, igual que otros sitios usan el verde de WhatsApp puntualmente para este único botón,
-   sin que eso implique adoptarlo como color del sistema. */
+   sin que eso implique adoptarlo como color del sistema. El texto es 14px bold -- por debajo del
+   umbral de "texto grande" de WCAG (18.66px en negrita), así que debe cumplir el mismo 7:1 (AAA
+   texto normal) que el resto de la app, no el 4.5:1 de "texto grande". #0b3d0b daba 6.28:1 (AA,
+   no AAA) -- se oscurece a #062806 (8.06:1) para mantener el mismo estándar que el resto del proyecto. */
 .footer-whatsapp-btn{
   display:inline-flex;align-items:center;gap:.5em;width:fit-content;
-  background:#25d366;color:#0b3d0b;font-weight:var(--font-weight-bold);font-size:var(--font-size-small);
+  background:#25d366;color:#062806;font-weight:var(--font-weight-bold);font-size:var(--font-size-small);
   padding:.55em 1em;border-radius:var(--radius-pill);text-decoration:none;
   transition:filter .15s ease;
 }
