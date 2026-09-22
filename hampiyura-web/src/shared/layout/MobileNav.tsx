@@ -1,4 +1,4 @@
-import { Bell, FlaskConical, Home, Inbox, LayoutDashboard, LogOut, MessageSquare, Package, Sprout, UserRound, Users, X } from 'lucide-react';
+import { Bell, FlaskConical, Home, Inbox, LayoutDashboard, LogOut, MessageSquare, Package, Sprout, TreeDeciduous, UserRound, Users, X } from 'lucide-react';
 import type { Session } from '../auth/session';
 import { clearSession, esAdministrador, esValidador } from '../auth/session';
 import SearchBar from '../../modules/m12-busqueda-recomendaciones/components/SearchBar';
@@ -63,6 +63,9 @@ function MobileNav({ sesion, puedeGestionar, onCerrar, ...nav }: Props) {
         )}
 
         <div className="mobile-nav-drawer-divider" />
+        <Button variant="secondary" fullWidth iconLeft={<TreeDeciduous size={15} aria-hidden="true" />} onClick={() => ir(nav.onIrAProponerPlanta)}>
+          Proponer planta
+        </Button>
         <Button variant="primary" fullWidth iconLeft={<Sprout size={15} aria-hidden="true" />} onClick={() => ir(nav.onIrAPublicarProducto)}>
           Publicar producto
         </Button>

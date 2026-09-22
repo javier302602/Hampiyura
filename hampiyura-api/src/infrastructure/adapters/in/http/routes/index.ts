@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { registrar, login, activarCuenta, solicitarRecuperacion, restablecerContraseña, cambiarContraseña, obtenerPerfil } from '../controllers/m01-cuentas.controller';
-import { registrarPlanta, listarPlantas, obtenerPlanta } from '../controllers/m02-catalogo-plantas/plantas.controller';
+import { registrarPlanta, proponerPlanta, listarPlantas, obtenerPlanta } from '../controllers/m02-catalogo-plantas/plantas.controller';
 import { registrarFicha, obtenerFicha, listarFichasPorPlanta, registrarUbicacionCultivo, obtenerUbicacionCultivo, listarMapaCultivo } from '../controllers/m03-cultivo.controller';
 import { registrarUso, listarUsos } from '../controllers/m04-usos-partes/usos.controller';
 import { registrarParteUso, obtenerParteUso, listarPartesUsoPorPlanta } from '../controllers/m04-usos-partes/partes-uso.controller';
@@ -17,7 +17,7 @@ import { crearConsulta, listarBandejaConsultas, listarMisConsultas, obtenerConsu
 import { requireAuth, requireValidator, requireAdmin, requireProductor, attachUserIfPresent } from '../middlewares/role.middleware';
 export const router=Router();
 router.post('/cuentas/registro',registrar); router.post('/cuentas/login',login); router.post('/cuentas/activar',activarCuenta); router.post('/cuentas/recuperar-contrasena',solicitarRecuperacion); router.post('/cuentas/restablecer-contrasena',restablecerContraseña); router.post('/cuentas/cambiar-contrasena',requireAuth,cambiarContraseña); router.get('/cuentas/perfil',requireAuth,obtenerPerfil);
-router.post('/plantas',requireValidator,registrarPlanta); router.get('/plantas',listarPlantas); router.get('/plantas/:id',obtenerPlanta);
+router.post('/plantas',requireValidator,registrarPlanta); router.post('/plantas/proponer',requireAuth,proponerPlanta); router.get('/plantas',listarPlantas); router.get('/plantas/:id',obtenerPlanta);
 router.post('/cultivos',requireValidator,registrarFicha); router.get('/cultivos/:id',obtenerFicha); router.get('/plantas/:plantaId/cultivos',listarFichasPorPlanta);
 router.post('/cultivos/:cultivoId/ubicacion',requireAuth,registrarUbicacionCultivo); router.get('/cultivos/:cultivoId/ubicacion',obtenerUbicacionCultivo);
 router.get('/mapa-cultivo',listarMapaCultivo);

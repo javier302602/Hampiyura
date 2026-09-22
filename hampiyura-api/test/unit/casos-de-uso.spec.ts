@@ -18,7 +18,7 @@ import { Cultivo } from '../../src/domain/entities/cultivo.entity';
 import { ParteUso } from '../../src/domain/entities/parte-uso.entity';
 import { Uso } from '../../src/domain/entities/uso.entity';
 import { RegistrarUsuarioUseCase, LoginUseCase, ActivarCuentaUseCase, SolicitarRecuperacionContraseñaUseCase, RestablecerContraseñaUseCase, CambiarContraseñaUseCase, ObtenerPerfilUseCase } from '../../src/application/m01-cuentas/cuentas.use-cases';
-import { RegistrarPlantaUseCase, ListarPlantasUseCase, ObtenerPlantaUseCase } from '../../src/application/m02-catalogo-plantas/catalogo-plantas.use-cases';
+import { RegistrarPlantaUseCase, ProponerPlantaUseCase, ListarPlantasUseCase, ObtenerPlantaUseCase } from '../../src/application/m02-catalogo-plantas/catalogo-plantas.use-cases';
 import { TokenAccion } from '../../src/domain/entities/token-accion.entity';
 import { Usuario } from '../../src/domain/entities/usuario.entity';
 import { CrearPublicacionUseCase, ObtenerPublicacionUseCase, ListarPublicacionesUseCase, EditarPublicacionUseCase, EliminarPublicacionUseCase, SubirMediaUseCase } from '../../src/application/m06-publicaciones/publicaciones.use-cases';
@@ -210,13 +210,14 @@ describe('M-02 · Catálogo de plantas', () => {
     const repo:any={guardar:jest.fn(),listar:jest.fn(),buscarPorId:jest.fn()};
     await expect(new RegistrarPlantaUseCase(repo).ejecutar({...plantaInput,nombreCientifico:''})).rejects.toThrow();
   });
-  test('lista el catálogo de plantas', async () => {
-    const repo:any={guardar:jest.fn(),listar:jest.fn().mockResolvedValue([{props:plantaInput}]),buscarPorId:jest.fn()};
+  test('lista el catálogo de plantas (solo Validado, mismo criterio que Producto/Publicacion)', async () => {
+    const repo:any={guardar:jest.fn(),listar:jest.fn().mockResolvedValue([new Planta({...plantaInput,id:'p1',estadoValidacion:'Validado'}),new Planta({...plantaInput,id:'p2',estadoValidacion:'Pendiente'})]),buscarPorId:jest.fn()};
     const plantas=await new ListarPlantasUseCase(repo).ejecutar();
     expect(plantas).toHaveLength(1);
+    expect(plantas[0].props.id).toBe('p1');
   });
   test('obtiene el detalle de una planta por id, enriquecida con el resumen de conservación (RF-269)', async () => {
-    const repo:any={guardar:jest.fn(),listar:jest.fn(),buscarPorId:jest.fn().mockResolvedValue({props:{...plantaInput,id:'p1'}})};
+    const repo:any={guardar:jest.fn(),listar:jest.fn(),buscarPorId:jest.fn().mockResolvedValue(new Planta({...plantaInput,id:'p1',estadoValidacion:'Validado'}))};
     const estadosConservacion:any={buscarValidadoPorPlanta:jest.fn().mockResolvedValue(null)};
     const planta=await new ObtenerPlantaUseCase(repo,estadosConservacion).ejecutar('p1');
     expect(planta.id).toBe('p1');
@@ -227,6 +228,27 @@ describe('M-02 · Catálogo de plantas', () => {
     const repo:any={guardar:jest.fn(),listar:jest.fn(),buscarPorId:jest.fn().mockResolvedValue(null)};
     const estadosConservacion:any={buscarValidadoPorPlanta:jest.fn()};
     await expect(new ObtenerPlantaUseCase(repo,estadosConservacion).ejecutar('inexistente')).rejects.toThrow();
+  });
+  test('una planta Pendiente no se puede obtener públicamente (mismo criterio que Producto)', async () => {
+    const repo:any={guardar:jest.fn(),listar:jest.fn(),buscarPorId:jest.fn().mockResolvedValue(new Planta({...plantaInput,id:'p1',estadoValidacion:'Pendiente'}))};
+    const estadosConservacion:any={buscarValidadoPorPlanta:jest.fn()};
+    await expect(new ObtenerPlantaUseCase(repo,estadosConservacion).ejecutar('p1')).rejects.toThrow();
+  });
+
+  describe('Frente 4 · Proponer planta (cualquier usuario autenticado, queda Pendiente)', () => {
+    test('propone una planta: queda Pendiente y genera una ValidacionContenido para M-09', async () => {
+      const repo:any={guardar:jest.fn()};
+      const validaciones:any={guardar:jest.fn()};
+      const planta=await new ProponerPlantaUseCase(repo,validaciones).ejecutar({...plantaInput,proponenteId:'u1'});
+      expect(repo.guardar).toHaveBeenCalled();
+      expect(planta.props.estadoValidacion).toBe('Pendiente');
+      expect(validaciones.guardar).toHaveBeenCalledWith(expect.objectContaining({props:expect.objectContaining({tipoEntidad:'Planta',entidadId:planta.props.id,estado:'Pendiente',autorId:'u1'})}));
+    });
+    test('rechaza proponer sin nombre científico', async () => {
+      const repo:any={guardar:jest.fn()};
+      const validaciones:any={guardar:jest.fn()};
+      await expect(new ProponerPlantaUseCase(repo,validaciones).ejecutar({...plantaInput,nombreCientifico:'',proponenteId:'u1'})).rejects.toThrow();
+    });
   });
 });
 
@@ -1006,7 +1028,7 @@ describe('M-09 · RN-05: un especialista solo valida contenido de su propia áre
     expect(() => v.aprobar('esp-1', rolIncorrecto)).toThrow();
   });
 
-  test.each(['Publicacion','Producto'])('%s: sin área asignada -- ningún especialista puede validar, solo Administrador', (tipoEntidad) => {
+  test.each(['Publicacion','Producto','Planta'])('%s: sin área asignada -- ningún especialista puede validar, solo Administrador', (tipoEntidad) => {
     const v=pendiente(tipoEntidad);
     expect(() => v.aprobar('esp-1','EspecialistaSalud')).toThrow();
     expect(() => v.aprobar('esp-1','EspecialistaAgronomo')).toThrow();
@@ -1016,7 +1038,7 @@ describe('M-09 · RN-05: un especialista solo valida contenido de su propia áre
   });
 
   test('Administrador puede validar cualquier tipoEntidad, sin importar el área', () => {
-    for (const tipoEntidad of ['Cultivo','EstadoConservacion','Preparacion','ParteUso','Publicacion','Producto']) {
+    for (const tipoEntidad of ['Cultivo','EstadoConservacion','Preparacion','ParteUso','Publicacion','Producto','Planta']) {
       const v=pendiente(tipoEntidad);
       expect(() => v.aprobar('admin-1','Administrador')).not.toThrow();
     }

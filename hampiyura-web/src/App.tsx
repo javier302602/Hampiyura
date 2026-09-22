@@ -2,6 +2,7 @@ import { Navigate, Route, Routes, useNavigate, useParams, useSearchParams } from
 import HomePage from './pages/HomePage';
 import PlantaListPage from './modules/m02-catalogo-plantas/pages/PlantaListPage';
 import PlantaDetailPage from './modules/m02-catalogo-plantas/pages/PlantaDetailPage';
+import ProponerPlantaPage from './modules/m02-catalogo-plantas/pages/ProponerPlantaPage';
 import UsosPage from './modules/m04-usos-partes/pages/UsosPage';
 import PublicacionesFeedPage from './modules/m06-publicaciones/pages/PublicacionesFeedPage';
 import PublicacionDetailPage from './modules/m06-publicaciones/pages/PublicacionDetailPage';
@@ -30,7 +31,7 @@ import { esAdministrador, esValidador } from './shared/auth/session';
 import type { FiltrosBusqueda } from './modules/m12-busqueda-recomendaciones/api/busqueda.api';
 
 const RUTAS = {
-  home: '/', catalogo: '/m02-catalogo-plantas', mapa: '/m03-cultivo/mapa', usos: '/m04-usos-partes',
+  home: '/', catalogo: '/m02-catalogo-plantas', proponerPlanta: '/m02-catalogo-plantas/proponer', mapa: '/m03-cultivo/mapa', usos: '/m04-usos-partes',
   publicaciones: '/m06-publicaciones', consultas: '/m08-consultas', validacion: '/m09-validacion-moderacion/bandeja',
   productos: '/m11-productos-emprendimientos', busqueda: '/m12-busqueda-recomendaciones/resultados',
   admin: '/m13-analitica-estadisticas/panel', adminUsuarios: '/m13-analitica-estadisticas/usuarios',
@@ -92,6 +93,7 @@ function App() {
       onIrAUsuariosAdmin={() => navigate(RUTAS.adminUsuarios)}
       onIrAHome={() => navigate(RUTAS.home)}
       onIrACatalogo={() => navigate(RUTAS.catalogo)}
+      onIrAProponerPlanta={() => navigate(RUTAS.proponerPlanta)}
     >
       <Routes>
         <Route
@@ -108,6 +110,7 @@ function App() {
           }
         />
         <Route path={RUTAS.catalogo} element={<PlantaListPage onSeleccionar={(id) => navigate(`${RUTAS.catalogo}/${encodeURIComponent(id)}`)} />} />
+        <Route path={RUTAS.proponerPlanta} element={<ProponerPlantaPage onVolver={() => navigate(RUTAS.catalogo)} />} />
         <Route path={`${RUTAS.catalogo}/:plantaId`} element={<RutaPlanta />} />
         <Route path={RUTAS.usos} element={<UsosPage />} />
         <Route path={RUTAS.mapa} element={<MapaCultivoPage onSeleccionarPlanta={(id) => navigate(`${RUTAS.catalogo}/${encodeURIComponent(id)}`)} />} />

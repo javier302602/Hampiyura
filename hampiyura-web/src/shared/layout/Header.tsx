@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ChevronDown, FlaskConical, Inbox, LayoutDashboard, Leaf, Menu, Sprout, Users } from 'lucide-react';
+import { ChevronDown, FlaskConical, Inbox, LayoutDashboard, Leaf, Menu, Sprout, TreeDeciduous, Users } from 'lucide-react';
 import { esAdministrador, esValidador, getSession, suscribirseACambiosDeSesion } from '../auth/session';
 import UserMenu from '../../modules/m01-cuentas/components/UserMenu';
 import SearchBar from '../../modules/m12-busqueda-recomendaciones/components/SearchBar';
@@ -28,6 +28,7 @@ export interface NavCallbacks {
   onIrAUsuariosAdmin: () => void;
   onIrAHome: () => void;
   onIrACatalogo: () => void;
+  onIrAProponerPlanta: () => void;
 }
 
 // Reemplaza la fila plana de 9+ botones que antes vivía dentro de .hero (ver auditoría, hallazgo
@@ -98,6 +99,12 @@ function Header(props: NavCallbacks) {
               pierde nada, solo cambia dónde vive para no desbordar la barra (bug real encontrado
               en la verificación: sin esto, "Publicar producto" se salía de la pantalla en móvil). */}
           <div className="site-header-actions-desktop">
+            {/* Frente 4 (auditoría): "Proponer planta" no existía en ningún rol -- ahora vive al
+                lado de "Publicar producto", como secondary (no compite en jerarquía con LA acción
+                principal terracota del header). */}
+            <Button variant="onBrand" size="sm" iconLeft={<TreeDeciduous size={15} aria-hidden="true" />} onClick={props.onIrAProponerPlanta}>
+              Proponer planta
+            </Button>
             <Button variant="primary" size="sm" iconLeft={<Sprout size={15} aria-hidden="true" />} onClick={props.onIrAPublicarProducto}>
               Publicar producto
             </Button>

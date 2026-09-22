@@ -66,6 +66,15 @@ export class ListarPendientesUseCase implements ListarPendientesPort {
       const autor = await this.usuarios.buscarPorId(estado.props.autorId);
       return `Conservación de ${planta ? planta.props.nombreComun : estado.props.plantaId} (${estado.props.nivelRiesgo})${autor ? ` — por ${autor.props.nombre}` : ''}`;
     }
+    // Frente 4: "Proponer planta" -- Planta no tiene su propio campo de autor (a diferencia de
+    // Publicacion/Producto), así que el proponente se toma de props.autorId (el de la propia
+    // ValidacionContenido, siempre presente).
+    if (props.tipoEntidad === 'Planta') {
+      const planta = await this.plantas.buscarPorId(props.entidadId);
+      if (!planta) return `Planta · ${props.entidadId}`;
+      const autor = await this.usuarios.buscarPorId(props.autorId);
+      return `${planta.props.nombreComun} (${planta.props.nombreCientifico})${autor ? ` — propuesta por ${autor.props.nombre}` : ''}`;
+    }
     return `${props.tipoEntidad} · ${props.entidadId}`;
   }
 }

@@ -87,6 +87,7 @@ export class PrismaPlantaRepository implements PlantaRepositoryPort {
   async buscarPorId(id:string){const x=await this.prisma.planta.findUnique({where:{id}}); return x?new Planta({...x,imagenPrincipal:x.imagenPrincipal??undefined}):null;}
   async eliminar(id:string){await this.prisma.planta.delete({where:{id}});}
   async contar(){return this.prisma.planta.count();}
+  async actualizarEstadoValidacion(id:string, estado:EstadoValidacion){await this.prisma.planta.update({where:{id},data:{estadoValidacion:estado}});}
 }
 export class PrismaParteUsoRepository implements ParteUsoRepositoryPort {
   constructor(private readonly prisma:PrismaClient) {}

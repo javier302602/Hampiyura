@@ -17,3 +17,18 @@ export type PlantaVisible = Planta & { conservacion: EstadoConservacionVisible }
 
 export function listarPlantas(): Promise<Planta[]> { return apiRequest<Planta[]>('/plantas'); }
 export function obtenerPlanta(id: string): Promise<PlantaVisible> { return apiRequest<PlantaVisible>(`/plantas/${id}`); }
+
+// Frente 4 (auditoría): "Proponer planta" -- cualquier usuario autenticado, queda "Pendiente"
+// (no aparece en listarPlantas/obtenerPlanta hasta que un validador la apruebe en la bandeja de
+// M-09, mismo criterio que Producto/Publicacion).
+export interface ProponerPlantaInput {
+  nombreComun: string;
+  nombreCientifico: string;
+  familia: string;
+  region: string;
+  habitat: string;
+  imagenPrincipal?: string;
+}
+export function proponerPlanta(input: ProponerPlantaInput): Promise<Planta> {
+  return apiRequest<Planta>('/plantas/proponer', { method: 'POST', body: JSON.stringify(input) });
+}

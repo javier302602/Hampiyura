@@ -104,6 +104,11 @@ model Planta {
   region String
   habitat String
   imagenPrincipal String?
+  // Frente 4 (auditoría): "Proponer planta" no existía en ningún rol -- las plantas solo se podían
+  // crear directo (POST /plantas, requireValidator) sin pasar por M-09. @default(Validado) hace
+  // que TODAS las plantas ya existentes en la base queden exactamente igual de visibles que hoy
+  // (nada cambia para ellas); solo las propuestas nuevas (ProponerPlantaUseCase) arrancan Pendiente.
+  estadoValidacion EstadoValidacion @default(Validado)
   cultivos Cultivo[]
   partesUso ParteUso[]
   publicaciones Publicacion[]
