@@ -100,10 +100,11 @@ function Header(props: NavCallbacks) {
               pierde nada, solo cambia dónde vive para no desbordar la barra (bug real encontrado
               en la verificación: sin esto, "Publicar producto" se salía de la pantalla en móvil). */}
           <div className="site-header-actions-desktop">
-            {/* Frente 4 (auditoría): "Proponer planta" no existía en ningún rol -- ahora vive al
-                lado de "Publicar producto", como secondary (no compite en jerarquía con LA acción
-                principal terracota del header). */}
-            <Button variant="onBrand" size="sm" iconLeft={<TreeDeciduous size={15} aria-hidden="true" />} onClick={props.onIrAProponerPlanta}>
+            {/* Frente 4 la puso como onBrand (secundaria) para no competir con "Publicar producto" --
+                decisión revertida a pedido explícito: mismo peso, terracota sólido para las dos.
+                Orden + el ícono distinto (TreeDeciduous vs Sprout) es la única separación entre
+                ambas; no se les baja el peso visual a ninguna. */}
+            <Button variant="primary" size="sm" iconLeft={<TreeDeciduous size={15} aria-hidden="true" />} onClick={props.onIrAProponerPlanta}>
               Proponer planta
             </Button>
             <Button variant="primary" size="sm" iconLeft={<Sprout size={15} aria-hidden="true" />} onClick={props.onIrAPublicarProducto}>

@@ -67,7 +67,7 @@ function MobileNav({ sesion, puedeGestionar, onCerrar, ...nav }: Props) {
         )}
 
         <div className="mobile-nav-drawer-divider" />
-        <Button variant="secondary" fullWidth iconLeft={<TreeDeciduous size={15} aria-hidden="true" />} onClick={() => ir(nav.onIrAProponerPlanta)}>
+        <Button variant="primary" fullWidth iconLeft={<TreeDeciduous size={15} aria-hidden="true" />} onClick={() => ir(nav.onIrAProponerPlanta)}>
           Proponer planta
         </Button>
         <Button variant="primary" fullWidth iconLeft={<Sprout size={15} aria-hidden="true" />} onClick={() => ir(nav.onIrAPublicarProducto)}>

@@ -9,7 +9,12 @@
   border-bottom:1px solid color-mix(in srgb, var(--brand-on-brand) 12%, transparent);
 }
 .site-header-inner{
-  max-width:1200px;margin:0 auto;
+  /* 1200px (bug real, ver fix de nav flex más abajo): el contenido real -- logo + nav + buscador de
+     3 campos + acciones -- necesita ~1700px para caber sin que el buscador colapse a 0px. El techo
+     de 1200 no dependía del viewport (nunca escalaba), así que el buscador quedaba invisible incluso
+     a 1920px de ancho -- no se notaba en la verificación de Ronda 4 porque esa solo chequeaba que
+     la PÁGINA no tuviera scroll horizontal, no que cada elemento conservara un ancho usable. */
+  max-width:1700px;margin:0 auto;
   padding:var(--space-3) var(--space-6);
   display:flex;align-items:center;gap:var(--space-5);
 }
@@ -25,7 +30,15 @@
   display:flex;align-items:center;justify-content:center;font-weight:var(--font-weight-bold);
 }
 
-.site-header-nav{display:flex;align-items:center;gap:var(--space-1);flex:1}
+/* flex:1 (crece para "empujar" .site-header-actions a la derecha) se cambia a flex:0 1 auto --
+   bug real encontrado verificando "Proponer planta" en terracota (esta ronda, visible recién ahora
+   porque antes onBrand era una pastilla clara que disimulaba el problema): con flex:1, nav se
+   quedaba con TODO el espacio sobrante y no dejaba nada para .site-header-search-group, que
+   colapsaba a 0px (ver fix de Frente 6, ese diagnóstico solo medía scrollWidth de la página, no que
+   un elemento a 0px de ancho se superpusiera con el siguiente) -- el ícono de lupa terminaba flotando
+   encima del botón "Proponer planta". margin-left:auto en .site-header-actions asume el rol de
+   empujar a la derecha en su lugar, sin robarle espacio al buscador. */
+.site-header-nav{display:flex;align-items:center;gap:var(--space-1);flex:0 1 auto}
 .site-header-nav a,.site-header-nav button{
   color:var(--brand-on-brand-muted);text-decoration:none;
   font:inherit;font-weight:var(--font-weight-medium);font-size:var(--font-size-small);
@@ -45,7 +58,7 @@
    viewport, hasta 2200px), agregar un ícono más solo lo hizo cruzar el umbral de causar scroll
    horizontal real en vez de quedar "casi ajustado". El fix real es dejar que el buscador se
    comprima (ancho flexible con piso razonable) en vez de exigir 160/150/150px fijos siempre. */
-.site-header-actions{display:flex;align-items:center;gap:var(--space-2);flex-shrink:1;min-width:0}
+.site-header-actions{display:flex;align-items:center;gap:var(--space-2);flex-shrink:1;min-width:0;margin-left:auto}
 .site-header-actions-desktop{display:flex;align-items:center;gap:var(--space-2);flex-shrink:0}
 
 /* SearchBar.tsx: .site-header-search-group envuelve los 3 controles (nombre/enfermedad/categoría,
@@ -121,13 +134,19 @@
   display:flex;flex-direction:column;gap:var(--space-2);
   overflow-y:auto;
 }
-.mobile-nav-drawer a,.mobile-nav-drawer button{
+/* :not(.btn) es el fix -- bug real encontrado verificando "Proponer planta" en terracota (esta
+   ronda): este reset (pensado para los links de nav planos tipo "Inicio"/"Plantas") tiene más
+   especificidad (clase+elemento) que .btn-primary (una sola clase), así que le ganaba la cascada
+   y le vaciaba el fondo/color a CUALQUIER <Button> dentro del drawer -- "Publicar producto" tenía
+   el mismo problema desde antes de esta ronda, solo que nadie lo había medido en el navegador.
+   Button ya trae su propio look completo (.btn), no necesita ni quiere este reset genérico. */
+.mobile-nav-drawer a:not(.btn),.mobile-nav-drawer button:not(.btn){
   display:flex;align-items:center;gap:var(--space-3);
   font:inherit;font-weight:var(--font-weight-medium);font-size:var(--font-size-body);
   color:var(--color-text);text-decoration:none;background:none;border:none;cursor:pointer;
   padding:.75em .5em;border-radius:var(--radius-sm);text-align:left;width:100%;
 }
-.mobile-nav-drawer a:hover,.mobile-nav-drawer button:hover{background:var(--color-bg)}
+.mobile-nav-drawer a:not(.btn):hover,.mobile-nav-drawer button:not(.btn):hover{background:var(--color-bg)}
 .mobile-nav-drawer-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-3)}
 .mobile-nav-drawer-divider{height:1px;background:var(--color-border);margin:var(--space-2) 0}
 
@@ -135,11 +154,15 @@
    de 3 campos + 2 CTAs + notif/tema/cuenta) nunca cupo de verdad en anchos "de laptop" típicos
    (1280/1366/1440): con flex-shrink:0 desbordaba con scroll horizontal real (bug encontrado al
    verificar el toggle de tema, Frente 6); dejando que el buscador se comprima en su lugar lo hacía
-   desaparecer a 0px, peor todavía. 1536px es el punto real donde todo cabe sin comprimir nada (
-   medido con scrollWidth vs clientWidth) -- por debajo de eso se usa el drawer móvil, que ya
-   contiene exactamente lo mismo (nav, buscador, CTAs, toggle de tema, sesión) y ya estaba
-   verificado. */
-@media (max-width:1536px){
+   desaparecer a 0px, peor todavía.
+   1536px (el valor que dejó Frente 6) resultó ser insuficiente de verdad: esa verificación solo
+   chequeaba que la PÁGINA no tuviera scroll horizontal, no que cada elemento conservara un ancho
+   usable -- con max-width:1700px en .site-header-inner (ver esa regla), el buscador seguía en 0px
+   justo en el borde de 1536px. Se sube el corte a 1600px, punto real donde el buscador ya tiene un
+   ancho usable (>200px, medido) sin comprimirse a la nada. Por debajo de eso se usa el drawer móvil,
+   que ya contiene exactamente lo mismo (nav, buscador, CTAs, toggle de tema, sesión) y está
+   verificado aparte. */
+@media (max-width:1600px){
   .site-header-nav,.site-header-search-group,.site-header-actions-desktop{display:none}
   .site-header-hamburger{display:inline-flex}
 }
