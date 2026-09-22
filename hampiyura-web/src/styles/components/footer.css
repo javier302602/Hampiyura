@@ -10,10 +10,44 @@
    la herencia de .site-footer y el texto queda casi invisible sobre el fondo oscuro (bug real
    encontrado en la verificación de contraste: ratio 1.09:1). */
 .site-footer-tagline{font-size:var(--font-size-small);margin:0;color:var(--brand-on-brand-muted)}
+
+/* Verde de WhatsApp a propósito (no un token del design system) -- es una señal de marca reconocible
+   por sí sola, igual que otros sitios usan el verde de WhatsApp puntualmente para este único botón,
+   sin que eso implique adoptarlo como color del sistema. */
+.footer-whatsapp-btn{
+  display:inline-flex;align-items:center;gap:.5em;width:fit-content;
+  background:#25d366;color:#0b3d0b;font-weight:var(--font-weight-bold);font-size:var(--font-size-small);
+  padding:.55em 1em;border-radius:var(--radius-pill);text-decoration:none;
+  transition:filter .15s ease;
+}
+.footer-whatsapp-btn:hover{filter:brightness(1.08)}
 .site-footer-col h3{font-size:var(--font-size-label);text-transform:uppercase;letter-spacing:.06em;color:var(--brand-on-brand);margin:0 0 var(--space-3)}
 .site-footer-col ul{list-style:none;margin:0;padding:0;display:grid;gap:var(--space-2)}
 .site-footer-col a,.site-footer-col button{color:var(--brand-on-brand-muted);text-decoration:none;font:inherit;font-size:var(--font-size-small);background:none;border:none;padding:0;cursor:pointer;text-align:left}
 .site-footer-col a:hover,.site-footer-col button:hover{color:var(--brand-on-brand)}
+.site-footer-faq{
+  padding-top:var(--space-6);margin-bottom:var(--space-6);
+  border-top:1px solid color-mix(in srgb, var(--brand-on-brand) 14%, transparent);
+}
+.site-footer-faq h3{font-size:var(--font-size-label);text-transform:uppercase;letter-spacing:.06em;color:var(--brand-on-brand);margin:0 0 var(--space-4)}
+.site-footer-faq-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-2) var(--space-6)}
+.site-footer-faq-item{
+  border-bottom:1px solid color-mix(in srgb, var(--brand-on-brand) 10%, transparent);
+  padding:var(--space-2) 0;
+}
+.site-footer-faq-item summary{
+  cursor:pointer;color:var(--brand-on-brand);font-weight:var(--font-weight-medium);font-size:var(--font-size-small);
+  list-style:none;display:flex;align-items:center;gap:var(--space-2);
+}
+.site-footer-faq-item summary::-webkit-details-marker{display:none}
+.site-footer-faq-item summary::before{content:"+";color:var(--brand-on-brand-muted);font-weight:var(--font-weight-bold);width:1em}
+.site-footer-faq-item[open] summary::before{content:"–"}
+.site-footer-faq-item p{margin:var(--space-2) 0 0 1.5em;color:var(--brand-on-brand-muted);font-size:var(--font-size-small);line-height:1.5}
+
+@media (max-width:640px){
+  .site-footer-faq-grid{grid-template-columns:1fr}
+}
+
 .site-footer-bottom{
   display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-3);
   padding-top:var(--space-5);border-top:1px solid color-mix(in srgb, var(--brand-on-brand) 14%, transparent);
