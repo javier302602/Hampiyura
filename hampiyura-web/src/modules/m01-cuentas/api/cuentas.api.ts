@@ -34,5 +34,5 @@ export function cambiarContrasena(contraseñaActual: string, contraseñaNueva: s
 // GET /cuentas/perfil no existía en el backend (FASE 7 solo dejó login/registro/recuperación) --
 // se agregó ahora porque sin él "perfil básico" es irrecuperable tras refrescar la página (el JWT
 // solo trae sub+rol, y login() no devuelve nombre). Ver Plan de Gestión de Cambios.
-export interface Perfil { id: string; nombre: string; correo: string; rol: string; idioma: string; nivelConocimiento: string; region: string; estado: string; }
+export interface Perfil { id: string; nombre: string; correo: string; rol: string; idioma: string; nivelConocimiento: string; region: string; estado: string; aceptoComisionEn?: string | null; }
 export function obtenerPerfil(): Promise<Perfil> { return apiRequest<Perfil>('/cuentas/perfil'); }

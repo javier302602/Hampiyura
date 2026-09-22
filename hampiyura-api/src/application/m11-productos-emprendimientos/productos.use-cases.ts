@@ -24,9 +24,15 @@ async function aVista(producto:Producto, plantas:PlantaRepositoryPort, usuarios:
 // informacionProceso. RF-274: se escanean los campos de texto ANTES de entrar a revisión (M-09);
 // si hay afirmaciones engañosas, el producto igual se crea pero queda marcado para revisión
 // reforzada -- no se bloquea la creación, se refuerza el control humano (ver resumen de la sesión).
+//
+// Frente 3: además de plantasIds (legado, se sigue exigiendo/validando igual), acepta
+// plantasUtilizadas (entrada estructurada) y aceptaComision. La comisión se exige UNA vez por
+// usuario (Usuario.aceptoComisionEn), no por producto -- si ya aceptó antes, publicar de nuevo no
+// vuelve a pedirlo; si es la primera vez, input.aceptaComision debe venir en true y acá se
+// registra la fecha de aceptación en el perfil.
 export class PublicarProductoUseCase implements PublicarProductoPort {
-  constructor(private readonly repo:ProductoRepositoryPort, private readonly plantas:PlantaRepositoryPort, private readonly validaciones:ValidacionContenidoRepositoryPort) {}
-  async ejecutar(input:PublicarProductoInput):Promise<Producto> {
+  constructor(private readonly repo:ProductoRepositoryPort, private readonly plantas:PlantaRepositoryPort, private readonly validaciones:ValidacionContenidoRepositoryPort, private readonly usuarios:UsuarioRepositoryPort) {}
+  async ejecutar(input:PublicarProductoInput & { aceptaComision?: boolean }):Promise<Producto> {
     if (!input.nombre?.trim()) throw new ValidationError('El nombre del producto es obligatorio');
     if (!input.plantasIds?.length) throw new ValidationError('Debes indicar al menos una planta utilizada');
     if (!input.localidad?.trim()) throw new ValidationError('La localidad es obligatoria');
@@ -35,8 +41,16 @@ export class PublicarProductoUseCase implements PublicarProductoPort {
     for (const plantaId of input.plantasIds) {
       if (!(await this.plantas.buscarPorId(plantaId))) throw new ValidationError(`La planta indicada no existe en el catálogo: ${plantaId}`);
     }
+    const productor = await this.usuarios.buscarPorId(input.productorId);
+    if (!productor) throw new NotFoundError(`Usuario no encontrado: ${input.productorId}`);
+    if (!productor.props.aceptoComisionEn) {
+      if (!input.aceptaComision) throw new ValidationError('Debes aceptar los términos de comisión (5% sobre ventas) antes de publicar');
+      productor.props.aceptoComisionEn = new Date();
+      await this.usuarios.actualizar(productor);
+    }
     const requiereRevisionReforzada = contieneAfirmacionEnganosa(input.nombre, input.descripcion, input.informacionProceso, input.ingredientes);
-    const producto = new Producto({ ...input, id:randomUUID(), estadoValidacion:'Pendiente', requiereRevisionReforzada, etiquetaValidadoDocumental:false, etiquetaCertificado:false });
+    const { aceptaComision: _omitir, ...productoInput } = input;
+    const producto = new Producto({ ...productoInput, id:randomUUID(), estadoValidacion:'Pendiente', requiereRevisionReforzada, etiquetaValidadoDocumental:false, etiquetaCertificado:false });
     await this.repo.guardar(producto);
     await this.validaciones.guardar(new ValidacionContenido({ id:randomUUID(), tipoEntidad:'Producto', entidadId:producto.props.id, estado:'Pendiente', fecha:new Date(), autorId:producto.props.productorId }));
     return producto;

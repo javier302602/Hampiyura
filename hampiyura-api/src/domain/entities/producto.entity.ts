@@ -1,6 +1,19 @@
 import { EstadoValidacion } from '../value-objects/estado-validacion.vo';
 import { ValidationError } from '../errors/domain.errors';
 
+// Frente 3: entrada estructurada de "planta utilizada" -- reemplaza los checkboxes de una lista
+// fija. plantaId queda vacío cuando el texto libre no hizo match con el catálogo (el frontend
+// intenta el match; el backend no vuelve a intentarlo, solo confía en lo que llega). plantasIds
+// (abajo) se sigue derivando de las entradas que SÍ tienen plantaId, así ningún consumidor
+// existente (ProductoCard, filtro por plantaId) se entera del cambio.
+export interface PlantaUtilizada {
+  plantaId?: string;
+  plantaNombreLibre: string;
+  parteUsada: string;
+  estado: string;
+  cantidad?: string;
+}
+
 // RF-272/273: obligatorios = nombre, plantasIds, productorId, localidad, contactoVendedor,
 // informacionProceso. El resto es opcional (precio, certificación, fecha exacta, etc.).
 export interface ProductoProps {
@@ -9,6 +22,7 @@ export interface ProductoProps {
   nombre: string;
   descripcion?: string;
   plantasIds: string[];
+  plantasUtilizadas?: PlantaUtilizada[];
   ingredientes?: string;
   presentacion?: string;
   cantidad?: string;

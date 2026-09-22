@@ -152,7 +152,7 @@ export class PrismaPreparacionRepository implements PreparacionRepositoryPort {
 }
 export class PrismaProductoRepository implements ProductoRepositoryPort {
   constructor(private readonly prisma:PrismaClient) {}
-  private aDominio(x:any):Producto { return new Producto({...x, descripcion:x.descripcion??undefined, ingredientes:x.ingredientes??undefined, presentacion:x.presentacion??undefined, cantidad:x.cantidad??undefined, precioReferencial:x.precioReferencial??undefined, fechaElaboracion:x.fechaElaboracion??undefined, documentacionCertificacion:x.documentacionCertificacion??undefined}); }
+  private aDominio(x:any):Producto { return new Producto({...x, descripcion:x.descripcion??undefined, ingredientes:x.ingredientes??undefined, presentacion:x.presentacion??undefined, cantidad:x.cantidad??undefined, precioReferencial:x.precioReferencial??undefined, fechaElaboracion:x.fechaElaboracion??undefined, documentacionCertificacion:x.documentacionCertificacion??undefined, plantasUtilizadas:x.plantasUtilizadas??undefined}); }
   async guardar(p:Producto){await this.prisma.producto.create({data:p.props as any});}
   async buscarPorId(id:string){const x=await this.prisma.producto.findUnique({where:{id}}); return x?this.aDominio(x):null;}
   async listar(){const xs=await this.prisma.producto.findMany(); return xs.map((x)=>this.aDominio(x));}

@@ -5,10 +5,22 @@ import { AuthenticatedRequest } from '../../middlewares/role.middleware';
 
 function auth(req:Request) { return (req as AuthenticatedRequest).user; }
 
+// Frente 3: plantasUtilizadas (entrada estructurada: planta/parte usada/estado/cantidad) reemplaza
+// los checkboxes de una lista fija en el formulario. plantasIds ya NO lo manda el cliente -- se
+// deriva acá de las entradas que sí tienen plantaId (match contra el catálogo, resuelto en el
+// frontend), para que la regla de negocio "toda planta referenciada debe existir en el catálogo"
+// (PublicarProductoUseCase) se siga cumpliendo exactamente igual que antes sin tocarla.
+const plantaUtilizadaSchema=z.object({
+  plantaId:z.string().min(1).optional(),
+  plantaNombreLibre:z.string().min(1),
+  parteUsada:z.string().min(1),
+  estado:z.string().min(1),
+  cantidad:z.string().optional(),
+});
 const publicarSchema=z.object({
   nombre:z.string().min(1),
   descripcion:z.string().optional(),
-  plantasIds:z.array(z.string().min(1)).min(1),
+  plantasUtilizadas:z.array(plantaUtilizadaSchema).min(1,'Debes indicar al menos una planta utilizada'),
   ingredientes:z.string().optional(),
   presentacion:z.string().optional(),
   cantidad:z.string().optional(),
@@ -21,11 +33,13 @@ const publicarSchema=z.object({
   // claro para quien publica. z.string().date() valida exactamente ese formato.
   fechaElaboracion:z.string().date().optional(),
   contactoVendedor:z.string().min(1),
+  aceptaComision:z.boolean().optional(),
 });
 export async function publicarProducto(req:Request,res:Response){
-  const {fechaElaboracion,...resto}=publicarSchema.parse(req.body);
+  const {fechaElaboracion,plantasUtilizadas,...resto}=publicarSchema.parse(req.body);
   const productorId=auth(req).id;
-  const producto=await container.publicarProducto.ejecutar({...resto, productorId, fechaElaboracion:fechaElaboracion?new Date(fechaElaboracion):undefined});
+  const plantasIds=[...new Set(plantasUtilizadas.map((p)=>p.plantaId).filter((id):id is string=>!!id))];
+  const producto=await container.publicarProducto.ejecutar({...resto, plantasIds, plantasUtilizadas, productorId, fechaElaboracion:fechaElaboracion?new Date(fechaElaboracion):undefined});
   res.status(201).json(producto.props);
 }
 export async function obtenerProducto(req:Request,res:Response){const producto=await container.obtenerProducto.ejecutar(String(req.params.id)); res.json(producto);}

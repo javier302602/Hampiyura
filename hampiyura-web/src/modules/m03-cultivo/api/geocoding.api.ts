@@ -15,6 +15,21 @@ export interface SugerenciaLocalidad {
   longitud: number;
 }
 
+const NOMINATIM_REVERSE_URL = 'https://nominatim.openstreetmap.org/reverse';
+
+// Frente 3 (M-11, localidad de producto por mapa): buscarLocalidad() ya existía (búsqueda por
+// texto, M-03) pero solo centra el mapa -- el pin exacto se suelta con clic/arrastre después
+// (ver SelectorUbicacionMapa), así que el texto de la búsqueda puede no coincidir con el punto
+// final. Esta función SÍ resuelve una dirección legible a partir del punto exacto donde quedó el
+// pin, para autocompletar el campo "Localidad" sin importar si se movió después de buscar.
+export async function direccionInversa(lat: number, lon: number, signal?: AbortSignal): Promise<string | null> {
+  const params = new URLSearchParams({ format: 'jsonv2', lat: String(lat), lon: String(lon), zoom: '14' });
+  const response = await fetch(`${NOMINATIM_REVERSE_URL}?${params.toString()}`, { signal });
+  if (!response.ok) return null;
+  const datos = await response.json();
+  return (datos as { display_name?: string })?.display_name ?? null;
+}
+
 export async function buscarLocalidad(consulta: string, signal?: AbortSignal): Promise<SugerenciaLocalidad[]> {
   const texto = consulta.trim();
   if (texto.length < 3) return [];

@@ -92,7 +92,20 @@ function ProductoDetailPage({ productoId, onVolver }: { productoId: string; onVo
 
       {producto.descripcion && (<><h3>Descripción</h3><p>{producto.descripcion}</p></>)}
       <h3>Plantas utilizadas</h3>
-      <p>{producto.plantasNombres.join(', ')}</p>
+      {/* plantasUtilizadas (Frente 3) es la entrada estructurada nueva -- productos publicados
+          antes de este cambio no la tienen, así que se conserva el fallback a plantasNombres
+          (derivado de plantasIds) para no perder esa información. */}
+      {producto.plantasUtilizadas && producto.plantasUtilizadas.length > 0 ? (
+        <ul style={{ margin: '.4em 0', paddingLeft: '1.2em' }}>
+          {producto.plantasUtilizadas.map((pu, i) => (
+            <li key={i}>
+              <strong>{pu.plantaNombreLibre}</strong> — {pu.parteUsada}, {pu.estado}{pu.cantidad ? ` (${pu.cantidad})` : ''}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>{producto.plantasNombres.join(', ')}</p>
+      )}
       {producto.ingredientes && (<><h3>Ingredientes</h3><p>{producto.ingredientes}</p></>)}
       {producto.presentacion && <span>Presentación: {producto.presentacion}</span>}
       {producto.cantidad && <span>Cantidad: {producto.cantidad}</span>}

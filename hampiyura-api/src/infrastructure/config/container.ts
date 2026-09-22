@@ -86,7 +86,7 @@ export const container={
   documentarPreparacion:new DocumentarPreparacionUseCase(preparaciones,partesUso,validaciones),
   obtenerPreparacion:new ObtenerPreparacionUseCase(preparaciones),
   listarPreparaciones:new ListarPreparacionesUseCase(preparaciones),
-  publicarProducto:new PublicarProductoUseCase(productos,plantas,validaciones),
+  publicarProducto:new PublicarProductoUseCase(productos,plantas,validaciones,usuarios),
   obtenerProducto:new ObtenerProductoUseCase(productos,plantas,usuarios),
   listarProductos:new ListarProductosUseCase(productos,plantas,usuarios),
   marcarValidadoDocumentalmente:new MarcarValidadoDocumentalmenteUseCase(productos),

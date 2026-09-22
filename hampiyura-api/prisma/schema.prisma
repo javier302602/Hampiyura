@@ -71,6 +71,10 @@ model Usuario {
   nivelConocimiento String
   region String
   estado EstadoCuenta
+  // Frente 3 (comisión del 5%): se pide "asociada al producto o al perfil, la primera vez" -- se
+  // eligió el perfil: se registra una sola vez (booleano derivado de que esta fecha no sea null) y
+  // cubre todas las publicaciones futuras, en vez de repetir el mismo checkbox en cada producto.
+  aceptoComisionEn DateTime?
   cultivos Cultivo[]
   validaciones ValidacionContenido[]
   notificaciones Notificacion[]
@@ -305,6 +309,13 @@ model Producto {
   nombre String
   descripcion String?
   plantasIds String[]
+  // Frente 3: entrada estructurada (planta/parte usada/estado/cantidad) por cada uso de planta en
+  // el producto -- reemplaza los checkboxes de una lista fija. Json porque es una lista de objetos
+  // heterogénea (cantidad/unidad opcionales, plantaId opcional cuando no hubo match con el
+  // catálogo) sin necesidad propia de consultarse por columna; plantasIds se sigue derivando
+  // automáticamente de acá (ver PublicarProductoUseCase) así que ningún consumidor existente
+  // (ProductoCard, filtros por plantaId) se entera del cambio.
+  plantasUtilizadas Json?
   ingredientes String?
   presentacion String?
   cantidad String?

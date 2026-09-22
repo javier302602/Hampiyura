@@ -1,0 +1,41 @@
+/* PublicarProductoForm.tsx (Frente 3) -- reestructura el formulario largo en secciones con
+   título, en vez de un solo bloque apilado de campos. Reutilizable para cualquier otro formulario
+   largo que se toque más adelante (ProponerPlantaForm, etc.). */
+.form-section{display:grid;gap:var(--space-3);padding:var(--space-5) 0;border-bottom:1px solid var(--color-border)}
+.form-section:last-of-type{border-bottom:none}
+.form-section-title{font-size:var(--font-size-h3);font-weight:var(--font-weight-bold);color:var(--color-text);margin:0}
+.form-section-desc{font-size:var(--font-size-small);color:var(--color-text-muted);margin:0 0 var(--space-1)}
+
+/* Filas de "planta utilizada" -- chips/filas editables, una por combinación planta+forma. */
+.plant-entry-add{display:flex;gap:var(--space-2);align-items:flex-start;flex-wrap:wrap}
+.plant-entry-add input{flex:1 1 260px}
+.plant-entry-list{display:grid;gap:var(--space-2)}
+.plant-entry-row{
+  display:grid;grid-template-columns:1.4fr 1fr 1fr .8fr auto;gap:var(--space-2);align-items:center;
+  padding:var(--space-3);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);
+}
+.plant-entry-row input,.plant-entry-row select{font:inherit;font-size:var(--font-size-small);padding:.5em .6em;border-radius:var(--radius-sm);border:1px solid var(--color-border);background:var(--color-bg);color:var(--color-text)}
+.plant-entry-row-match{display:flex;align-items:center;gap:.3em;font-size:var(--font-size-caption)}
+.plant-entry-row-match-ok{color:var(--color-success)}
+.plant-entry-row-match-libre{color:var(--color-text-muted)}
+.plant-entry-cantidad{display:flex;gap:var(--space-1)}
+.plant-entry-cantidad input{width:70px}
+.plant-entry-cantidad select{width:70px}
+
+@media (max-width:720px){
+  .plant-entry-row{grid-template-columns:1fr 1fr;grid-template-areas:"nombre nombre" "parte estado" "cantidad quitar"}
+}
+
+/* Bloque de aceptación de comisión -- gatea el botón de publicar hasta que se marque. */
+.consent-box{
+  display:flex;gap:var(--space-3);align-items:flex-start;
+  padding:var(--space-4);border:1px solid var(--color-accent);border-radius:var(--radius-md);
+  background:var(--color-accent-soft);
+}
+.consent-box input[type="checkbox"]{margin-top:3px;width:18px;height:18px;flex-shrink:0}
+.consent-box label{font-weight:var(--font-weight-regular);font-size:var(--font-size-small);color:var(--color-text)}
+.consent-box-ya-aceptado{
+  display:flex;gap:var(--space-2);align-items:center;
+  padding:var(--space-3) var(--space-4);border-radius:var(--radius-md);
+  background:var(--color-success-bg);color:var(--color-success);font-size:var(--font-size-small);font-weight:var(--font-weight-medium);
+}

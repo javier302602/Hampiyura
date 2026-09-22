@@ -2,12 +2,23 @@ import { apiRequest } from '../../../shared/api/client';
 
 // Forma cruda de la respuesta de POST /productos (producto.props en el controller) -- también la
 // que devuelven PATCH .../validar-documental y .../certificar (no pasan por la vista enriquecida).
+// Frente 3: entrada estructurada de "planta utilizada" -- reemplaza los checkboxes de una lista
+// fija. plantaId queda vacío si el texto libre no matcheó ninguna planta del catálogo.
+export interface PlantaUtilizada {
+  plantaId?: string;
+  plantaNombreLibre: string;
+  parteUsada: string;
+  estado: string;
+  cantidad?: string;
+}
+
 export interface Producto {
   id: string;
   productorId: string;
   nombre: string;
   descripcion?: string;
   plantasIds: string[];
+  plantasUtilizadas?: PlantaUtilizada[];
   ingredientes?: string;
   presentacion?: string;
   cantidad?: string;
@@ -33,7 +44,7 @@ export type ProductoVisible = Producto & { revisadoPorEquipo: boolean; plantasNo
 export interface PublicarProductoInput {
   nombre: string;
   descripcion?: string;
-  plantasIds: string[];
+  plantasUtilizadas: PlantaUtilizada[];
   ingredientes?: string;
   presentacion?: string;
   cantidad?: string;
@@ -43,6 +54,9 @@ export interface PublicarProductoInput {
   informacionProceso: string;
   fechaElaboracion?: string;
   contactoVendedor: string;
+  // Solo hace falta enviarlo en true la primera vez que el usuario publica (el backend lo exige
+  // solo si Usuario.aceptoComisionEn todavía es null) -- ver PublicarProductoUseCase.
+  aceptaComision?: boolean;
 }
 export function publicarProducto(input: PublicarProductoInput): Promise<Producto> {
   return apiRequest<Producto>('/productos', { method: 'POST', body: JSON.stringify(input) });

@@ -681,13 +681,17 @@ describe('M-05 · Preparaciones', () => {
 describe('M-11 · Productos y Emprendimientos', () => {
   const productoInput:any={productorId:'prod1',nombre:'[DATO DE PRUEBA] Jabón de manzanilla',plantasIds:['p1'],fotografias:[],localidad:'dato de prueba',informacionProceso:'dato de prueba',contactoVendedor:'dato de prueba'};
   function producto(overrides:Partial<Producto['props']> = {}) { return new Producto({id:'prod-1',...productoInput,estadoValidacion:'Pendiente',requiereRevisionReforzada:false,etiquetaValidadoDocumental:false,etiquetaCertificado:false,...overrides}); }
+  // Productor que YA aceptó la comisión (aceptoComisionEn no-null) -- así la mayoría de los tests
+  // de este bloque no necesitan preocuparse por el frente de comisión, que se prueba aparte más
+  // abajo ("Frente 3 · comisión del 5%").
+  const usuariosConComisionAceptada:any={buscarPorId:jest.fn().mockResolvedValue({props:{id:'prod1',aceptoComisionEn:new Date('2026-01-01')}}),actualizar:jest.fn()};
 
   describe('RF-274 · anti-afirmaciones engañosas', () => {
     test('un producto con "cura el cáncer" en la descripción queda marcado para revisión reforzada', async () => {
       const repo:any={guardar:jest.fn()};
       const plantas:any={buscarPorId:jest.fn().mockResolvedValue({id:'p1'})};
       const validaciones:any={guardar:jest.fn()};
-      const creado=await new PublicarProductoUseCase(repo,plantas,validaciones).ejecutar({...productoInput,descripcion:'Este ungüento cura el cáncer y elimina el dolor de forma definitiva'});
+      const creado=await new PublicarProductoUseCase(repo,plantas,validaciones,usuariosConComisionAceptada).ejecutar({...productoInput,descripcion:'Este ungüento cura el cáncer y elimina el dolor de forma definitiva'});
       expect(creado.props.requiereRevisionReforzada).toBe(true);
       // Sigue publicándose (queda Pendiente, entra a M-09) -- no se bloquea la creación, se refuerza el control humano.
       expect(repo.guardar).toHaveBeenCalled();
@@ -697,15 +701,45 @@ describe('M-11 · Productos y Emprendimientos', () => {
       const repo:any={guardar:jest.fn()};
       const plantas:any={buscarPorId:jest.fn().mockResolvedValue({id:'p1'})};
       const validaciones:any={guardar:jest.fn()};
-      const creado=await new PublicarProductoUseCase(repo,plantas,validaciones).ejecutar({...productoInput,descripcion:'Jabón artesanal elaborado con manzanilla de nuestra huerta'});
+      const creado=await new PublicarProductoUseCase(repo,plantas,validaciones,usuariosConComisionAceptada).ejecutar({...productoInput,descripcion:'Jabón artesanal elaborado con manzanilla de nuestra huerta'});
       expect(creado.props.requiereRevisionReforzada).toBe(false);
     });
     test('detecta variantes con tildes/mayúsculas ("Cura la diabetes")', async () => {
       const repo:any={guardar:jest.fn()};
       const plantas:any={buscarPorId:jest.fn().mockResolvedValue({id:'p1'})};
       const validaciones:any={guardar:jest.fn()};
-      const creado=await new PublicarProductoUseCase(repo,plantas,validaciones).ejecutar({...productoInput,descripcion:'Cura la diabetes en pocos días'});
+      const creado=await new PublicarProductoUseCase(repo,plantas,validaciones,usuariosConComisionAceptada).ejecutar({...productoInput,descripcion:'Cura la diabetes en pocos días'});
       expect(creado.props.requiereRevisionReforzada).toBe(true);
+    });
+  });
+
+  describe('Frente 3 · comisión del 5% (aceptación única en el perfil)', () => {
+    test('rechaza publicar si el productor nunca aceptó la comisión y no la acepta en este envío', async () => {
+      const repo:any={guardar:jest.fn()};
+      const plantas:any={buscarPorId:jest.fn().mockResolvedValue({id:'p1'})};
+      const validaciones:any={guardar:jest.fn()};
+      const usuarios:any={buscarPorId:jest.fn().mockResolvedValue({props:{id:'prod1',aceptoComisionEn:null}}),actualizar:jest.fn()};
+      await expect(new PublicarProductoUseCase(repo,plantas,validaciones,usuarios).ejecutar(productoInput)).rejects.toThrow(/comisión/i);
+      expect(repo.guardar).not.toHaveBeenCalled();
+    });
+    test('primera vez: si acepta la comisión en el envío, publica y registra la fecha en el perfil', async () => {
+      const repo:any={guardar:jest.fn()};
+      const plantas:any={buscarPorId:jest.fn().mockResolvedValue({id:'p1'})};
+      const validaciones:any={guardar:jest.fn()};
+      const usuarios:any={buscarPorId:jest.fn().mockResolvedValue({props:{id:'prod1',aceptoComisionEn:null}}),actualizar:jest.fn()};
+      const creado=await new PublicarProductoUseCase(repo,plantas,validaciones,usuarios).ejecutar({...productoInput,aceptaComision:true});
+      expect(repo.guardar).toHaveBeenCalled();
+      expect(usuarios.actualizar).toHaveBeenCalledWith(expect.objectContaining({props:expect.objectContaining({aceptoComisionEn:expect.any(Date)})}));
+      expect(creado.props.estadoValidacion).toBe('Pendiente');
+    });
+    test('si ya había aceptado antes, publicar de nuevo no vuelve a pedirlo ni reescribe la fecha', async () => {
+      const repo:any={guardar:jest.fn()};
+      const plantas:any={buscarPorId:jest.fn().mockResolvedValue({id:'p1'})};
+      const validaciones:any={guardar:jest.fn()};
+      const creado=await new PublicarProductoUseCase(repo,plantas,validaciones,usuariosConComisionAceptada).ejecutar(productoInput);
+      expect(repo.guardar).toHaveBeenCalled();
+      expect(usuariosConComisionAceptada.actualizar).not.toHaveBeenCalled();
+      expect(creado.props.estadoValidacion).toBe('Pendiente');
     });
   });
 
@@ -713,7 +747,7 @@ describe('M-11 · Productos y Emprendimientos', () => {
     const repo:any={guardar:jest.fn()};
     const plantas:any={buscarPorId:jest.fn().mockResolvedValue({id:'p1'})};
     const validaciones:any={guardar:jest.fn()};
-    const creado=await new PublicarProductoUseCase(repo,plantas,validaciones).ejecutar(productoInput);
+    const creado=await new PublicarProductoUseCase(repo,plantas,validaciones,usuariosConComisionAceptada).ejecutar(productoInput);
     expect(repo.guardar).toHaveBeenCalled();
     expect(creado.props.estadoValidacion).toBe('Pendiente');
     expect(validaciones.guardar).toHaveBeenCalledWith(expect.objectContaining({props:expect.objectContaining({tipoEntidad:'Producto',entidadId:creado.props.id,estado:'Pendiente'})}));
@@ -722,13 +756,13 @@ describe('M-11 · Productos y Emprendimientos', () => {
     const repo:any={guardar:jest.fn()};
     const plantas:any={buscarPorId:jest.fn().mockResolvedValue({id:'p1'})};
     const validaciones:any={guardar:jest.fn()};
-    await expect(new PublicarProductoUseCase(repo,plantas,validaciones).ejecutar({...productoInput,localidad:''})).rejects.toThrow();
+    await expect(new PublicarProductoUseCase(repo,plantas,validaciones,usuariosConComisionAceptada).ejecutar({...productoInput,localidad:''})).rejects.toThrow();
   });
   test('rechaza publicar un producto referenciando una planta que no existe', async () => {
     const repo:any={guardar:jest.fn()};
     const plantas:any={buscarPorId:jest.fn().mockResolvedValue(null)};
     const validaciones:any={guardar:jest.fn()};
-    await expect(new PublicarProductoUseCase(repo,plantas,validaciones).ejecutar(productoInput)).rejects.toThrow();
+    await expect(new PublicarProductoUseCase(repo,plantas,validaciones,usuariosConComisionAceptada).ejecutar(productoInput)).rejects.toThrow();
   });
 
   const plantasStub:any={buscarPorId:jest.fn().mockResolvedValue(null)};
