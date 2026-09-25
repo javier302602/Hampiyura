@@ -1,6 +1,8 @@
 # Ejemplo de nginx para servir HampiYura en producción.
 #
 #   - El frontend es estático: es el contenido de hampiyura-web/dist (resultado de `npm run build`).
+#     nginx lo sirve directamente desde ahí, así que no necesita gestor de procesos y sobrevive a
+#     reinicios como cualquier servicio de systemd (nginx se habilita solo al instalarlo con apt).
 #   - /api y /uploads se reenvían al backend Node (puerto 3000 por defecto).
 #
 # Copia este archivo a /etc/nginx/conf.d/hampiyura.conf (o sites-available), ajusta `server_name` y
@@ -9,7 +11,7 @@ server {
     listen 80;
     server_name tu-dominio.com;
 
-    root /var/www/hampiyura;        # <- carpeta donde copiaste el contenido de hampiyura-web/dist
+    root /opt/hampiyura/hampiyura-web/dist;   # <- salida de `npm run build`; se actualiza sola con cada build
     index index.html;
 
     # El backend acepta imágenes en base64 dentro de JSON (hasta 8 MB): deja margen.

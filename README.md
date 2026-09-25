@@ -117,56 +117,153 @@ validador lo aprueba en *Gestión → Bandeja de validación*.
 
 ---
 
-## 5. Despliegue en producción
+## 5. Despliegue en producción (permanente, sobrevive a cerrar la terminal y a reinicios)
 
-Arquitectura recomendada: **nginx** sirve el frontend compilado (archivos estáticos) y reenvía `/api` y
-`/uploads` al backend Node, que habla con PostgreSQL.
+`npm run dev` y `npm start` en primer plano **mueren al cerrar la terminal o perder la conexión SSH**. En un
+servidor real cada pieza la gestiona el sistema:
 
-### 5.1 Backend
+| Pieza | Quién la mantiene viva | Arranca sola al reiniciar |
+|---|---|---|
+| Frontend (archivos estáticos de `hampiyura-web/dist`) | **nginx** (servicio de systemd) | sí (`systemctl enable nginx`) |
+| Backend (Node, `dist/main.js`) | **systemd** (`deploy/hampiyura-api.service`) — o **pm2** como alternativa | sí (`systemctl enable`) |
+| PostgreSQL | servicio `postgresql` del sistema (o Docker con `restart: unless-stopped`) | sí |
 
-```bash
-cd hampiyura-api
-cp .env.example .env
-#   Edita .env: DATABASE_URL real, JWT_SECRET (openssl rand -hex 32), NODE_ENV=production
-npm ci                      # instala también las devDependencies: `prisma` y `tsx` se usan en migrate/seed/build
-npm run migrate:deploy      # aplica migraciones
-npm run seed                # (con SEED_ADMIN_* la primera vez)
-npm run build               # prisma generate + tsc  ->  dist/
-NODE_ENV=production npm start   # node dist/main.js  (puerto PORT, 3000 por defecto)
-```
+Los pasos de abajo suponen **Debian 12 / Ubuntu 22.04+**, se ejecutan como **root** (o con `sudo`) y dejan el
+código en `/opt/hampiyura`. Están probados de principio a fin en un Debian 12 con systemd real, incluido
+un reinicio del servidor (ver sección 5.8).
 
-Importante:
-
-- Ejecuta el backend **desde la carpeta `hampiyura-api/`**: las fotos subidas se guardan en `./uploads`
-  (ruta relativa al directorio de trabajo). Esa carpeta debe **persistir** y entrar en tus copias de seguridad.
-- Mantén el proceso vivo con un gestor: por ejemplo `pm2 start dist/main.js --name hampiyura-api`
-  (con `NODE_ENV=production` y las variables del `.env`), o una unidad `systemd`.
-
-### 5.2 Frontend
+### 5.1 Preparar el servidor
 
 ```bash
-cd hampiyura-web
-npm ci
-npm run build               # tsc -b && vite build  ->  dist/
+# Paquetes: nginx, PostgreSQL, git, openssl y Node.js 22 (repositorio oficial NodeSource)
+apt-get update && apt-get install -y curl ca-certificates git openssl nginx postgresql sudo
+curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && apt-get install -y nodejs
+
+# Base de datos (elige tu propia contraseña)
+sudo -u postgres psql -c "CREATE USER hampiyura WITH PASSWORD 'CAMBIA_ESTA_CLAVE';"
+sudo -u postgres psql -c "CREATE DATABASE hampiyura OWNER hampiyura;"
+
+# Usuario de sistema sin login (la app NO corre como root) y código
+adduser --system --group --home /opt/hampiyura hampiyura
+git clone https://github.com/javier302602/Hampiyura.git /opt/hampiyura
+chown -R hampiyura:hampiyura /opt/hampiyura
+chmod 755 /opt/hampiyura          # nginx (www-data) necesita poder leer hampiyura-web/dist
 ```
 
-Copia el contenido de `hampiyura-web/dist/` a la carpeta que sirve nginx (p. ej. `/var/www/hampiyura`) y usa
-[`deploy/nginx.conf.example`](deploy/nginx.conf.example): sirve la SPA con *fallback* a `index.html`
-(React Router) y reenvía `/api/` y `/uploads/` a `http://127.0.0.1:3000`.
-Añade HTTPS con [certbot](https://certbot.eff.org).
+> ¿Prefieres PostgreSQL en Docker? Omite `postgresql` y las dos líneas de `psql`, y ejecuta
+> `docker compose up -d db` en `/opt/hampiyura` (el contenedor ya trae `restart: unless-stopped`);
+> `DATABASE_URL` queda como en `.env.example`.
 
-> `npm run preview` **no** sirve para producción y no reenvía `/api`. Usa nginx (o cualquier servidor
-> estático con proxy inverso).
+### 5.2 Backend: configuración, migraciones, seed y build
 
-### 5.3 Checklist de seguridad antes de exponerlo
+```bash
+# 1) Configuración (el .env real nunca se sube a git)
+sudo -u hampiyura cp /opt/hampiyura/hampiyura-api/.env.example /opt/hampiyura/hampiyura-api/.env
+chmod 600 /opt/hampiyura/hampiyura-api/.env
+nano /opt/hampiyura/hampiyura-api/.env
+#    DATABASE_URL="postgresql://hampiyura:CAMBIA_ESTA_CLAVE@localhost:5432/hampiyura"
+#    JWT_SECRET="<salida de: openssl rand -hex 32>"
+#    NODE_ENV=production     (descomenta la línea)
 
-- [ ] `NODE_ENV=production` y un `JWT_SECRET` propio (≥ 32 caracteres).
+# 2) Dependencias, migraciones, datos base (con el admin inicial la primera vez) y compilación
+sudo -u hampiyura bash -c '
+  cd /opt/hampiyura/hampiyura-api &&
+  npm ci &&
+  npm run migrate:deploy &&
+  SEED_ADMIN_CORREO="admin@tu-dominio.com" SEED_ADMIN_PASSWORD="UnaClaveSegura123" npm run seed &&
+  npm run build'
+```
+
+### 5.3 Frontend: build y nginx
+
+```bash
+sudo -u hampiyura bash -c 'cd /opt/hampiyura/hampiyura-web && npm ci && npm run build'   # -> hampiyura-web/dist/
+
+cp /opt/hampiyura/deploy/nginx.conf.example /etc/nginx/conf.d/hampiyura.conf
+nano /etc/nginx/conf.d/hampiyura.conf        # cambia server_name por tu dominio (o "_" si usas la IP)
+rm -f /etc/nginx/sites-enabled/default       # quita el sitio de bienvenida de nginx
+nginx -t && systemctl enable --now nginx && systemctl reload nginx
+```
+
+nginx sirve `hampiyura-web/dist` directamente (con *fallback* a `index.html` para React Router) y reenvía
+`/api/` y `/uploads/` al backend. No necesita ningún gestor de procesos adicional. Añade HTTPS con
+[certbot](https://certbot.eff.org): `apt-get install -y certbot python3-certbot-nginx && certbot --nginx`.
+
+> `npm run preview` y `npm run dev` **no** son para producción (no reenvían `/api` y mueren con la terminal).
+
+### 5.4 Backend permanente con systemd (recomendado)
+
+```bash
+cp /opt/hampiyura/deploy/hampiyura-api.service /etc/systemd/system/
+systemctl daemon-reload
+systemctl enable --now hampiyura-api      # enable = arranca solo al reiniciar; --now = arranca ya
+systemctl status hampiyura-api --no-pager
+curl -s http://127.0.0.1:3000/api/usos | head -c 100     # debe devolver JSON con las categorías
+```
+
+Qué te da la unidad ([`deploy/hampiyura-api.service`](deploy/hampiyura-api.service)): corre como el usuario
+`hampiyura` (no root), lee el `.env` de `hampiyura-api/`, **se reinicia sola a los 3 s si se cae**
+(`Restart=always`), arranca con el servidor (`WantedBy=multi-user.target`), guarda los logs en el journal y
+solo puede escribir en `hampiyura-api/uploads` (`ProtectSystem=strict`).
+Si `which node` no da `/usr/bin/node`, corrige `ExecStart` en la unidad.
+
+| Acción | Comando |
+|---|---|
+| Ver el estado | `systemctl status hampiyura-api` |
+| **Ver logs en vivo** | `journalctl -u hampiyura-api -f` |
+| Ver los últimos logs | `journalctl -u hampiyura-api -n 100 --no-pager` |
+| Logs de la última hora | `journalctl -u hampiyura-api --since "1 hour ago"` |
+| **Reiniciar** | `systemctl restart hampiyura-api` |
+| **Detener** | `systemctl stop hampiyura-api` |
+| Volver a iniciar | `systemctl start hampiyura-api` |
+| Que NO arranque al reiniciar el servidor | `systemctl disable hampiyura-api` |
+| Logs de nginx | `journalctl -u nginx -f`  ·  `tail -f /var/log/nginx/error.log` |
+
+### 5.5 Alternativa: pm2 en lugar de systemd
+
+Usa **una u otra** (las dos a la vez pelearían por el puerto 3000). Si prefieres pm2:
+
+```bash
+npm install -g pm2
+sudo -u hampiyura pm2 start /opt/hampiyura/deploy/ecosystem.config.cjs
+sudo -u hampiyura pm2 save                                 # guarda la lista de procesos
+pm2 startup systemd -u hampiyura --hp /opt/hampiyura       # imprime UN comando "sudo env PATH=… pm2 startup …": cópialo y ejecútalo
+```
+
+Ese último comando crea el servicio `pm2-hampiyura` en systemd, que resucita los procesos guardados al
+arrancar el servidor. Operación: `sudo -u hampiyura pm2 status` · `pm2 logs hampiyura-api` (logs en vivo) ·
+`pm2 restart hampiyura-api` · `pm2 stop hampiyura-api` · `pm2 delete hampiyura-api` (ejecuta `pm2 …` como el
+usuario `hampiyura`: `sudo -u hampiyura pm2 …`).
+
+### 5.6 Actualizar a una versión nueva
+
+```bash
+sudo /opt/hampiyura/deploy/update.sh
+```
+
+Hace `git pull`, `npm ci` + migraciones + build del backend, `npm ci` + build del frontend (nginx ya lo sirve
+desde `dist/`, no hay que copiar nada) y reinicia el backend. Con pm2:
+`sudo RESTART_CMD="runuser -u hampiyura -- pm2 restart hampiyura-api" /opt/hampiyura/deploy/update.sh`.
+
+### 5.7 Notas y checklist antes de exponerlo
+
+- Las fotos subidas viven en `hampiyura-api/uploads/` (ruta relativa al directorio de trabajo del backend):
+  esa carpeta debe **persistir** y entrar en tus copias de seguridad, junto con la base de datos.
+- [ ] `NODE_ENV=production` y un `JWT_SECRET` propio (≥ 32 caracteres); el servidor no arranca sin él.
 - [ ] Contraseña de Postgres distinta de `postgres`; el puerto 5432 **no** expuesto a internet
-      (el `docker-compose.yml` ya lo enlaza solo a `127.0.0.1`).
-- [ ] HTTPS activo.
-- [ ] Copias de seguridad periódicas de la base de datos **y** de `hampiyura-api/uploads/`.
-- [ ] Quita `SEED_ADMIN_PASSWORD` del `.env` tras el primer seed y cambia la clave del admin.
+      (el paquete `postgresql` de Debian y el `docker-compose.yml` ya escuchan solo en localhost).
+- [ ] HTTPS activo (certbot) y un firewall que solo deje entrar 22, 80 y 443.
+- [ ] Copias de seguridad periódicas: `sudo -u postgres pg_dump hampiyura > respaldo.sql` y `hampiyura-api/uploads/`.
+- [ ] Quita `SEED_ADMIN_PASSWORD` del entorno tras el primer seed y cambia la clave del admin.
 - El backend no incluye *rate limiting* ni `helmet`; si lo expones a mucho tráfico, ponlos delante (nginx `limit_req`) o añádelos.
+
+### 5.8 Cómo se verificó que sobrevive
+
+Probado en un Debian 12 con systemd real (PostgreSQL, nginx y el backend como servicios), siguiendo esta sección
+tal cual: (1) el backend responde tras cerrar la sesión que lo arrancó; (2) tras matar el proceso con `kill -9`
+systemd lo vuelve a levantar en ~3 s con otro PID; (3) tras **reiniciar el servidor completo** PostgreSQL, nginx y
+`hampiyura-api` vuelven solos y la app responde sin intervención manual; (4) lo mismo con pm2
+(`pm2 save` + `pm2 startup`); (5) `deploy/update.sh` actualiza y reinicia sin dejar archivos de root.
 
 ---
 

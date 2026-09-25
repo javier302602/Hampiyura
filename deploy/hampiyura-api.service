@@ -1,0 +1,41 @@
+# Unidad systemd del backend de HampiYura (Node.js).
+#
+# Instalación (como root):
+#   cp /opt/hampiyura/deploy/hampiyura-api.service /etc/systemd/system/
+#   systemctl daemon-reload
+#   systemctl enable --now hampiyura-api      # "enable" = arranca solo al reiniciar el servidor
+#
+# Supone: el repo clonado en /opt/hampiyura, un usuario de sistema `hampiyura` y Node en /usr/bin/node
+# (compruébalo con `which node`; si está en otra ruta, corrige ExecStart). Los valores de DATABASE_URL,
+# JWT_SECRET y PORT salen de /opt/hampiyura/hampiyura-api/.env (lo lee la propia app con dotenv).
+[Unit]
+Description=HampiYura API (Node.js)
+Documentation=https://github.com/javier302602/Hampiyura
+After=network-online.target postgresql.service docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=hampiyura
+Group=hampiyura
+# Las fotos subidas se guardan en ./uploads, relativo a este directorio.
+WorkingDirectory=/opt/hampiyura/hampiyura-api
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node dist/main.js
+
+# Si el proceso se cae (error, falta de memoria, kill), vuelve a levantarlo a los 3 s, siempre.
+Restart=always
+RestartSec=3
+
+# Endurecimiento básico: sin privilegios extra, sistema de archivos de solo lectura salvo uploads.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/hampiyura/hampiyura-api/uploads
+
+# Los logs (stdout/stderr) van al journal: journalctl -u hampiyura-api -f
+SyslogIdentifier=hampiyura-api
+
+[Install]
+WantedBy=multi-user.target
