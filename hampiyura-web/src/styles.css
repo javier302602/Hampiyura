@@ -95,7 +95,7 @@ p{font-size:1.1rem;line-height:1.6;max-width:620px;color:var(--color-text)}
   min-height:clamp(440px,58vh,620px);
   display:flex;flex-direction:column;justify-content:center;
   background-image:
-      linear-gradient(90deg,var(--hero-scrim) 0%,var(--hero-scrim) var(--hero-solid-end,calc(var(--gutter) + 700px)),var(--hero-photo-overlay) var(--hero-fade-end,calc(var(--gutter) + 1100px))),
+      linear-gradient(90deg,var(--hero-photo-overlay) 0%,var(--hero-scrim) var(--hero-solid-start,max(0px,calc(var(--gutter) - 56px))),var(--hero-scrim) var(--hero-solid-end,calc(var(--gutter) + 680px)),var(--hero-photo-overlay) var(--hero-fade-end,calc(var(--gutter) + 940px))),
       var(--hero-photo),
     var(--hero-pattern),
     radial-gradient(1000px 480px at 12% -25%, var(--jungle-2) 0%, transparent 60%),
@@ -106,7 +106,7 @@ p{font-size:1.1rem;line-height:1.6;max-width:620px;color:var(--color-text)}
 }
 /* En pantallas angostas el texto ocupa todo el ancho: el velo cubre todo y es algo más opaco. Los alfas (.80/.82 escritorio, .86 angosto)
    salen de un barrido medido en píxeles (peor 2% de cada caja de texto, 390-2560px): margen ~9% sobre el mínimo AAA. */
-@media (max-width:720px){.hero{--hero-solid-end:100%;--hero-fade-end:100%;--hero-scrim:var(--hero-scrim-narrow)}}
+@media (max-width:720px){.hero{--hero-solid-start:0%;--hero-solid-end:100%;--hero-fade-end:100%;--hero-scrim:var(--hero-scrim-narrow)}}
 .hero-contenido{max-width:650px;position:relative;z-index:1}
 /* Sobre la foto el eyebrow en terracota no llega ni a AA (3.75:1 medido en píxeles): texto normal + barra terracota como acento. */
 .hero .eyebrow{color:var(--color-text);display:flex;align-items:center;gap:.7em}
