@@ -1,5 +1,6 @@
-export interface Session { token: string; rol: string; userId: string; }
+export interface Session { token: string; rol: string; userId: string; exp?: number; }
 const KEY = 'hampiyura.session';
+const AVISO_KEY = 'hampiyura.sesion-expirada';
 const EVENTO_CAMBIO = 'hampiyura:session-changed';
 
 // RequireRole (y cualquier otro componente) puede suscribirse a esto para re-renderizar cuando
@@ -13,19 +14,35 @@ export function suscribirseACambiosDeSesion(callback: () => void): () => void {
   return () => window.removeEventListener(EVENTO_CAMBIO, callback);
 }
 
-function decodificarPayload(token: string): { rol: string; userId: string } {
+function decodificarPayload(token: string): { rol: string; userId: string; exp?: number } {
   try {
     const payload = JSON.parse(atob(token.split('.')[1] ?? ''));
-    return { rol: typeof payload.rol === 'string' ? payload.rol : '', userId: typeof payload.sub === 'string' ? payload.sub : '' };
+    return {
+      rol: typeof payload.rol === 'string' ? payload.rol : '',
+      userId: typeof payload.sub === 'string' ? payload.sub : '',
+      exp: typeof payload.exp === 'number' ? payload.exp : undefined,
+    };
   } catch {
     return { rol: '', userId: '' };
   }
 }
 
+// El JWT dura 1 día pero la sesión vive en localStorage: pasado ese día la app seguía mostrándose
+// "con sesión iniciada" mientras toda acción autenticada (proponer planta, publicar producto...)
+// fallaba con 401. Una sesión vencida se descarta acá (y se deja un aviso para explicarlo), en vez de
+// devolverse como si siguiera siendo válida.
 export function getSession(): Session | null {
   try {
     const raw = localStorage.getItem(KEY);
-    return raw ? (JSON.parse(raw) as Session) : null;
+    if (!raw) return null;
+    const session = JSON.parse(raw) as Session;
+    const exp = session.exp ?? decodificarPayload(session.token).exp;
+    if (exp && exp * 1000 <= Date.now()) {
+      localStorage.removeItem(KEY);
+      localStorage.setItem(AVISO_KEY, '1');
+      return null;
+    }
+    return session;
   } catch {
     return null;
   }
@@ -33,7 +50,7 @@ export function getSession(): Session | null {
 
 export function setSessionToken(token: string): Session {
   const session: Session = { token, ...decodificarPayload(token) };
-  try { localStorage.setItem(KEY, JSON.stringify(session)); } catch { /* almacenamiento no disponible */ }
+  try { localStorage.setItem(KEY, JSON.stringify(session)); localStorage.removeItem(AVISO_KEY); } catch { /* almacenamiento no disponible */ }
   notificarCambioSesion();
   return session;
 }
@@ -41,6 +58,20 @@ export function setSessionToken(token: string): Session {
 export function clearSession() {
   try { localStorage.removeItem(KEY); } catch { /* almacenamiento no disponible */ }
   notificarCambioSesion();
+}
+
+// El backend rechazó el token (vencido o inválido): se cierra la sesión Y se deja constancia del
+// motivo para que Login/RequireRole puedan explicarlo -- clearSession() solo, dejaría a la persona
+// con un "Inicia sesión" sin contexto de por qué de pronto ya no lo está.
+export function expirarSesion() {
+  try { localStorage.setItem(AVISO_KEY, '1'); } catch { /* almacenamiento no disponible */ }
+  clearSession();
+}
+export function hayAvisoDeSesionExpirada(): boolean {
+  try { return localStorage.getItem(AVISO_KEY) === '1'; } catch { return false; }
+}
+export function descartarAvisoDeSesionExpirada() {
+  try { localStorage.removeItem(AVISO_KEY); } catch { /* almacenamiento no disponible */ }
 }
 
 // Mismo criterio que requireValidator en el backend: Administrador o cualquier Especialista_*.

@@ -123,8 +123,17 @@ p{font-size:1.1rem;line-height:1.6;max-width:620px;color:var(--color-text)}
 .formulario label{display:grid;gap:.35rem;font-weight:700;font-size:.95rem}
 .formulario input,.formulario select,.formulario textarea{font:inherit;padding:.55em .7em;border-radius:8px;border:1px solid #ccc;background:var(--color-surface);color:var(--color-text)}
 .formulario textarea{resize:vertical;min-height:4.5em;font-family:inherit}
-.formulario button{justify-self:start;background:var(--color-accent);color:var(--color-accent-contrast);border:none;border-radius:999px;padding:.6em 1.4em;font-weight:700;cursor:pointer}
-.formulario button:disabled{opacity:.6;cursor:default}
+/* :not(.btn):not(.icon-btn) -- este estilo "todo botón dentro de un form es terracota" es de antes del
+   design system y tiene más especificidad (clase+elemento) que .btn-secondary/.icon-btn (una sola
+   clase), así que le ganaba la cascada a los componentes Button/IconButton: "Agregar" (secondary) en
+   el formulario de producto salía terracota y el "Quitar planta" (icon-btn) quedaba como una píldora
+   terracota sin ícono visible. Medido con un barrido de todas las pantallas (cada .btn/.icon-btn vs.
+   una sonda con las mismas clases fuera de cualquier contenedor). Los <button> planos sin clase
+   (p.ej. "Quitar" de una foto) conservan este estilo. justify-self:start se mantiene para .btn: sin
+   él, un Button dentro de este grid se estiraría al ancho completo. */
+.formulario button:not(.btn):not(.icon-btn){justify-self:start;background:var(--color-accent);color:var(--color-accent-contrast);border:none;border-radius:999px;padding:.6em 1.4em;font-weight:700;cursor:pointer}
+.formulario button:not(.btn):not(.icon-btn):disabled{opacity:.6;cursor:default}
+.formulario .btn{justify-self:start}
 
 .error-formulario{color:#b0322f;font-weight:700}
 

@@ -140,13 +140,13 @@
    y le vaciaba el fondo/color a CUALQUIER <Button> dentro del drawer -- "Publicar producto" tenía
    el mismo problema desde antes de esta ronda, solo que nadie lo había medido en el navegador.
    Button ya trae su propio look completo (.btn), no necesita ni quiere este reset genérico. */
-.mobile-nav-drawer a:not(.btn),.mobile-nav-drawer button:not(.btn){
+.mobile-nav-drawer a:not(.btn),.mobile-nav-drawer button:not(.btn):not(.icon-btn){
   display:flex;align-items:center;gap:var(--space-3);
   font:inherit;font-weight:var(--font-weight-medium);font-size:var(--font-size-body);
   color:var(--color-text);text-decoration:none;background:none;border:none;cursor:pointer;
   padding:.75em .5em;border-radius:var(--radius-sm);text-align:left;width:100%;
 }
-.mobile-nav-drawer a:not(.btn):hover,.mobile-nav-drawer button:not(.btn):hover{background:var(--color-bg)}
+.mobile-nav-drawer a:not(.btn):hover,.mobile-nav-drawer button:not(.btn):not(.icon-btn):hover{background:var(--color-bg)}
 .mobile-nav-drawer-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-3)}
 .mobile-nav-drawer-divider{height:1px;background:var(--color-border);margin:var(--space-2) 0}
 

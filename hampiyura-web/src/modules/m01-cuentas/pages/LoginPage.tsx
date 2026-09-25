@@ -1,7 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { KeyRound } from 'lucide-react';
 import { login } from '../api/cuentas.api';
-import { setSessionToken } from '../../../shared/auth/session';
+import { hayAvisoDeSesionExpirada, setSessionToken } from '../../../shared/auth/session';
 import Button from '../../../shared/ui/Button';
 import AuthLayout from '../components/AuthLayout';
 
@@ -17,6 +17,7 @@ function LoginPage({ onIngreso, onIrARegistro, onIrARecuperar, onIrAActivar }: P
   const [contraseña, setContraseña] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [sesionExpirada] = useState(hayAvisoDeSesionExpirada());
 
   async function manejarSubmit(e: FormEvent) {
     e.preventDefault();
@@ -57,6 +58,11 @@ function LoginPage({ onIngreso, onIrARegistro, onIrARecuperar, onIrAActivar }: P
         </>
       }
     >
+      {sesionExpirada && (
+        <p className="nota-cientifico" role="status" style={{ marginBottom: 'var(--space-3)' }}>
+          Tu sesión expiró (por seguridad dura un día). Inicia sesión de nuevo para continuar.
+        </p>
+      )}
       <form onSubmit={manejarSubmit} className="formulario">
         <label>
           Correo
