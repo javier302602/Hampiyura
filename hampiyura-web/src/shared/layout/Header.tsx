@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { ChevronDown, Flag, FlaskConical, Inbox, LayoutDashboard, Leaf, Menu, Sprout, TreeDeciduous, Users } from 'lucide-react';
+import { ChevronDown, Flag, FlaskConical, Inbox, LayoutDashboard, Menu, Sprout, TreeDeciduous, Users } from 'lucide-react';
 import { esAdministrador, esValidador, getSession, suscribirseACambiosDeSesion } from '../auth/session';
 import UserMenu from '../../modules/m01-cuentas/components/UserMenu';
 import SearchBar from '../../modules/m12-busqueda-recomendaciones/components/SearchBar';
 import NotificacionesIndicador from '../../modules/m14-notificaciones/components/NotificacionesIndicador';
 import useDropdown from '../hooks/useDropdown';
 import Button from '../ui/Button';
+import Logo from '../ui/Logo';
 import ThemeToggle from '../theme/ThemeToggle';
 import MobileNav from './MobileNav';
 import type { FiltrosBusqueda } from '../../modules/m12-busqueda-recomendaciones/api/busqueda.api';
@@ -52,7 +53,7 @@ function Header(props: NavCallbacks) {
     <header className="site-header">
       <div className="site-header-inner">
         <button className="site-header-logo" onClick={props.onIrAHome} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-          <span className="site-header-logo-mark" aria-hidden="true"><Leaf size={18} /></span>
+          <Logo size={36} />
           HampiYura
         </button>
 

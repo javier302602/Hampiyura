@@ -1,5 +1,4 @@
 import { ReactNode } from 'react';
-import { Leaf } from 'lucide-react';
 
 interface Props {
   eyebrow: string;
@@ -19,7 +18,7 @@ function AuthLayout({ eyebrow, title, description, children, footer }: Props) {
   return (
     <div className="auth-layout">
       <div className="auth-panel">
-        <span className="auth-logo"><Leaf size={16} aria-hidden="true" /> HampiYura</span>
+        <span className="auth-logo"><img className="auth-logo-completo" src="/img/logo-hampiyura.png" alt="HampiYura — plataforma digital de plantas medicinales de la Amazonía" width="150" height="150" /></span>
         <p className="eyebrow">{eyebrow}</p>
         <h1 className="auth-title">{title}</h1>
         {description && <p className="auth-desc">{description}</p>}

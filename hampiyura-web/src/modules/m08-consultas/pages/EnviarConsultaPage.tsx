@@ -1,4 +1,5 @@
 import { FormEvent, useState } from 'react';
+import Button from '../../../shared/ui/Button';
 import { crearConsulta, TIPOS_CONSULTA, ETIQUETAS_TIPO_CONSULTA, type TipoConsulta, type Consulta } from '../api/consultas.api';
 import { getSession } from '../../../shared/auth/session';
 
@@ -34,7 +35,7 @@ function EnviarConsultaPage({ onVerMisConsultas, onVolver }: Props) {
   if (enviada) {
     return (
       <section>
-        <button onClick={onVolver}>← Volver al catálogo</button>
+        <Button variant="ghost" onClick={onVolver}>← Volver al catálogo</Button>
         <h2>Consulta enviada</h2>
         <p className="sello-verificado">✔ Tu consulta ("{ETIQUETAS_TIPO_CONSULTA[enviada.tipo]}") fue recibida{enviada.prioridad === 'Alta' && ' con prioridad alta'}.</p>
         {haySesion ? (
@@ -55,7 +56,7 @@ function EnviarConsultaPage({ onVerMisConsultas, onVolver }: Props) {
 
   return (
     <section>
-      <button onClick={onVolver}>← Volver al catálogo</button>
+      <Button variant="ghost" onClick={onVolver}>← Volver al catálogo</Button>
       <h2>Contacto / Ayuda</h2>
       <p>Envíanos una consulta, reporte o solicitud. {!haySesion && 'Puedes hacerlo sin crear una cuenta.'}</p>
       <form onSubmit={manejarSubmit} className="formulario">

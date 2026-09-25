@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Button from '../../../shared/ui/Button';
 import PublicarProductoForm from '../components/PublicarProductoForm';
 import RequireRole from '../../../shared/auth/RequireRole';
 import { esProductor } from '../../../shared/auth/session';
@@ -12,7 +13,7 @@ function PublicarProductoPage({ onVolver }: { onVolver: () => void }) {
 
   return (
     <section>
-      <button onClick={onVolver}>← Volver al catálogo</button>
+      <Button variant="ghost" onClick={onVolver}>← Volver al catálogo</Button>
       <h2>Publicar producto (M-11)</h2>
       <RequireRole permitido={esProductor}>
         {publicado ? (

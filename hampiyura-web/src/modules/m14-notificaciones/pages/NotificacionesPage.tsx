@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Button from '../../../shared/ui/Button';
 import { listarNotificaciones, marcarTodasLeidas, marcarLeida, eliminarNotificacion, type Notificacion } from '../api/notificaciones.api';
 
 // Los tipos viejos (comentario_nuevo, calificacion_nueva, contenido_aprobado, etc., de M-06/M-07/
@@ -42,7 +43,7 @@ function NotificacionesPage({ onVolver, onAbrirConsulta }: Props) {
 
   return (
     <section>
-      <button onClick={onVolver}>← Volver al catálogo</button>
+      <Button variant="ghost" onClick={onVolver}>← Volver al catálogo</Button>
       <h2>Notificaciones</h2>
 
       {cargando && <p>Cargando notificaciones…</p>}

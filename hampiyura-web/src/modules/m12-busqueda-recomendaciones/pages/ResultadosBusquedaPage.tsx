@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Button from '../../../shared/ui/Button';
 import { buscarPlantas, type FiltrosBusqueda, type ResultadoBusquedaPlanta } from '../api/busqueda.api';
 import { obtenerImagenPlanta } from '../../m02-catalogo-plantas/components/imagen-planta';
 
@@ -34,7 +35,7 @@ function ResultadosBusquedaPage({ filtros, onSeleccionarPlanta, onVolver }: Prop
 
   return (
     <section>
-      <button onClick={onVolver}>← Volver al catálogo</button>
+      <Button variant="ghost" onClick={onVolver}>← Volver al catálogo</Button>
       <h2>Resultados de búsqueda</h2>
       {criterios.length > 0 && <p className="comentario-meta">Filtrando por {criterios.join(' + ')}.</p>}
 

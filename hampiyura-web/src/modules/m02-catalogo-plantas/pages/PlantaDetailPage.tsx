@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Button from '../../../shared/ui/Button';
 import { obtenerPlanta, type PlantaVisible } from '../api/plantas.api';
 import { listarPartesUsoPorPlanta, listarUsos, type ParteUso, type Uso } from '../../m04-usos-partes/api/partes-uso.api';
 import ParteUsoCard from '../../m04-usos-partes/components/ParteUsoCard';
@@ -47,7 +48,7 @@ function PlantaDetailPage({ plantaId, onVolver }: Props) {
 
   return (
     <section>
-      <button onClick={onVolver}>← Volver al catálogo</button>
+      <Button variant="ghost" onClick={onVolver}>← Volver al catálogo</Button>
       <h2>{planta.nombreComun}</h2>
       <p><em>{planta.nombreCientifico}</em> — familia {planta.familia}</p>
       <p>Región: {planta.region} · Hábitat: {planta.habitat}</p>

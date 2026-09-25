@@ -18,13 +18,16 @@
   --color-accent-contrast:#ffffff;
   --color-accent-hover:#94552d;
   --color-accent-soft:#f3e3d3;
+  --color-accent-deep:#b56837;  /* terracota de la paleta, para acentos NO textuales (bordes, barras, brillos) en ambos temas */
+  --color-surface-elevated:#ffffff;
+  --warm-glow:transparent;
 
   /* Marca -- superficies "de marca" (Header/Footer) que se mantienen oscuras en ambos temas,
      a propósito: son una franja de identidad, no una superficie de contenido que deba invertirse. */
   --brand-900:#0b3d32;
   --brand-700:#145c45;
   --brand-on-brand:#f6f4ec;
-  --brand-on-brand-muted:rgba(246,244,236,.72);
+  --brand-on-brand-muted:rgba(246,244,236,.86);
 
   /* Estados semánticos -- reemplazan los hex sueltos que hoy viven repartidos en badges/alertas */
   --color-success:#1e7a42;      --color-success-bg:#e3f3e8;
@@ -69,6 +72,8 @@
   /* Sombras -- suaves y discretas, un único set en vez de valores rgba() repartidos */
   --shadow-sm:0 2px 6px rgba(15,47,38,.08);
   --shadow-md:0 8px 20px rgba(15,47,38,.10);
+  --shadow-hover:var(--shadow-md);
+  --card-shadow:none;
   --shadow-lg:0 16px 34px rgba(15,47,38,.14);
 
   color-scheme:light dark;
@@ -89,64 +94,72 @@
    incluso si el sistema está en claro. */
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --color-bg:#0f2620;
-    --color-surface:#17332b;
+    --color-bg:#08201a;
+    --color-surface:#0f2b23;
+    --color-surface-elevated:#173a2e;
     --color-text:#eef2ea;
     --color-text-muted:#c5d2c9;
-    --color-border:#2d4a3f;
-    --color-accent:#e0955c;
-    --color-accent-contrast:#17352b;
-    --color-accent-hover:#efb182;
-    --color-accent-soft:#2e2015;
+    --color-border:#2c5446;
+    --color-accent:#f0ab78;
+    --color-accent-contrast:#08201a;
+    --color-accent-hover:#f7bf97;
+    --color-accent-soft:#33210f;
 
     --color-success:#6fcf97;   --color-success-bg:#123524;
     --color-warning:#f0b35c;  --color-warning-bg:#3a2a14;
     --color-info:#7ab8e6;     --color-info-bg:#16283a;
-    --color-danger:#f0827c;   --color-danger-bg:#3a1a18;
+    --color-danger:#f7aaa5;   --color-danger-bg:#3a1a18;
 
-    --jungle-1:#071813;
-    --jungle-2:#123a2c;
+    --jungle-1:#04120e;
+    --jungle-2:#0f3a2b;
+    --warm-glow:rgba(181,104,55,.24);
     --water-accent:#3f8fc2;
-    --hero-scrim:rgba(15,38,32,.82);
-  --hero-scrim-narrow:rgba(15,38,32,.86);
-    --hero-photo-overlay:rgba(15,38,32,.1);
+    --hero-scrim:rgba(8,32,26,.80);
+  --hero-scrim-narrow:rgba(8,32,26,.86);
+    --hero-photo-overlay:rgba(8,32,26,.06);
     --hero-pattern:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%20viewBox%3D'0%200%20160%20160'%3E%3Cg%20fill%3D'%236fae7f'%20fill-opacity%3D'0.14'%3E%3Cpath%20d%3D'M34%2C14%20C16%2C34%2016%2C64%2034%2C90%20C52%2C64%2052%2C34%2034%2C14%20Z'%2F%3E%3Cpath%20d%3D'M34%2C14%20L34%2C90'%20stroke%3D'%236fae7f'%20stroke-opacity%3D'0.14'%20stroke-width%3D'1.5'%20fill%3D'none'%2F%3E%3Cpath%20d%3D'M118%2C40%20C100%2C58%20100%2C84%20118%2C106%20C136%2C84%20136%2C58%20118%2C40%20Z'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M118%2C40%20L118%2C106'%20stroke%3D'%236fae7f'%20stroke-opacity%3D'0.14'%20stroke-width%3D'1.5'%20fill%3D'none'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M66%2C110%20C50%2C128%2050%2C150%2066%2C168%20C82%2C150%2082%2C128%2066%2C110%20Z'%20transform%3D'rotate(-18%2066%20139)'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
     --ambient-pattern:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%20viewBox%3D'0%200%20160%20160'%3E%3Cg%20fill%3D'%236fae7f'%20fill-opacity%3D'0.06'%3E%3Cpath%20d%3D'M34%2C14%20C16%2C34%2016%2C64%2034%2C90%20C52%2C64%2052%2C34%2034%2C14%20Z'%2F%3E%3Cpath%20d%3D'M34%2C14%20L34%2C90'%20stroke%3D'%236fae7f'%20stroke-opacity%3D'0.06'%20stroke-width%3D'1.5'%20fill%3D'none'%2F%3E%3Cpath%20d%3D'M118%2C40%20C100%2C58%20100%2C84%20118%2C106%20C136%2C84%20136%2C58%20118%2C40%20Z'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M118%2C40%20L118%2C106'%20stroke%3D'%236fae7f'%20stroke-opacity%3D'0.14'%20stroke-width%3D'1.5'%20fill%3D'none'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M66%2C110%20C50%2C128%2050%2C150%2066%2C168%20C82%2C150%2082%2C128%2066%2C110%20Z'%20transform%3D'rotate(-18%2066%20139)'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
 
-    --shadow-sm:0 2px 6px rgba(0,0,0,.28);
-    --shadow-md:0 8px 20px rgba(0,0,0,.32);
-    --shadow-lg:0 16px 34px rgba(0,0,0,.4);
+    --shadow-sm:inset 0 1px 0 rgba(255,255,255,.05),0 2px 8px rgba(0,0,0,.5);
+    --card-shadow:var(--shadow-sm);
+    --shadow-hover:0 0 0 1px color-mix(in srgb,var(--color-accent-deep) 55%,transparent),0 10px 28px rgba(181,104,55,.22);
+    --shadow-md:inset 0 1px 0 rgba(255,255,255,.06),0 10px 24px rgba(0,0,0,.55);
+    --shadow-lg:inset 0 1px 0 rgba(255,255,255,.07),0 18px 40px rgba(0,0,0,.65);
   }
 }
 
 /* Mismo bloque que arriba, aplicado sin condición de @media -- cubre "el usuario eligió oscuro
    a mano" aunque el sistema operativo esté en claro. */
 :root[data-theme="dark"]{
-  --color-bg:#0f2620;
-  --color-surface:#17332b;
+  --color-bg:#08201a;
+  --color-surface:#0f2b23;
+    --color-surface-elevated:#173a2e;
   --color-text:#eef2ea;
   --color-text-muted:#c5d2c9;
-  --color-border:#2d4a3f;
-  --color-accent:#e0955c;
-  --color-accent-contrast:#17352b;
-  --color-accent-hover:#efb182;
-  --color-accent-soft:#2e2015;
+  --color-border:#2c5446;
+  --color-accent:#f0ab78;
+  --color-accent-contrast:#08201a;
+  --color-accent-hover:#f7bf97;
+  --color-accent-soft:#33210f;
 
   --color-success:#6fcf97;   --color-success-bg:#123524;
   --color-warning:#f0b35c;  --color-warning-bg:#3a2a14;
   --color-info:#7ab8e6;     --color-info-bg:#16283a;
-  --color-danger:#f0827c;   --color-danger-bg:#3a1a18;
+  --color-danger:#f7aaa5;   --color-danger-bg:#3a1a18;
 
-  --jungle-1:#071813;
-  --jungle-2:#123a2c;
+  --jungle-1:#04120e;
+  --jungle-2:#0f3a2b;
+    --warm-glow:rgba(181,104,55,.24);
   --water-accent:#3f8fc2;
-  --hero-scrim:rgba(15,38,32,.82);
-  --hero-scrim-narrow:rgba(15,38,32,.86);
-  --hero-photo-overlay:rgba(15,38,32,.1);
+  --hero-scrim:rgba(8,32,26,.80);
+  --hero-scrim-narrow:rgba(8,32,26,.86);
+  --hero-photo-overlay:rgba(8,32,26,.06);
   --hero-pattern:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%20viewBox%3D'0%200%20160%20160'%3E%3Cg%20fill%3D'%236fae7f'%20fill-opacity%3D'0.14'%3E%3Cpath%20d%3D'M34%2C14%20C16%2C34%2016%2C64%2034%2C90%20C52%2C64%2052%2C34%2034%2C14%20Z'%2F%3E%3Cpath%20d%3D'M34%2C14%20L34%2C90'%20stroke%3D'%236fae7f'%20stroke-opacity%3D'0.14'%20stroke-width%3D'1.5'%20fill%3D'none'%2F%3E%3Cpath%20d%3D'M118%2C40%20C100%2C58%20100%2C84%20118%2C106%20C136%2C84%20136%2C58%20118%2C40%20Z'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M118%2C40%20L118%2C106'%20stroke%3D'%236fae7f'%20stroke-opacity%3D'0.14'%20stroke-width%3D'1.5'%20fill%3D'none'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M66%2C110%20C50%2C128%2050%2C150%2066%2C168%20C82%2C150%2082%2C128%2066%2C110%20Z'%20transform%3D'rotate(-18%2066%20139)'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
   --ambient-pattern:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%20viewBox%3D'0%200%20160%20160'%3E%3Cg%20fill%3D'%236fae7f'%20fill-opacity%3D'0.06'%3E%3Cpath%20d%3D'M34%2C14%20C16%2C34%2016%2C64%2034%2C90%20C52%2C64%2052%2C34%2034%2C14%20Z'%2F%3E%3Cpath%20d%3D'M34%2C14%20L34%2C90'%20stroke%3D'%236fae7f'%20stroke-opacity%3D'0.06'%20stroke-width%3D'1.5'%20fill%3D'none'%2F%3E%3Cpath%20d%3D'M118%2C40%20C100%2C58%20100%2C84%20118%2C106%20C136%2C84%20136%2C58%20118%2C40%20Z'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M118%2C40%20L118%2C106'%20stroke%3D'%236fae7f'%20stroke-opacity%3D'0.14'%20stroke-width%3D'1.5'%20fill%3D'none'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M66%2C110%20C50%2C128%2050%2C150%2066%2C168%20C82%2C150%2082%2C128%2066%2C110%20Z'%20transform%3D'rotate(-18%2066%20139)'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
 
-  --shadow-sm:0 2px 6px rgba(0,0,0,.28);
-  --shadow-md:0 8px 20px rgba(0,0,0,.32);
-  --shadow-lg:0 16px 34px rgba(0,0,0,.4);
+  --shadow-sm:inset 0 1px 0 rgba(255,255,255,.05),0 2px 8px rgba(0,0,0,.5);
+    --card-shadow:var(--shadow-sm);
+    --shadow-hover:0 0 0 1px color-mix(in srgb,var(--color-accent-deep) 55%,transparent),0 10px 28px rgba(181,104,55,.22);
+  --shadow-md:inset 0 1px 0 rgba(255,255,255,.06),0 10px 24px rgba(0,0,0,.55);
+  --shadow-lg:inset 0 1px 0 rgba(255,255,255,.07),0 18px 40px rgba(0,0,0,.65);
 }

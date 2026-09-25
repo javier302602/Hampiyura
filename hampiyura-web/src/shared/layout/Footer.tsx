@@ -1,4 +1,5 @@
-import { Leaf, MessageCircle } from 'lucide-react';
+import Logo from '../ui/Logo';
+import { MessageCircle } from 'lucide-react';
 import SessionBar from '../auth/SessionBar';
 import type { NavCallbacks } from './Header';
 
@@ -47,7 +48,7 @@ function Footer({ onIrAHome, onIrACatalogo, onIrAMapaCultivo, onIrAPublicaciones
       <div className="site-footer-inner">
         <div className="site-footer-grid">
           <div className="site-footer-brand">
-            <span className="site-footer-brand-name"><Leaf size={18} aria-hidden="true" /> HampiYura</span>
+            <span className="site-footer-brand-name"><Logo size={32} /> HampiYura</span>
             <p className="site-footer-tagline">Saberes que echan raíces: plantas amazónicas, conocimiento comunitario y territorio.</p>
             <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="footer-whatsapp-btn">
               <MessageCircle size={16} aria-hidden="true" /> Escríbenos por WhatsApp

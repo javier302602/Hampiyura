@@ -23,7 +23,7 @@ function SessionBar() {
       {session ? (
         <>
           <span>Sesión activa — rol: <strong>{session.rol || 'desconocido'}</strong></span>
-          <button onClick={cerrarSesion}>Cerrar sesión</button>
+          <button className="btn btn-secondary btn-sm" onClick={cerrarSesion}>Cerrar sesión</button>
         </>
       ) : (
         <form onSubmit={manejarSubmit} style={{ display: 'flex', gap: '.5rem' }}>
@@ -34,7 +34,7 @@ function SessionBar() {
             onChange={(e) => setToken(e.target.value)}
             style={{ minWidth: '320px' }}
           />
-          <button type="submit">Usar token</button>
+          <button className="btn btn-secondary btn-sm" type="submit">Usar token</button>
         </form>
       )}
     </div>

@@ -9,7 +9,7 @@ function ReglasContrasena({ contraseña }: { contraseña: string }) {
   return (
     <ul style={{ margin: '.3em 0', paddingLeft: '1.2em', fontSize: '.9rem' }}>
       {reglas.map((r) => (
-        <li key={r.texto} style={{ color: r.cumple ? '#1e7a42' : '#665' }}>
+        <li key={r.texto} style={{ color: r.cumple ? 'var(--color-success)' : 'var(--color-text-muted)' }}>
           {r.cumple ? '✔' : '○'} {r.texto}
         </li>
       ))}
