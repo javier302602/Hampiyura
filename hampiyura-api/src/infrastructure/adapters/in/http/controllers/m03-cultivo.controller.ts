@@ -26,4 +26,11 @@ export async function registrarUbicacionCultivo(req:Request,res:Response){
   res.status(201).json(ubicacion.props);
 }
 export async function obtenerUbicacionCultivo(req:Request,res:Response){const ubicacion=await container.obtenerUbicacionCultivo.ejecutar(String(req.params.cultivoId)); res.json(ubicacion?.props ?? null);}
-export async function listarMapaCultivo(_req:Request,res:Response){const mapa=await container.listarMapaCultivo.ejecutar(); res.json(mapa);}
+// Público: solo fichas validadas. ?estado=todas (solo Especialista/Administrador) incluye las pendientes
+// para la vista de gestión; para cualquier otro llamante el parámetro se ignora.
+export async function listarMapaCultivo(req:Request,res:Response){
+  const usuario=(req as AuthenticatedRequest).user;
+  const esValidador=!!usuario && (usuario.rol==='Administrador' || usuario.rol.startsWith('Especialista'));
+  const mapa=await container.listarMapaCultivo.ejecutar({incluirNoValidadas: esValidador && req.query.estado==='todas'});
+  res.json(mapa);
+}

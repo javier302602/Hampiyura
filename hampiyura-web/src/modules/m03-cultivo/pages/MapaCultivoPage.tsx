@@ -5,6 +5,7 @@ import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import { listarMapaCultivo, type UbicacionCultivoVisible } from '../api/mapa-cultivo.api';
 import { CENTRO_PERU_AMAZONICO, agregarTileLayer } from '../leaflet-setup';
+import { esValidador, getSession } from '../../../shared/auth/session';
 
 interface Props {
   // Permite que el popup del marcador enlace a la ficha completa de la planta (mismo mecanismo de
@@ -37,12 +38,17 @@ function MapaCultivoPage({ onSeleccionarPlanta }: Props) {
   const [familiaFiltro, setFamiliaFiltro] = useState('');
   const [ubicacionActivaId, setUbicacionActivaId] = useState<string | null>(null);
 
+  // Vista de gestión (RF-251): Especialista/Administrador pueden ver también las fichas sin validar.
+  const sesion = getSession();
+  const puedeVerPendientes = !!sesion && esValidador(sesion.rol);
+  const [verPendientes, setVerPendientes] = useState(false);
+
   useEffect(() => {
-    listarMapaCultivo()
+    listarMapaCultivo(puedeVerPendientes && verPendientes)
       .then(setUbicaciones)
       .catch((err) => setError(err instanceof Error ? err.message : 'No se pudo cargar el mapa de distribución.'))
       .finally(() => setCargando(false));
-  }, []);
+  }, [verPendientes, puedeVerPendientes]);
 
   // Opciones de los filtros: se derivan de los datos ya cargados en vez de mantener listas fijas
   // que se podrían desincronizar. "Tipo de cultivo" y "familia" son los únicos campos de
@@ -130,6 +136,13 @@ function MapaCultivoPage({ onSeleccionarPlanta }: Props) {
         Ubicaciones de cultivo registradas por la comunidad. Se usa OpenTopoMap + Leaflet, con relieve y curvas de nivel, sin necesidad de clave de API de pago.
       </p>
 
+      {puedeVerPendientes && (
+        <label style={{ display: 'flex', gap: '.5rem', alignItems: 'center', margin: '.5rem 0' }}>
+          <input type="checkbox" checked={verPendientes} onChange={(e) => setVerPendientes(e.target.checked)} />
+          Vista de gestión: incluir fichas sin validar (no son visibles para el público)
+        </label>
+      )}
+
       <div className="mapa-cultivo-controles">
         <label>
           Buscar
@@ -176,7 +189,7 @@ function MapaCultivoPage({ onSeleccionarPlanta }: Props) {
                 onClick={() => irAUbicacionEnMapa(u)}
               >
                 <strong>{u.nombreComunPlanta}</strong>
-                <span>{u.tipoCultivo} · {u.familia}</span>
+                <span>{u.tipoCultivo} · {u.familia}{u.estadoValidacion !== 'Validado' ? ` · ${u.estadoValidacion}` : ''}</span>
                 <span className="fuente-cita">{u.zona}</span>
               </button>
             ))}

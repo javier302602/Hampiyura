@@ -15,10 +15,13 @@ export interface UbicacionCultivoVisible {
   longitud: number | null;
   fecha: string;
   autorNombre: string;
+  // El mapa público solo trae 'Validado'; las demás llegan solo en la vista de gestión.
+  estadoValidacion: string;
 }
 
-export function listarMapaCultivo(): Promise<UbicacionCultivoVisible[]> {
-  return apiRequest<UbicacionCultivoVisible[]>('/mapa-cultivo');
+// `incluirNoValidadas` (solo tiene efecto para Especialista/Administrador): vista de gestión.
+export function listarMapaCultivo(incluirNoValidadas = false): Promise<UbicacionCultivoVisible[]> {
+  return apiRequest<UbicacionCultivoVisible[]>(incluirNoValidadas ? '/mapa-cultivo?estado=todas' : '/mapa-cultivo');
 }
 
 export interface RegistrarUbicacionCultivoInput {

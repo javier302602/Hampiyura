@@ -973,7 +973,7 @@ describe('RF-271 · Mapa de distribución (mapa-cultivo.port.ts activado)', () =
     test('enriquece cada ubicación con el nombre de la planta y expone coordenadas si no hay riesgo', async () => {
       const repo:any={listarTodas:jest.fn().mockResolvedValue([ubicacion()])};
       const plantas:any={buscarPorId:jest.fn().mockResolvedValue({props:{id:'p1',nombreComun:'Uña de gato'}})};
-      const cultivos:any={buscarPorId:jest.fn().mockResolvedValue({props:{id:'c1',metodoPropagacion:'Esqueje'}})};
+      const cultivos:any={buscarPorId:jest.fn().mockResolvedValue({props:{id:'c1',metodoPropagacion:'Esqueje',estadoValidacion:'Validado'}})};
       const estadosConservacion:any={buscarValidadoPorPlanta:jest.fn().mockResolvedValue(null)};
       const usuarios:any={buscarPorId:jest.fn().mockResolvedValue({props:{id:'u1',nombre:'[DATO DE PRUEBA] Autor Uno'}})};
       const mapa=await new ListarMapaCultivoUseCase(repo,plantas,cultivos,estadosConservacion,usuarios).ejecutar();
@@ -985,10 +985,24 @@ describe('RF-271 · Mapa de distribución (mapa-cultivo.port.ts activado)', () =
       expect(mapa[0].autorNombre).toBe('[DATO DE PRUEBA] Autor Uno');
     });
 
+    test('RF-251: el mapa público omite ubicaciones de fichas sin validar; la vista de gestión las incluye', async () => {
+      const repo:any={listarTodas:jest.fn().mockResolvedValue([ubicacion({id:'a',cultivoId:'c-val'}),ubicacion({id:'b',cultivoId:'c-pend'}),ubicacion({id:'c',cultivoId:'c-borrada'})])};
+      const plantas:any={buscarPorId:jest.fn().mockResolvedValue({props:{id:'p1',nombreComun:'Uña de gato'}})};
+      const fichas:Record<string,any>={'c-val':{props:{metodoPropagacion:'Esqueje',estadoValidacion:'Validado'}},'c-pend':{props:{metodoPropagacion:'Semilla',estadoValidacion:'Pendiente'}}};
+      const cultivos:any={buscarPorId:jest.fn(async (id:string)=>fichas[id]??null)};
+      const estadosConservacion:any={buscarValidadoPorPlanta:jest.fn().mockResolvedValue(null)};
+      const usuarios:any={buscarPorId:jest.fn().mockResolvedValue({props:{id:'u1',nombre:'Autor'}})};
+      const uc=new ListarMapaCultivoUseCase(repo,plantas,cultivos,estadosConservacion,usuarios);
+      expect((await uc.ejecutar()).map(u=>u.id)).toEqual(['a']);
+      const gestion=await uc.ejecutar({incluirNoValidadas:true});
+      expect(gestion.map(u=>u.id)).toEqual(['a','b']);
+      expect(gestion[1].estadoValidacion).toBe('Pendiente');
+    });
+
     test('RN-07: oculta coordenadas ya guardadas si la planta pasó a estar en riesgo después', async () => {
       const repo:any={listarTodas:jest.fn().mockResolvedValue([ubicacion()])};
       const plantas:any={buscarPorId:jest.fn().mockResolvedValue({props:{id:'p1',nombreComun:'Uña de gato'}})};
-      const cultivos:any={buscarPorId:jest.fn().mockResolvedValue({props:{id:'c1',metodoPropagacion:'Esqueje'}})};
+      const cultivos:any={buscarPorId:jest.fn().mockResolvedValue({props:{id:'c1',metodoPropagacion:'Esqueje',estadoValidacion:'Validado'}})};
       const estado=new EstadoConservacion({id:'ec1',plantaId:'p1',autorId:'u1',categoria:'[DATO DE PRUEBA] Vulnerable',zona:'x',amenazas:'x',nivelRiesgo:'EnPeligro',disponibilidadTemporada:'x',recomendacionesConservacion:'x',metodosPropagacion:'x',alternativasCultivo:'x',fuenteOficial:new Fuente('[DATO DE PRUEBA] fuente'),fecha:new Date(),estadoValidacion:'Validado'});
       const estadosConservacion:any={buscarValidadoPorPlanta:jest.fn().mockResolvedValue(estado)};
       const usuarios:any={buscarPorId:jest.fn().mockResolvedValue({props:{id:'u1',nombre:'[DATO DE PRUEBA] Autor Uno'}})};
@@ -1062,6 +1076,13 @@ describe('M-09 · RN-05: un especialista solo valida contenido de su propia áre
     }
   });
 
+  test('RF-251: el autor de una ficha de cultivo no puede aprobarla; otro validador sí', () => {
+    const v=new ValidacionContenido({id:'v1',tipoEntidad:'Cultivo',entidadId:'c1',estado:'Pendiente',fecha:new Date(),autorId:'esp-1'});
+    expect(() => v.aprobar('esp-1','EspecialistaAgronomo')).toThrow(/tú mismo/);
+    expect(v.props.estado).toBe('Pendiente');
+    expect(() => v.aprobar('esp-2','EspecialistaAgronomo')).not.toThrow();
+    expect(v.props.estado).toBe('Validado');
+  });
   test('observar() y rechazar() aplican la misma restricción de área que aprobar()', () => {
     const v1=pendiente('Cultivo');
     expect(() => v1.observar('esp-1','[DATO DE PRUEBA] falta info','EspecialistaSalud')).toThrow();

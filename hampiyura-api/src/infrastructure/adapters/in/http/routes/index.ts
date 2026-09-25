@@ -20,7 +20,7 @@ router.post('/cuentas/registro',registrar); router.post('/cuentas/login',login);
 router.post('/plantas',requireValidator,registrarPlanta); router.post('/plantas/proponer',requireAuth,proponerPlanta); router.get('/plantas',listarPlantas); router.get('/plantas/:id',obtenerPlanta);
 router.post('/cultivos',requireValidator,registrarFicha); router.get('/cultivos/:id',obtenerFicha); router.get('/plantas/:plantaId/cultivos',listarFichasPorPlanta);
 router.post('/cultivos/:cultivoId/ubicacion',requireAuth,registrarUbicacionCultivo); router.get('/cultivos/:cultivoId/ubicacion',obtenerUbicacionCultivo);
-router.get('/mapa-cultivo',listarMapaCultivo);
+router.get('/mapa-cultivo',attachUserIfPresent,listarMapaCultivo);
 router.post('/usos',requireValidator,registrarUso); router.get('/usos',listarUsos);
 router.post('/partes-uso',requireAuth,registrarParteUso); router.get('/partes-uso/:id',obtenerParteUso); router.get('/plantas/:plantaId/partes-uso',listarPartesUsoPorPlanta);
 router.post('/publicaciones/media',requireAuth,subirMedia);

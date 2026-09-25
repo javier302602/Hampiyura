@@ -1,4 +1,4 @@
-import { ListarMapaCultivoPort, UbicacionCultivoVisible } from '../../domain/ports/in/m03-cultivo/listar-mapa-cultivo.port';
+import { ListarMapaCultivoPort, OpcionesMapaCultivo, UbicacionCultivoVisible } from '../../domain/ports/in/m03-cultivo/listar-mapa-cultivo.port';
 import { MapaCultivoPort } from '../../domain/ports/out/mapa-cultivo.port';
 import { PlantaRepositoryPort } from '../../domain/ports/out/planta.repository.port';
 import { CultivoRepositoryPort } from '../../domain/ports/out/cultivo.repository.port';
@@ -16,7 +16,7 @@ export class ListarMapaCultivoUseCase implements ListarMapaCultivoPort {
     private readonly estadosConservacion: EstadoConservacionRepositoryPort,
     private readonly usuarios: UsuarioRepositoryPort,
   ) {}
-  async ejecutar(): Promise<UbicacionCultivoVisible[]> {
+  async ejecutar(opciones: OpcionesMapaCultivo = {}): Promise<UbicacionCultivoVisible[]> {
     const ubicaciones = await this.repo.listarTodas();
     const riesgoPorPlanta = new Map<string, boolean>();
     const plantaPorId = new Map<string, Awaited<ReturnType<PlantaRepositoryPort['buscarPorId']>>>();
@@ -25,6 +25,10 @@ export class ListarMapaCultivoUseCase implements ListarMapaCultivoPort {
 
     const resultado: UbicacionCultivoVisible[] = [];
     for (const u of ubicaciones) {
+      // RF-251: una ficha sin validar (o cuya ficha ya no existe) no se publica en el mapa público.
+      if (!cultivoPorId.has(u.props.cultivoId)) cultivoPorId.set(u.props.cultivoId, await this.cultivos.buscarPorId(u.props.cultivoId));
+      const ficha = cultivoPorId.get(u.props.cultivoId);
+      if (!ficha || (!opciones.incluirNoValidadas && ficha.props.estadoValidacion !== 'Validado')) continue;
       if (!riesgoPorPlanta.has(u.props.plantaId)) {
         const estado = await this.estadosConservacion.buscarValidadoPorPlanta(u.props.plantaId);
         riesgoPorPlanta.set(u.props.plantaId, estado?.estaEnRiesgo() ?? false);
@@ -49,6 +53,7 @@ export class ListarMapaCultivoUseCase implements ListarMapaCultivoPort {
         longitud: enRiesgo ? null : u.props.longitud,
         fecha: u.props.fecha,
         autorNombre: autor?.props.nombre ?? u.props.autorId,
+        estadoValidacion: ficha.props.estadoValidacion,
       });
     }
     return resultado;

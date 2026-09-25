@@ -19,5 +19,10 @@ export interface UbicacionCultivoVisible {
   // Igual que `autorNombre` en PublicacionVisible: nombre público de quien registró la ubicación,
   // con el mismo fallback al id si el usuario ya no existe.
   autorNombre: string;
+  // Estado de la ficha de cultivo a la que pertenece la ubicación. El mapa público solo devuelve
+  // 'Validado' (RF-251: nada sin validar se publica); Pendiente/Observado/Rechazado solo llegan en la
+  // vista de gestión (incluirPendientes).
+  estadoValidacion: string;
 }
-export interface ListarMapaCultivoPort { ejecutar(): Promise<UbicacionCultivoVisible[]>; }
+export interface OpcionesMapaCultivo { incluirNoValidadas?: boolean; }
+export interface ListarMapaCultivoPort { ejecutar(opciones?: OpcionesMapaCultivo): Promise<UbicacionCultivoVisible[]>; }

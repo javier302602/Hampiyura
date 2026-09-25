@@ -36,7 +36,10 @@ export class ValidacionContenido {
     if (!rolRequerido) throw new UnauthorizedError(`Contenido de tipo "${this.props.tipoEntidad}" todavía no tiene un área asignada: solo un administrador puede validarlo`);
     if (rol !== rolRequerido) throw new UnauthorizedError(`Este contenido requiere un especialista de otra área (se necesita ${rolRequerido})`);
   }
-  aprobar(validadorId:string, rol='Administrador') { this.validarRol(rol); this.props.estado='Validado'; this.props.validadorId=validadorId; this.props.fecha=new Date(); }
+  // RF-251: quien registró una ficha de cultivo no puede aprobarla él mismo -- la aprueba otro
+  // especialista/administrador. (Solo Cultivo por ahora; no es el doble revisor completo.)
+  private exigirOtroValidador(validadorId:string) { if (this.props.tipoEntidad==='Cultivo' && validadorId===this.props.autorId) throw new UnauthorizedError('No puedes aprobar una ficha de cultivo que tú mismo registraste: debe aprobarla otro especialista o administrador'); }
+  aprobar(validadorId:string, rol='Administrador') { this.validarRol(rol); this.exigirOtroValidador(validadorId); this.props.estado='Validado'; this.props.validadorId=validadorId; this.props.fecha=new Date(); }
   observar(validadorId:string, comentario:string, rol='Administrador') { this.validarRol(rol); if (!comentario.trim()) throw new ValidationError('La observación es obligatoria'); this.props.estado='Observado'; this.props.comentarioValidador=comentario; this.props.validadorId=validadorId; this.props.fecha=new Date(); }
   rechazar(validadorId:string, comentario:string, rol='Administrador') { this.validarRol(rol); if (!comentario.trim()) throw new ValidationError('El motivo de rechazo es obligatorio'); this.props.estado='Rechazado'; this.props.comentarioValidador=comentario; this.props.validadorId=validadorId; this.props.fecha=new Date(); }
 }
