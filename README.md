@@ -138,6 +138,7 @@ un reinicio del servidor (ver sección 5.8).
 # Paquetes: nginx, PostgreSQL, git, openssl y Node.js 22 (repositorio oficial NodeSource)
 apt-get update && apt-get install -y curl ca-certificates git openssl nginx postgresql sudo
 curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && apt-get install -y nodejs
+systemctl enable --now postgresql nginx     # normalmente apt ya los arranca; así te aseguras y quedan habilitados al arranque
 
 # Base de datos (elige tu propia contraseña)
 sudo -u postgres psql -c "CREATE USER hampiyura WITH PASSWORD 'CAMBIA_ESTA_CLAVE';"
@@ -221,19 +222,32 @@ Si `which node` no da `/usr/bin/node`, corrige `ExecStart` en la unidad.
 
 ### 5.5 Alternativa: pm2 en lugar de systemd
 
-Usa **una u otra** (las dos a la vez pelearían por el puerto 3000). Si prefieres pm2:
+Usa **una u otra** (las dos a la vez pelearían por el puerto 3000; si cambias de una a otra, desactiva la anterior:
+`systemctl disable --now hampiyura-api` o `sudo -u hampiyura pm2 delete all`). Si prefieres pm2:
 
 ```bash
 npm install -g pm2
-sudo -u hampiyura pm2 start /opt/hampiyura/deploy/ecosystem.config.cjs
-sudo -u hampiyura pm2 save                                 # guarda la lista de procesos
-pm2 startup systemd -u hampiyura --hp /opt/hampiyura       # imprime UN comando "sudo env PATH=… pm2 startup …": cópialo y ejecútalo
+sudo -u hampiyura pm2 start /opt/hampiyura/deploy/ecosystem.config.cjs   # arranca el backend (build de producción, dist/main.js)
+sudo -u hampiyura pm2 save                                              # guarda la lista de procesos
+pm2 startup systemd -u hampiyura --hp /opt/hampiyura                     # como root: crea y habilita el servicio pm2-hampiyura
 ```
 
-Ese último comando crea el servicio `pm2-hampiyura` en systemd, que resucita los procesos guardados al
-arrancar el servidor. Operación: `sudo -u hampiyura pm2 status` · `pm2 logs hampiyura-api` (logs en vivo) ·
-`pm2 restart hampiyura-api` · `pm2 stop hampiyura-api` · `pm2 delete hampiyura-api` (ejecuta `pm2 …` como el
-usuario `hampiyura`: `sudo -u hampiyura pm2 …`).
+El último comando, ejecutado como root, escribe `/etc/systemd/system/pm2-hampiyura.service` y lo habilita: al
+arrancar el servidor, systemd lo inicia y pm2 resucita los procesos guardados con `pm2 save`. (Si lo ejecutas como
+otro usuario, pm2 solo imprime un comando `sudo env PATH=… pm2 startup …` que debes copiar y ejecutar como root.)
+Vuelve a hacer `pm2 save` cada vez que cambies la lista de procesos.
+
+Todos los comandos de pm2 se ejecutan **como el usuario `hampiyura`**, que es el dueño del daemon:
+
+| Acción | Comando |
+|---|---|
+| Ver el estado | `sudo -u hampiyura pm2 status` |
+| **Ver logs en vivo** | `sudo -u hampiyura pm2 logs hampiyura-api` (Ctrl+C para salir; los archivos están en `/opt/hampiyura/.pm2/logs/`) |
+| **Reiniciar** | `sudo -u hampiyura pm2 restart hampiyura-api` |
+| **Detener** | `sudo -u hampiyura pm2 stop hampiyura-api` |
+| Volver a iniciar | `sudo -u hampiyura pm2 start hampiyura-api` |
+| Quitarlo de pm2 | `sudo -u hampiyura pm2 delete hampiyura-api && sudo -u hampiyura pm2 save` |
+| Quitar el arranque automático | `pm2 unstartup systemd -u hampiyura --hp /opt/hampiyura` |
 
 ### 5.6 Actualizar a una versión nueva
 
