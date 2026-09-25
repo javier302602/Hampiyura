@@ -1,0 +1,29 @@
+# Base de datos PostgreSQL para HampiYura (desarrollo local o un servidor pequeño).
+# Solo levanta la BD: el backend y el frontend se ejecutan con Node (ver README.md).
+#
+#   docker compose up -d db
+#
+# Los valores por defecto coinciden con hampiyura-api/.env.example. En un servidor real cambia la
+# contraseña (POSTGRES_PASSWORD) y usa la misma en DATABASE_URL del .env del backend.
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: hampiyura-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-hampiyura}
+    ports:
+      # Solo escucha en localhost: la BD no queda expuesta a internet.
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - hampiyura-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-hampiyura}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  hampiyura-db:

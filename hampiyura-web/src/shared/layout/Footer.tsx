@@ -92,10 +92,14 @@ function Footer({ onIrAHome, onIrACatalogo, onIrAMapaCultivo, onIrAPublicaciones
 
         <div className="site-footer-bottom">
           <span>© {anio} HampiYura. Fotografía de portada: Wikimedia Commons.</span>
-          <details className="site-footer-dev">
-            <summary>Modo desarrollo: iniciar sesión con un token JWT</summary>
-            <div style={{ marginTop: 'var(--space-2)' }}><SessionBar /></div>
-          </details>
+          {/* Herramienta de desarrollo: solo se incluye en `npm run dev`; el build de producción
+              (import.meta.env.DEV === false) la elimina por completo, no se muestra en un servidor real. */}
+          {import.meta.env.DEV && (
+            <details className="site-footer-dev">
+              <summary>Modo desarrollo: iniciar sesión con un token JWT</summary>
+              <div style={{ marginTop: 'var(--space-2)' }}><SessionBar /></div>
+            </details>
+          )}
         </div>
       </div>
     </footer>

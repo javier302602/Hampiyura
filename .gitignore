@@ -1,13 +1,33 @@
+# --- Dependencias y artefactos de build ---
 node_modules/
 dist/
 build/
+coverage/
+*.tsbuildinfo
+
+# --- Secretos y configuración local (NUNCA subir) ---
 .env
-.env.local
+.env.*
+!.env.example
+
+# --- Datos generados en tiempo de ejecución ---
 *.log
-.DS_Store
-Thumbs.db
+# Fotos subidas por los usuarios: se generan en el servidor, no van al repo (se conserva la carpeta vacía).
 hampiyura-api/uploads/*
 !hampiyura-api/uploads/.gitkeep
+
+# --- Bases de datos locales ---
+*.sqlite
+*.sqlite3
+*.db
+
+# --- Editor / sistema operativo ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# --- Herramientas y evidencias locales de desarrollo ---
+.claude/
 hampiyura-web/scratch-*.cjs
 capturas-identidad-visual/
-
