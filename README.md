@@ -9,7 +9,7 @@ de validación por especialistas para todo lo que la comunidad propone.
 | Backend (API REST) | [`hampiyura-api/`](hampiyura-api) | Node.js + TypeScript, Express 5, Prisma, PostgreSQL, arquitectura hexagonal |
 | Frontend (SPA) | [`hampiyura-web/`](hampiyura-web) | React 19 + TypeScript + Vite, React Router, Leaflet |
 | Base de datos | [`docker-compose.yml`](docker-compose.yml) | PostgreSQL 16 (opcional vía Docker) |
-| Ejemplo de nginx | [`deploy/nginx.conf.example`](deploy/nginx.conf.example) | Servir el frontend y reenviar `/api` |
+| Despliegue permanente | [`deploy/`](deploy) | `hampiyura-api.service` (systemd), `ecosystem.config.cjs` (pm2), `nginx.conf.example`, `update.sh` |
 | Documentación de diseño | [`docs/`](docs) | Arquitectura, requisitos, actas |
 
 ---
@@ -257,7 +257,8 @@ sudo /opt/hampiyura/deploy/update.sh
 
 Hace `git pull`, `npm ci` + migraciones + build del backend, `npm ci` + build del frontend (nginx ya lo sirve
 desde `dist/`, no hay que copiar nada) y reinicia el backend. Con pm2:
-`sudo RESTART_CMD="runuser -u hampiyura -- pm2 restart hampiyura-api" /opt/hampiyura/deploy/update.sh`.
+`sudo RESTART_CMD="sudo -u hampiyura pm2 restart hampiyura-api" /opt/hampiyura/deploy/update.sh`.
+Tras el reinicio el backend tarda ~1 s en volver a escuchar: si haces `curl` justo al terminar y da error, repítelo.
 
 ### 5.7 Notas y checklist antes de exponerlo
 
@@ -271,13 +272,24 @@ desde `dist/`, no hay que copiar nada) y reinicia el backend. Con pm2:
 - [ ] Quita `SEED_ADMIN_PASSWORD` del entorno tras el primer seed y cambia la clave del admin.
 - El backend no incluye *rate limiting* ni `helmet`; si lo expones a mucho tráfico, ponlos delante (nginx `limit_req`) o añádelos.
 
-### 5.8 Cómo se verificó que sobrevive
+### 5.8 Cómo se verificó que sobrevive (y hasta dónde)
 
-Probado en un Debian 12 con systemd real (PostgreSQL, nginx y el backend como servicios), siguiendo esta sección
-tal cual: (1) el backend responde tras cerrar la sesión que lo arrancó; (2) tras matar el proceso con `kill -9`
-systemd lo vuelve a levantar en ~3 s con otro PID; (3) tras **reiniciar el servidor completo** PostgreSQL, nginx y
-`hampiyura-api` vuelven solos y la app responde sin intervención manual; (4) lo mismo con pm2
-(`pm2 save` + `pm2 startup`); (5) `deploy/update.sh` actualiza y reinicia sin dejar archivos de root.
+Probado en un **Debian 12 con systemd real como PID 1** (contenedor privilegiado de Docker: PostgreSQL 15, nginx,
+Node 22), aplicando las secciones 5.1–5.6 tal cual (única diferencia: `git clone` desde una copia local del repo).
+
+| Comprobación | Resultado |
+|---|---|
+| El backend no depende de ninguna sesión de terminal/SSH | Su proceso cuelga de systemd (PPID 1, cgroup `system.slice`), 0 sesiones de login abiertas, y responde desde fuera del servidor |
+| **Reinicio completo del servidor** (apagado y arranque completos de systemd, sin ejecutar nada después) | PostgreSQL, nginx y `hampiyura-api` vuelven solos (`enabled`); la API responde 200 a los **6 s**; datos (usuarios, categorías) y fotos subidas intactos |
+| Lo mismo con **pm2** (`pm2 save` + `pm2 startup`) | Tras reiniciar, el servicio `pm2-hampiyura` resucita el backend (padre: el daemon de pm2); API 200 a los 4 s |
+| `kill -9` al proceso | systemd lo relanza con otro PID en ~3 s (pm2: en ~5 s) |
+| Postgres caído con el backend en marcha | El backend sigue vivo (responde error) y se recupera solo al volver la base, sin reiniciarlo |
+| Subida de fotos bajo el sandbox de la unidad | Se guarda en `uploads/` y nginx la sirve; fuera de `uploads/` el sistema es de solo lectura |
+| `update.sh` (systemd y pm2) | Trae commits nuevos con `git pull`, migra, compila y reinicia; no deja archivos de root en el proyecto |
+
+**Límites honestos:** no fue un VPS físico ni una conexión SSH real (se comprobó que el proceso es independiente de
+cualquier sesión), y el "reinicio" es el de un contenedor cuyo PID 1 es systemd — ejercita el apagado y el arranque
+completos de todos los servicios, pero no un corte de energía ni el firmware/red de tu proveedor.
 
 ---
 
@@ -340,7 +352,7 @@ Hampiyura/
 │  ├─ prisma/              schema.prisma, migraciones y seed.ts
 │  └─ uploads/             fotos subidas (no versionadas)
 ├─ hampiyura-web/          Frontend (src/modules/mXX-… por módulo, src/shared, src/styles)
-├─ deploy/nginx.conf.example
+├─ deploy/                 unidad systemd, alternativa pm2, nginx y script de actualización
 ├─ docker-compose.yml      PostgreSQL
 └─ docs/                   Arquitectura hexagonal, requisitos, actas de entrevistas
 ```

@@ -8,7 +8,7 @@
 # reinicio usa `sudo systemctl restart hampiyura-api`.
 #
 # RESTART_CMD sustituye el comando de reinicio; por ejemplo con pm2:
-#   sudo RESTART_CMD="runuser -u hampiyura -- pm2 restart hampiyura-api" /opt/hampiyura/deploy/update.sh
+#   sudo RESTART_CMD="sudo -u hampiyura pm2 restart hampiyura-api" /opt/hampiyura/deploy/update.sh
 set -euo pipefail
 RAIZ="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
