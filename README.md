@@ -180,7 +180,8 @@ Añade HTTPS con [certbot](https://certbot.eff.org).
      esa cuenta (queda `Activo`), o llama a `PATCH /api/admin/usuarios/:id/reactivar`.
    - *Recuperar una contraseña:* leer el token en la base y pasarle el enlace `/m01-cuentas/restablecer?token=…`
      al usuario (válido 15 min):
-     `SELECT token FROM "TokenAccion" WHERE tipo = 'Recuperacion' AND usado = false ORDER BY expiracion DESC LIMIT 1;`
+     `SELECT token FROM "TokenAccion" WHERE tipo = 'RecuperacionContrasena' AND usado = false ORDER BY expiracion DESC LIMIT 1;`
+     (con Docker: `docker exec -it hampiyura-db psql -U postgres -d hampiyura -c "<la consulta>"`)
    - Las cuentas **personales** no necesitan activación: quedan activas al registrarse.
 2. **Mapas y geocodificación** usan servicios públicos gratuitos y sin clave: teselas de
    [OpenTopoMap](https://opentopomap.org) y búsqueda/geocodificación inversa de
