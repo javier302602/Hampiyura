@@ -36,8 +36,9 @@
   --jungle-1:#0f2f26;
   --jungle-2:#1e5c46;
   --water-accent:#2f7ba8;
-  --hero-scrim:rgba(244,241,232,.9);
-  --hero-photo-overlay:rgba(244,241,232,.18);
+  --hero-scrim:rgba(244,241,232,.8);
+  --hero-scrim-narrow:rgba(244,241,232,.86);
+  --hero-photo-overlay:rgba(244,241,232,.04);
   --hero-photo:url("/img/hero-dosel-amazonico.jpg");
   --auth-photo:url("/img/auth-rio-ucayali.jpg");
   --hero-pattern:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%20viewBox%3D'0%200%20160%20160'%3E%3Cg%20fill%3D'%230f2f26'%20fill-opacity%3D'0.16'%3E%3Cpath%20d%3D'M34%2C14%20C16%2C34%2016%2C64%2034%2C90%20C52%2C64%2052%2C34%2034%2C14%20Z'%2F%3E%3Cpath%20d%3D'M34%2C14%20L34%2C90'%20stroke%3D'%230f2f26'%20stroke-opacity%3D'0.16'%20stroke-width%3D'1.5'%20fill%3D'none'%2F%3E%3Cpath%20d%3D'M118%2C40%20C100%2C58%20100%2C84%20118%2C106%20C136%2C84%20136%2C58%20118%2C40%20Z'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M118%2C40%20L118%2C106'%20stroke%3D'%230f2f26'%20stroke-opacity%3D'0.16'%20stroke-width%3D'1.5'%20fill%3D'none'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M66%2C110%20C50%2C128%2050%2C150%2066%2C168%20C82%2C150%2082%2C128%2066%2C110%20Z'%20transform%3D'rotate(-18%2066%20139)'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
@@ -106,8 +107,9 @@
     --jungle-1:#071813;
     --jungle-2:#123a2c;
     --water-accent:#3f8fc2;
-    --hero-scrim:rgba(15,38,32,.9);
-    --hero-photo-overlay:rgba(15,38,32,.22);
+    --hero-scrim:rgba(15,38,32,.82);
+  --hero-scrim-narrow:rgba(15,38,32,.86);
+    --hero-photo-overlay:rgba(15,38,32,.1);
     --hero-pattern:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%20viewBox%3D'0%200%20160%20160'%3E%3Cg%20fill%3D'%236fae7f'%20fill-opacity%3D'0.14'%3E%3Cpath%20d%3D'M34%2C14%20C16%2C34%2016%2C64%2034%2C90%20C52%2C64%2052%2C34%2034%2C14%20Z'%2F%3E%3Cpath%20d%3D'M34%2C14%20L34%2C90'%20stroke%3D'%236fae7f'%20stroke-opacity%3D'0.14'%20stroke-width%3D'1.5'%20fill%3D'none'%2F%3E%3Cpath%20d%3D'M118%2C40%20C100%2C58%20100%2C84%20118%2C106%20C136%2C84%20136%2C58%20118%2C40%20Z'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M118%2C40%20L118%2C106'%20stroke%3D'%236fae7f'%20stroke-opacity%3D'0.14'%20stroke-width%3D'1.5'%20fill%3D'none'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M66%2C110%20C50%2C128%2050%2C150%2066%2C168%20C82%2C150%2082%2C128%2066%2C110%20Z'%20transform%3D'rotate(-18%2066%20139)'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
     --ambient-pattern:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%20viewBox%3D'0%200%20160%20160'%3E%3Cg%20fill%3D'%236fae7f'%20fill-opacity%3D'0.06'%3E%3Cpath%20d%3D'M34%2C14%20C16%2C34%2016%2C64%2034%2C90%20C52%2C64%2052%2C34%2034%2C14%20Z'%2F%3E%3Cpath%20d%3D'M34%2C14%20L34%2C90'%20stroke%3D'%236fae7f'%20stroke-opacity%3D'0.06'%20stroke-width%3D'1.5'%20fill%3D'none'%2F%3E%3Cpath%20d%3D'M118%2C40%20C100%2C58%20100%2C84%20118%2C106%20C136%2C84%20136%2C58%20118%2C40%20Z'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M118%2C40%20L118%2C106'%20stroke%3D'%236fae7f'%20stroke-opacity%3D'0.14'%20stroke-width%3D'1.5'%20fill%3D'none'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M66%2C110%20C50%2C128%2050%2C150%2066%2C168%20C82%2C150%2082%2C128%2066%2C110%20Z'%20transform%3D'rotate(-18%2066%20139)'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
 
@@ -138,8 +140,9 @@
   --jungle-1:#071813;
   --jungle-2:#123a2c;
   --water-accent:#3f8fc2;
-  --hero-scrim:rgba(15,38,32,.9);
-  --hero-photo-overlay:rgba(15,38,32,.22);
+  --hero-scrim:rgba(15,38,32,.82);
+  --hero-scrim-narrow:rgba(15,38,32,.86);
+  --hero-photo-overlay:rgba(15,38,32,.1);
   --hero-pattern:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%20viewBox%3D'0%200%20160%20160'%3E%3Cg%20fill%3D'%236fae7f'%20fill-opacity%3D'0.14'%3E%3Cpath%20d%3D'M34%2C14%20C16%2C34%2016%2C64%2034%2C90%20C52%2C64%2052%2C34%2034%2C14%20Z'%2F%3E%3Cpath%20d%3D'M34%2C14%20L34%2C90'%20stroke%3D'%236fae7f'%20stroke-opacity%3D'0.14'%20stroke-width%3D'1.5'%20fill%3D'none'%2F%3E%3Cpath%20d%3D'M118%2C40%20C100%2C58%20100%2C84%20118%2C106%20C136%2C84%20136%2C58%20118%2C40%20Z'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M118%2C40%20L118%2C106'%20stroke%3D'%236fae7f'%20stroke-opacity%3D'0.14'%20stroke-width%3D'1.5'%20fill%3D'none'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M66%2C110%20C50%2C128%2050%2C150%2066%2C168%20C82%2C150%2082%2C128%2066%2C110%20Z'%20transform%3D'rotate(-18%2066%20139)'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
   --ambient-pattern:url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'160'%20height%3D'160'%20viewBox%3D'0%200%20160%20160'%3E%3Cg%20fill%3D'%236fae7f'%20fill-opacity%3D'0.06'%3E%3Cpath%20d%3D'M34%2C14%20C16%2C34%2016%2C64%2034%2C90%20C52%2C64%2052%2C34%2034%2C14%20Z'%2F%3E%3Cpath%20d%3D'M34%2C14%20L34%2C90'%20stroke%3D'%236fae7f'%20stroke-opacity%3D'0.06'%20stroke-width%3D'1.5'%20fill%3D'none'%2F%3E%3Cpath%20d%3D'M118%2C40%20C100%2C58%20100%2C84%20118%2C106%20C136%2C84%20136%2C58%20118%2C40%20Z'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M118%2C40%20L118%2C106'%20stroke%3D'%236fae7f'%20stroke-opacity%3D'0.14'%20stroke-width%3D'1.5'%20fill%3D'none'%20transform%3D'rotate(20%20118%2073)'%2F%3E%3Cpath%20d%3D'M66%2C110%20C50%2C128%2050%2C150%2066%2C168%20C82%2C150%2082%2C128%2066%2C110%20Z'%20transform%3D'rotate(-18%2066%20139)'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
 

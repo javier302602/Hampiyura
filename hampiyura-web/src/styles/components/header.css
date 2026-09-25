@@ -14,7 +14,7 @@
      de 1200 no dependía del viewport (nunca escalaba), así que el buscador quedaba invisible incluso
      a 1920px de ancho -- no se notaba en la verificación de Ronda 4 porque esa solo chequeaba que
      la PÁGINA no tuviera scroll horizontal, no que cada elemento conservara un ancho usable. */
-  max-width:1700px;margin:0 auto;
+  max-width:2000px;margin:0 auto;
   padding:var(--space-3) var(--space-6);
   display:flex;align-items:center;gap:var(--space-5);
 }
@@ -162,7 +162,7 @@
    ancho usable (>200px, medido) sin comprimirse a la nada. Por debajo de eso se usa el drawer móvil,
    que ya contiene exactamente lo mismo (nav, buscador, CTAs, toggle de tema, sesión) y está
    verificado aparte. */
-@media (max-width:1600px){
+@media (max-width:1860px){
   .site-header-nav,.site-header-search-group,.site-header-actions-desktop{display:none}
   .site-header-hamburger{display:inline-flex}
 }
