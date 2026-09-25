@@ -70,7 +70,7 @@ function HomePage({ onIrACatalogo, onIrAPublicaciones, onSeleccionarPlanta, onSe
             </Button>
           </div>
         </div>
-        <p className="hero-credit">Fotografía: Wikimedia Commons · Sangre de grado (Croton lechleri)</p>
+        <p className="hero-credit">Fotografía: Ivan Mlinaric, dosel amazónico cerca de Puerto Maldonado · CC BY 2.0 · Wikimedia Commons</p>
       </div>
 
       <section className="home-section" id="conocer-hampiyura">

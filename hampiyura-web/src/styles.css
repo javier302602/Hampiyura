@@ -85,7 +85,7 @@ p{font-size:1.1rem;line-height:1.6;max-width:620px;color:var(--color-text)}
   min-height:clamp(440px,58vh,620px);
   display:flex;flex-direction:column;justify-content:center;
   background-image:
-      linear-gradient(90deg,var(--hero-scrim) 0%,var(--hero-scrim) 43%,var(--hero-photo-overlay) 100%),
+      linear-gradient(90deg,var(--hero-scrim) 0%,var(--hero-scrim) var(--hero-scrim-stop,58%),var(--hero-photo-overlay) 100%),
       var(--hero-photo),
     var(--hero-pattern),
     radial-gradient(1000px 480px at 12% -25%, var(--jungle-2) 0%, transparent 60%),
@@ -94,10 +94,16 @@ p{font-size:1.1rem;line-height:1.6;max-width:620px;color:var(--color-text)}
   background-size:auto,cover,auto,auto,auto;
   background-repeat:no-repeat,no-repeat,repeat,no-repeat,no-repeat;
 }
+/* En pantallas angostas el texto ocupa todo el ancho: el velo cubre todo (medido: a 390px el subtítulo caía a 4.9:1 con el degradado normal). */
+@media (max-width:720px){.hero{--hero-scrim-stop:100%}}
 .hero-contenido{max-width:650px;position:relative;z-index:1}
+/* Sobre la foto el eyebrow en terracota no llega ni a AA (3.75:1 medido en píxeles): texto normal + barra terracota como acento. */
+.hero .eyebrow{color:var(--color-text);display:flex;align-items:center;gap:.7em}
+.hero .eyebrow::before{content:"";width:2.4em;height:3px;border-radius:2px;background:var(--color-accent)}
 .hero-contenido p:not(.eyebrow){font-size:clamp(1.1rem,2vw,1.35rem);max-width:560px}
 .hero-cta-row{display:flex;gap:var(--space-3);align-items:center;flex-wrap:wrap;position:relative;z-index:1;margin-top:var(--space-5)}
-.hero-credit{font-size:var(--font-size-caption);color:var(--color-text-muted);margin:var(--space-3) 0 0;position:relative;z-index:1}
+/* El crédito va sobre la foto (no sobre el velo): chip con fondo propio para que el contraste no dependa de qué parte de la foto le toque. */
+.hero-credit{font-size:var(--font-size-caption);color:var(--color-text-muted);margin:var(--space-3) 0 0;position:relative;z-index:1;width:fit-content;max-width:100%;padding:.25em .7em;border-radius:var(--radius-pill);background:color-mix(in srgb,var(--color-bg) 92%,transparent)}
 
 .tarjeta-clicable{cursor:pointer;transition:transform .1s ease,box-shadow .1s ease}
 .tarjeta-clicable:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.08)}

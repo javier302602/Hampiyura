@@ -12,7 +12,7 @@ interface Props {
 // Login/Registro (y por extensión Recuperar/Activar/Restablecer, misma familia) vivían como un
 // <h2> + .formulario suelto, sin nada de la identidad visual que ya tiene Home (foto real, franja
 // de marca) -- ver auditoría ronda 3, punto 5. En vez de reinventar el hero, este layout reusa el
-// mismo token de foto (--hero-photo, Sangre de grado) en un panel lateral: columna de contenido a
+// token de foto propio (--auth-photo, río Ucayali) en un panel lateral: columna de contenido a
 // la izquierda, foto+cita a la derecha. En mobile la foto se oculta (ver auth.css) para no robarle
 // espacio al formulario, que es lo que la persona vino a usar.
 function AuthLayout({ eyebrow, title, description, children, footer }: Props) {
@@ -29,7 +29,7 @@ function AuthLayout({ eyebrow, title, description, children, footer }: Props) {
       <div className="auth-photo" aria-hidden="true">
         <div className="auth-photo-quote">
           <p>&ldquo;Cada planta documentada es conocimiento tradicional que se preserva para la comunidad.&rdquo;</p>
-          <span className="auth-photo-credit">Sangre de grado (Croton lechleri) · Wikimedia Commons</span>
+          <span className="auth-photo-credit">Río Ucayali, Amazonía central del Perú · NASA (dominio público)</span>
         </div>
       </div>
     </div>
