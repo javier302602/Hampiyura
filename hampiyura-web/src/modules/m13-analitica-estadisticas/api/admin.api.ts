@@ -1,9 +1,14 @@
 import { apiRequest } from '../../../shared/api/client';
 
+// Mismo contrato que devuelve GET /admin/panel (ObtenerPanelAdminUseCase) -- antes el frontend solo
+// declaraba y mostraba tres de estos campos.
 export interface PanelAdmin {
   validacionesPendientes: number;
   usuariosRegistrados: number;
+  usuariosActivos: number;
   plantasPublicadas: number;
+  publicacionesRealizadas: number;
+  reportes: { pendientes: number; revisados: number; desestimados: number };
 }
 
 export function obtenerPanel(): Promise<PanelAdmin> { return apiRequest<PanelAdmin>('/admin/panel'); }

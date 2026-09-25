@@ -18,7 +18,15 @@ function PanelAdminPage() {
       <div className="cards">
         <article><strong>{panel.validacionesPendientes}</strong><span>Validaciones pendientes</span></article>
         <article><strong>{panel.usuariosRegistrados}</strong><span>Usuarios registrados</span></article>
+        <article><strong>{panel.usuariosActivos}</strong><span>Usuarios activos</span></article>
         <article><strong>{panel.plantasPublicadas}</strong><span>Plantas publicadas</span></article>
+        <article><strong>{panel.publicacionesRealizadas}</strong><span>Publicaciones realizadas</span></article>
+      </div>
+      <h3 style={{ marginTop: '1.5rem' }}>Reportes de contenido</h3>
+      <div className="cards">
+        <article><strong>{panel.reportes.pendientes}</strong><span>Reportes pendientes</span></article>
+        <article><strong>{panel.reportes.revisados}</strong><span>Reportes revisados</span></article>
+        <article><strong>{panel.reportes.desestimados}</strong><span>Reportes desestimados</span></article>
       </div>
     </section>
   );

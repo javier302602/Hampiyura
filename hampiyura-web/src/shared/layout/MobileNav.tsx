@@ -1,4 +1,4 @@
-import { Bell, FlaskConical, Home, Inbox, LayoutDashboard, LogOut, MessageSquare, Package, Sprout, TreeDeciduous, UserRound, Users, X } from 'lucide-react';
+import { Bell, Flag, FlaskConical, Home, Inbox, LayoutDashboard, LogOut, MessageSquare, Package, Sprout, TreeDeciduous, UserRound, Users, X } from 'lucide-react';
 import type { Session } from '../auth/session';
 import { clearSession, esAdministrador, esValidador } from '../auth/session';
 import SearchBar from '../../modules/m12-busqueda-recomendaciones/components/SearchBar';
@@ -55,6 +55,8 @@ function MobileNav({ sesion, puedeGestionar, onCerrar, ...nav }: Props) {
               <>
                 <button onClick={() => ir(nav.onIrABandejaValidacion)}><FlaskConical size={17} aria-hidden="true" /> Bandeja de validación</button>
                 <button onClick={() => ir(nav.onIrABandejaConsultas)}><Inbox size={17} aria-hidden="true" /> Bandeja de consultas</button>
+                <button onClick={() => ir(nav.onIrABandejaReportes)}><Flag size={17} aria-hidden="true" /> Bandeja de reportes</button>
+                <button onClick={() => ir(nav.onIrARegistrarFichaCultivo)}><Sprout size={17} aria-hidden="true" /> Registrar ficha de cultivo</button>
               </>
             )}
             {sesion && esAdministrador(sesion.rol) && (

@@ -11,6 +11,10 @@ export async function listarPendientes(_req:Request,res:Response){const pendient
 
 const reportarSchema=z.object({tipoEntidad:z.string().min(1),entidadId:z.string().min(1),motivo:z.string().min(1)});
 export async function reportar(req:Request,res:Response){const input=reportarSchema.parse(req.body); const autorId=auth(req).id; const reporte=await container.reportar.ejecutar({...input,autorId}); res.status(201).json(reporte.props);}
-export async function listarReportes(_req:Request,res:Response){const reportes=await container.listarReportesPendientes.ejecutar(); res.json(reportes.map(r=>r.props));}
+// ?estado=Pendiente|Revisado|Desestimado filtra; sin parámetro devuelve todos (antes solo Pendiente).
+export async function listarReportes(req:Request,res:Response){
+  const estado=req.query.estado===undefined?undefined:z.enum(['Pendiente','Revisado','Desestimado']).parse(req.query.estado);
+  res.json(await container.listarReportes.ejecutar(estado));
+}
 const actualizarReporteSchema=z.object({estado:z.enum(['Revisado','Desestimado'])});
 export async function actualizarEstadoReporte(req:Request,res:Response){const input=actualizarReporteSchema.parse(req.body); const reporte=await container.actualizarEstadoReporte.ejecutar(id(req),input.estado); res.json(reporte.props);}

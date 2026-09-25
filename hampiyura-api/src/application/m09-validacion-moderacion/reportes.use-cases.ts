@@ -3,6 +3,10 @@ import { Reporte } from '../../domain/entities/reporte.entity';
 import { ReportarContenidoInput, ReportarContenidoPort } from '../../domain/ports/in/m09-validacion/reportar-contenido.port';
 import { ListarReportesPendientesPort } from '../../domain/ports/in/m09-validacion/listar-reportes-pendientes.port';
 import { ActualizarEstadoReportePort, AccionReporte } from '../../domain/ports/in/m09-validacion/actualizar-estado-reporte.port';
+import { ListarReportesPort, ReporteVisible } from '../../domain/ports/in/m09-validacion/listar-reportes.port';
+import { EstadoReporte } from '../../domain/value-objects/estado-reporte.vo';
+import { ComentarioRepositoryPort } from '../../domain/ports/out/comentario.repository.port';
+import { UsuarioRepositoryPort } from '../../domain/ports/out/usuario.repository.port';
 import { ReporteRepositoryPort } from '../../domain/ports/out/reporte.repository.port';
 import { NotFoundError, ValidationError } from '../../domain/errors/domain.errors';
 
@@ -22,6 +26,27 @@ export class ReportarContenidoUseCase implements ReportarContenidoPort {
 export class ListarReportesPendientesUseCase implements ListarReportesPendientesPort {
   constructor(private readonly repo:ReporteRepositoryPort) {}
   async ejecutar():Promise<Reporte[]> { return this.repo.listarPendientes(); }
+}
+// Bandeja de reportes: además del reporte crudo resuelve quién reportó y, para comentarios (el único
+// tipo que hoy se puede reportar desde la interfaz), el texto y la publicación donde está -- sin
+// eso el validador solo vería un UUID.
+export class ListarReportesUseCase implements ListarReportesPort {
+  constructor(private readonly repo:ReporteRepositoryPort, private readonly usuarios:UsuarioRepositoryPort, private readonly comentarios:ComentarioRepositoryPort) {}
+  async ejecutar(estado?:EstadoReporte):Promise<ReporteVisible[]> {
+    const reportes = await this.repo.listarPorEstado(estado);
+    const resultado:ReporteVisible[] = [];
+    for (const r of reportes) {
+      const autor = await this.usuarios.buscarPorId(r.props.autorId);
+      const comentario = r.props.tipoEntidad === 'Comentario' ? await this.comentarios.buscarPorId(r.props.entidadId) : null;
+      const autorContenido = comentario ? await this.usuarios.buscarPorId(comentario.props.autorId) : null;
+      resultado.push({
+        ...r.props,
+        reportadoPor: autor?.props.nombre ?? r.props.autorId,
+        contenido: comentario ? { texto: comentario.props.texto, publicacionId: comentario.props.publicacionId, autorNombre: autorContenido?.props.nombre ?? comentario.props.autorId } : null,
+      });
+    }
+    return resultado;
+  }
 }
 export class ActualizarEstadoReporteUseCase implements ActualizarEstadoReportePort {
   constructor(private readonly repo:ReporteRepositoryPort) {}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ChevronDown, FlaskConical, Inbox, LayoutDashboard, Leaf, Menu, Sprout, TreeDeciduous, Users } from 'lucide-react';
+import { ChevronDown, Flag, FlaskConical, Inbox, LayoutDashboard, Leaf, Menu, Sprout, TreeDeciduous, Users } from 'lucide-react';
 import { esAdministrador, esValidador, getSession, suscribirseACambiosDeSesion } from '../auth/session';
 import UserMenu from '../../modules/m01-cuentas/components/UserMenu';
 import SearchBar from '../../modules/m12-busqueda-recomendaciones/components/SearchBar';
@@ -25,6 +25,8 @@ export interface NavCallbacks {
   onIrAPublicarProducto: () => void;
   onIrABandejaValidacion: () => void;
   onIrABandejaConsultas: () => void;
+  onIrABandejaReportes: () => void;
+  onIrARegistrarFichaCultivo: () => void;
   onIrAPanelAdmin: () => void;
   onIrAUsuariosAdmin: () => void;
   onIrAHome: () => void;
@@ -76,6 +78,16 @@ function Header(props: NavCallbacks) {
                   {sesion && esValidador(sesion.rol) && (
                     <button role="menuitem" onClick={() => { gestion.setAbierto(false); props.onIrABandejaConsultas(); }}>
                       <Inbox size={16} aria-hidden="true" /> Bandeja de consultas
+                    </button>
+                  )}
+                  {sesion && esValidador(sesion.rol) && (
+                    <button role="menuitem" onClick={() => { gestion.setAbierto(false); props.onIrABandejaReportes(); }}>
+                      <Flag size={16} aria-hidden="true" /> Bandeja de reportes
+                    </button>
+                  )}
+                  {sesion && esValidador(sesion.rol) && (
+                    <button role="menuitem" onClick={() => { gestion.setAbierto(false); props.onIrARegistrarFichaCultivo(); }}>
+                      <Sprout size={16} aria-hidden="true" /> Registrar ficha de cultivo
                     </button>
                   )}
                   {sesion && esAdministrador(sesion.rol) && (

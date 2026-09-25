@@ -22,6 +22,8 @@ import EnviarConsultaPage from './modules/m08-consultas/pages/EnviarConsultaPage
 import MisConsultasPage from './modules/m08-consultas/pages/MisConsultasPage';
 import ConsultaDetailPage from './modules/m08-consultas/pages/ConsultaDetailPage';
 import BandejaConsultasPage from './modules/m08-consultas/pages/BandejaConsultasPage';
+import BandejaReportesPage from './modules/m09-validacion-moderacion/pages/BandejaReportesPage';
+import RegistrarFichaCultivoPage from './modules/m03-cultivo/pages/RegistrarFichaCultivoPage';
 import BandejaValidacionPage from './modules/m09-validacion-moderacion/pages/BandejaValidacionPage';
 import PanelAdminPage from './modules/m13-analitica-estadisticas/pages/PanelAdminPage';
 import UsuariosAdminPage from './modules/m13-analitica-estadisticas/pages/UsuariosAdminPage';
@@ -31,8 +33,8 @@ import { esAdministrador, esValidador } from './shared/auth/session';
 import type { FiltrosBusqueda } from './modules/m12-busqueda-recomendaciones/api/busqueda.api';
 
 const RUTAS = {
-  home: '/', catalogo: '/m02-catalogo-plantas', proponerPlanta: '/m02-catalogo-plantas/proponer', mapa: '/m03-cultivo/mapa', usos: '/m04-usos-partes',
-  publicaciones: '/m06-publicaciones', consultas: '/m08-consultas', validacion: '/m09-validacion-moderacion/bandeja',
+  home: '/', catalogo: '/m02-catalogo-plantas', proponerPlanta: '/m02-catalogo-plantas/proponer', mapa: '/m03-cultivo/mapa', fichaCultivoNueva: '/m03-cultivo/nueva', usos: '/m04-usos-partes',
+  publicaciones: '/m06-publicaciones', consultas: '/m08-consultas', validacion: '/m09-validacion-moderacion/bandeja', reportes: '/m09-validacion-moderacion/reportes',
   productos: '/m11-productos-emprendimientos', busqueda: '/m12-busqueda-recomendaciones/resultados',
   admin: '/m13-analitica-estadisticas/panel', adminUsuarios: '/m13-analitica-estadisticas/usuarios',
   notificaciones: '/m14-notificaciones', cuentas: '/m01-cuentas',
@@ -89,6 +91,8 @@ function App() {
       onIrAPublicarProducto={() => navigate(`${RUTAS.productos}/nuevo`)}
       onIrABandejaValidacion={() => navigate(RUTAS.validacion)}
       onIrABandejaConsultas={() => navigate(`${RUTAS.consultas}/bandeja`)}
+      onIrABandejaReportes={() => navigate(RUTAS.reportes)}
+      onIrARegistrarFichaCultivo={() => navigate(RUTAS.fichaCultivoNueva)}
       onIrAPanelAdmin={() => navigate(RUTAS.admin)}
       onIrAUsuariosAdmin={() => navigate(RUTAS.adminUsuarios)}
       onIrAHome={() => navigate(RUTAS.home)}
@@ -114,6 +118,7 @@ function App() {
         <Route path={`${RUTAS.catalogo}/:plantaId`} element={<RutaPlanta />} />
         <Route path={RUTAS.usos} element={<UsosPage />} />
         <Route path={RUTAS.mapa} element={<MapaCultivoPage onSeleccionarPlanta={(id) => navigate(`${RUTAS.catalogo}/${encodeURIComponent(id)}`)} />} />
+        <Route path={RUTAS.fichaCultivoNueva} element={<RegistrarFichaCultivoPage onVolver={() => navigate(RUTAS.mapa)} onVerMapa={() => navigate(RUTAS.mapa)} />} />
         <Route path={RUTAS.publicaciones} element={<PublicacionesFeedPage onSeleccionar={(id) => navigate(`${RUTAS.publicaciones}/${encodeURIComponent(id)}`)} />} />
         <Route path={`${RUTAS.publicaciones}/:publicacionId`} element={<RutaPublicacion />} />
         <Route path={RUTAS.productos} element={<ProductosDirectorioPage onSeleccionar={(id) => navigate(`${RUTAS.productos}/${encodeURIComponent(id)}`)} />} />
@@ -132,6 +137,7 @@ function App() {
         <Route path={`${RUTAS.consultas}/bandeja`} element={<RequireRole permitido={esValidador}><BandejaConsultasPage onSeleccionar={(id) => navigate(`${RUTAS.consultas}/${encodeURIComponent(id)}`)} /></RequireRole>} />
         <Route path={`${RUTAS.consultas}/:consultaId`} element={<RutaConsulta />} />
         <Route path={RUTAS.validacion} element={<RequireRole permitido={esValidador}><BandejaValidacionPage /></RequireRole>} />
+        <Route path={RUTAS.reportes} element={<RequireRole permitido={esValidador}><BandejaReportesPage onVerPublicacion={(id) => navigate(`${RUTAS.publicaciones}/${encodeURIComponent(id)}`)} /></RequireRole>} />
         <Route path={RUTAS.admin} element={<RequireRole permitido={esAdministrador}><PanelAdminPage /></RequireRole>} />
         <Route path={RUTAS.adminUsuarios} element={<RequireRole permitido={esAdministrador}><UsuariosAdminPage /></RequireRole>} />
         <Route path="*" element={<Navigate to={RUTAS.home} replace />} />

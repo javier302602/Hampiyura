@@ -110,6 +110,7 @@ export class PrismaReporteRepository implements ReporteRepositoryPort {
   async guardar(r:Reporte){await this.prisma.reporte.create({data:r.props as any});}
   async buscarPorId(id:string){const x=await this.prisma.reporte.findUnique({where:{id}}); return x?new Reporte({...x,estado:x.estado}):null;}
   async listarPendientes(){const xs=await this.prisma.reporte.findMany({where:{estado:'Pendiente'}}); return xs.map(x=>new Reporte({...x,estado:x.estado}));}
+  async listarPorEstado(estado?:'Pendiente'|'Revisado'|'Desestimado'){const xs=await this.prisma.reporte.findMany({where:estado?{estado}:undefined,orderBy:{fecha:'desc'}}); return xs.map(x=>new Reporte({...x,estado:x.estado}));}
   async actualizar(r:Reporte){await this.prisma.reporte.update({where:{id:r.props.id},data:{estado:r.props.estado}});}
   async contarPorEstado(){
     const grupos=await this.prisma.reporte.groupBy({by:['estado'],_count:{estado:true}});

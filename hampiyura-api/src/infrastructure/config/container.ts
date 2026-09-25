@@ -15,7 +15,7 @@ import { ListarMapaCultivoUseCase } from '../../application/m03-cultivo/listar-m
 import { RegistrarUsoUseCase, ListarUsosUseCase } from '../../application/m04-usos-partes/catalogo-usos.use-cases';
 import { RegistrarParteUsoUseCase, ObtenerParteUsoUseCase, ListarPartesUsoUseCase } from '../../application/m04-usos-partes/partes-uso.use-cases';
 import { AprobarContenidoUseCase, ObservarContenidoUseCase, RechazarContenidoUseCase, ListarPendientesUseCase } from '../../application/m09-validacion-moderacion/validacion.use-cases';
-import { ReportarContenidoUseCase, ListarReportesPendientesUseCase, ActualizarEstadoReporteUseCase } from '../../application/m09-validacion-moderacion/reportes.use-cases';
+import { ReportarContenidoUseCase, ListarReportesPendientesUseCase, ListarReportesUseCase, ActualizarEstadoReporteUseCase } from '../../application/m09-validacion-moderacion/reportes.use-cases';
 import { ListarUsuariosUseCase, SuspenderUsuarioUseCase, ReactivarUsuarioUseCase, CambiarRolUsuarioUseCase, EliminarPlantaUseCase, ObtenerPanelAdminUseCase, ObtenerAuditoriaUseCase } from '../../application/m13-analitica-estadisticas/administracion.use-cases';
 import { ListarNotificacionesUseCase, MarcarTodasLeidasUseCase, MarcarLeidaUseCase, EliminarNotificacionUseCase } from '../../application/m14-seguridad-notificaciones/notificaciones.use-cases';
 import { CrearPublicacionUseCase, ObtenerPublicacionUseCase, ListarPublicacionesUseCase, EditarPublicacionUseCase, EliminarPublicacionUseCase, SubirMediaUseCase } from '../../application/m06-publicaciones/publicaciones.use-cases';
@@ -63,6 +63,7 @@ export const container={
   listarPendientes:new ListarPendientesUseCase(validaciones,publicaciones,usuarios,preparaciones,partesUso,productos,estadosConservacion,plantas),
   reportar:new ReportarContenidoUseCase(reportes),
   listarReportesPendientes:new ListarReportesPendientesUseCase(reportes),
+  listarReportes:new ListarReportesUseCase(reportes,usuarios,comentarios),
   actualizarEstadoReporte:new ActualizarEstadoReporteUseCase(reportes),
   listarUsuarios:new ListarUsuariosUseCase(usuarios),
   suspenderUsuario:new SuspenderUsuarioUseCase(usuarios),

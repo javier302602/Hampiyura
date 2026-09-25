@@ -39,3 +39,15 @@
   padding:var(--space-3) var(--space-4);border-radius:var(--radius-md);
   background:var(--color-success-bg);color:var(--color-success);font-size:var(--font-size-small);font-weight:var(--font-weight-medium);
 }
+
+/* Ficha de cultivo (RF-251): fieldset sin marco para poder deshabilitar todo el bloque de una vez
+   (una vez guardada la ficha solo se reintenta la ubicación), y selector de meses con chips. */
+.formulario .form-fieldset-plano{border:none;padding:0;margin:0;min-width:0;display:grid}
+.formulario .meses-fieldset{border:none;padding:0;margin:0;min-width:0}
+.formulario .meses-fieldset legend{font-weight:var(--font-weight-bold);font-size:.95rem;padding:0;margin-bottom:var(--space-2)}
+.formulario .meses-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:var(--space-2)}
+.formulario .mes-chip{display:flex;align-items:center;justify-content:center;gap:.35em;padding:.45em .3em;border:1px solid var(--color-border);border-radius:var(--radius-pill);background:var(--color-surface);color:var(--color-text);font-size:var(--font-size-small);font-weight:var(--font-weight-medium);cursor:pointer;user-select:none}
+.formulario .mes-chip input{width:14px;height:14px;margin:0;padding:0}
+.formulario .mes-chip-activo{background:var(--color-primary-900,var(--color-text));border-color:var(--color-primary-900,var(--color-text));color:var(--color-bg)}
+.formulario .mes-chip:focus-within{outline:2px solid var(--color-accent);outline-offset:2px}
+@media (max-width:520px){.formulario .meses-grid{grid-template-columns:repeat(4,1fr)}}

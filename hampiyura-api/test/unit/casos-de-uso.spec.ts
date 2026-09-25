@@ -4,7 +4,7 @@ import { RegistrarFichaCultivoUseCase } from '../../src/application/m03-cultivo/
 import { ObtenerFichaCultivoUseCase } from '../../src/application/m03-cultivo/obtener-ficha-cultivo.use-case';
 import { ListarFichasCultivoUseCase } from '../../src/application/m03-cultivo/listar-fichas-cultivo.use-case';
 import { AprobarContenidoUseCase, ObservarContenidoUseCase, RechazarContenidoUseCase, ListarPendientesUseCase } from '../../src/application/m09-validacion-moderacion/validacion.use-cases';
-import { ReportarContenidoUseCase, ListarReportesPendientesUseCase, ActualizarEstadoReporteUseCase } from '../../src/application/m09-validacion-moderacion/reportes.use-cases';
+import { ReportarContenidoUseCase, ListarReportesPendientesUseCase, ListarReportesUseCase, ActualizarEstadoReporteUseCase } from '../../src/application/m09-validacion-moderacion/reportes.use-cases';
 import { ListarUsuariosUseCase, SuspenderUsuarioUseCase, ReactivarUsuarioUseCase, EliminarPlantaUseCase, ObtenerPanelAdminUseCase, ObtenerAuditoriaUseCase } from '../../src/application/m13-analitica-estadisticas/administracion.use-cases';
 import { ListarNotificacionesUseCase, MarcarTodasLeidasUseCase, MarcarLeidaUseCase, EliminarNotificacionUseCase } from '../../src/application/m14-seguridad-notificaciones/notificaciones.use-cases';
 import { Notificacion } from '../../src/domain/entities/notificacion.entity';
@@ -376,6 +376,24 @@ describe('M-09 · Reportes (RF-25/RF-26)', () => {
     const repo:any={listarPendientes:jest.fn().mockResolvedValue([new Reporte({id:'r1',...reporteInput,fecha:new Date(),estado:'Pendiente'})])};
     const reportes=await new ListarReportesPendientesUseCase(repo).ejecutar();
     expect(reportes).toHaveLength(1);
+  });
+  test('la bandeja resuelve quién reportó y el texto del comentario reportado, y filtra por estado', async () => {
+    const reporte=new Reporte({id:'r9',tipoEntidad:'Comentario',entidadId:'c1',autorId:'u1',motivo:'Insulto',fecha:new Date(),estado:'Pendiente'});
+    const repo:any={listarPorEstado:jest.fn().mockResolvedValue([reporte])};
+    const usuarios:any={buscarPorId:jest.fn(async (id:string)=>({props:{nombre:id==='u1'?'Ana':'Beto'}}))};
+    const comentarios:any={buscarPorId:jest.fn().mockResolvedValue({props:{texto:'hola',publicacionId:'p1',autorId:'u2'}})};
+    const lista=await new ListarReportesUseCase(repo,usuarios,comentarios).ejecutar('Pendiente');
+    expect(repo.listarPorEstado).toHaveBeenCalledWith('Pendiente');
+    expect(lista[0]).toMatchObject({id:'r9',reportadoPor:'Ana',contenido:{texto:'hola',publicacionId:'p1',autorNombre:'Beto'}});
+  });
+  test('la bandeja deja contenido en null si el reporte no es de un comentario', async () => {
+    const reporte=new Reporte({id:'r8',tipoEntidad:'Planta',entidadId:'x',autorId:'u1',motivo:'Dato erróneo',fecha:new Date(),estado:'Revisado'});
+    const repo:any={listarPorEstado:jest.fn().mockResolvedValue([reporte])};
+    const usuarios:any={buscarPorId:jest.fn().mockResolvedValue({props:{nombre:'Ana'}})};
+    const comentarios:any={buscarPorId:jest.fn()};
+    const lista=await new ListarReportesUseCase(repo,usuarios,comentarios).ejecutar();
+    expect(lista[0].contenido).toBeNull();
+    expect(comentarios.buscarPorId).not.toHaveBeenCalled();
   });
   test('marca un reporte como revisado', async () => {
     const reporte=new Reporte({id:'r1',...reporteInput,fecha:new Date(),estado:'Pendiente'});

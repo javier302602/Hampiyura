@@ -8,10 +8,10 @@ import { AuthenticatedRequest } from '../middlewares/role.middleware';
 function auth(req:Request) { return (req as AuthenticatedRequest).user; }
 
 const mes=z.number().int().min(1).max(12);
-const schema=z.object({plantaId:z.string().min(1),autorId:z.string().min(1),zonaCultivo:z.string(),condicionesClimaticas:z.string(),tipoSuelo:z.string(),altitudAprox:z.string(),aguaNecesaria:z.string(),exposicionSolar:z.string(),epocaSiembra:z.string(),metodoPropagacion:z.string(),tiempoCrecimiento:z.string(),cuidados:z.string(),plagasComunes:z.string(),epocaCosecha:z.string(),recomendacionesSobreexplotacion:z.string(),consejosRecoleccion:z.string().min(1),mesesSiembra:z.array(mes),mesesCosecha:z.array(mes),fuente:z.string().min(1)});
+const schema=z.object({plantaId:z.string().min(1),zonaCultivo:z.string(),condicionesClimaticas:z.string(),tipoSuelo:z.string(),altitudAprox:z.string(),aguaNecesaria:z.string(),exposicionSolar:z.string(),epocaSiembra:z.string(),metodoPropagacion:z.string(),tiempoCrecimiento:z.string(),cuidados:z.string(),plagasComunes:z.string(),epocaCosecha:z.string(),recomendacionesSobreexplotacion:z.string(),consejosRecoleccion:z.string().min(1),mesesSiembra:z.array(mes),mesesCosecha:z.array(mes),fuente:z.string().min(1)});
 export async function registrarFicha(req:Request,res:Response){
   const {mesesSiembra,mesesCosecha,fuente,...resto}=schema.parse(req.body);
-  const cultivo=await container.registrarCultivo.ejecutar({...resto, fuente:new Fuente(fuente), calendario:new CalendarioCultivo(mesesSiembra,mesesCosecha)});
+  const cultivo=await container.registrarCultivo.ejecutar({...resto, autorId:auth(req).id, fuente:new Fuente(fuente), calendario:new CalendarioCultivo(mesesSiembra,mesesCosecha)});
   res.status(201).json(cultivo.props);
 }
 export async function obtenerFicha(req:Request,res:Response){const ficha=await container.obtenerFichaCultivo.ejecutar(String(req.params.id)); res.json(ficha);}
