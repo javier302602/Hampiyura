@@ -55,19 +55,25 @@ main{
   position:relative;
 }
 
-.eyebrow{letter-spacing:.2em;color:var(--color-accent);font-weight:700}
+.eyebrow{letter-spacing:.2em;color:var(--color-accent-text);font-weight:700}
 h1{font-size:clamp(2.5rem,7vw,5rem);line-height:.95;max-width:680px;margin:.4em 0}
 p{font-size:1.1rem;line-height:1.6;max-width:620px;color:var(--color-text)}
 .cards{display:flex;gap:1rem;flex-wrap:wrap;margin-top:3rem}
-.cards article{background:var(--color-surface);border:1px solid var(--color-border);border-radius:18px;padding:1.25rem 1.5rem;min-width:150px;display:grid;gap:.3rem;box-shadow:var(--card-shadow)}
+.cards article{background:var(--color-surface);border:1px solid var(--card-border);border-radius:var(--radius-lg);padding:1.25rem 1.5rem;min-width:150px;display:grid;gap:.3rem;box-shadow:var(--card-shadow)}
+/* Rejillas de tarjetas clicables (resultados de búsqueda, bandejas): mismo espaciado que .card-grid del catálogo. */
+.cards:has(>.tarjeta-clicable){gap:var(--space-5)}
 .cards article.tarjeta-clicable{flex:1 1 260px;min-width:240px;overflow:hidden;padding:0 0 1.25rem}
-.cards article.tarjeta-clicable>strong,.cards article.tarjeta-clicable>span{padding-left:1.25rem;padding-right:1.25rem}
-.imagen-tarjeta-planta{width:100%;height:220px;object-fit:cover;display:block;margin-bottom:1rem}
-.imagen-ficha-planta{display:block;width:min(100%,560px);height:clamp(260px,42vw,420px);object-fit:cover;border-radius:24px;border:1px solid var(--color-border);box-shadow:0 16px 34px rgba(15,47,38,.16);margin:1rem 0 1.5rem}
-.gestion-panel{background:linear-gradient(135deg,var(--color-surface),color-mix(in srgb,var(--color-surface) 86%,var(--color-accent) 14%));border:1px solid var(--color-border);border-top:5px solid var(--color-accent);border-radius:22px;padding:1.5rem;margin-top:2rem;box-shadow:0 12px 28px rgba(15,47,38,.08)}
+.cards article.tarjeta-clicable>strong,.cards article.tarjeta-clicable>span:not(.badge){padding-left:1.25rem;padding-right:1.25rem}
+/* Sin foto arriba (bandejas), el contenido necesita aire propio: antes la etiqueta quedaba pegada al borde. */
+.cards article.tarjeta-clicable:not(:has(>img)){padding:1.25rem 1.5rem}
+.cards article.tarjeta-clicable:not(:has(>img))>strong,.cards article.tarjeta-clicable:not(:has(>img))>span:not(.badge){padding-left:0;padding-right:0}
+.cards article.tarjeta-clicable{align-content:start}
+.imagen-tarjeta-planta{width:100%;aspect-ratio:4/3;height:auto;object-fit:cover;display:block;margin-bottom:1rem;outline:1px solid var(--media-ring);outline-offset:-1px}
+.imagen-ficha-planta{display:block;width:min(100%,560px);height:clamp(260px,42vw,420px);object-fit:cover;border-radius:var(--radius-lg);border:1px solid var(--card-border);box-shadow:var(--shadow-md);outline:1px solid var(--media-ring);outline-offset:-2px;margin:1rem 0 1.5rem}
+.gestion-panel{background:linear-gradient(135deg,var(--color-surface),color-mix(in srgb,var(--color-surface) 86%,var(--color-accent) 14%));border:1px solid var(--card-border);border-top:5px solid var(--color-accent-deep);border-radius:var(--radius-lg);padding:1.5rem;margin-top:2rem;box-shadow:var(--shadow-md)}
 .gestion-panel h2{margin-top:0;color:var(--color-text)}
 .gestion-panel .cards{margin-top:1.25rem}
-.cards strong{color:var(--color-accent)}
+.cards strong{color:var(--color-accent-text)}
 .cards span{font-weight:600}
 
 /* Identidad visual "Amazonía" del catálogo (RF pantallas públicas): la rejilla de tarjetas flota
@@ -118,8 +124,10 @@ p{font-size:1.1rem;line-height:1.6;max-width:620px;color:var(--color-text)}
 /* El crédito va sobre la foto (no sobre el velo): chip con fondo propio para que el contraste no dependa de qué parte de la foto le toque. */
 .hero-credit{font-size:var(--font-size-caption);color:var(--color-text-muted);margin:var(--space-3) 0 0;position:relative;z-index:1;width:fit-content;max-width:100%;padding:.25em .7em;border-radius:var(--radius-pill);background:color-mix(in srgb,var(--color-bg) 92%,transparent)}
 
-.tarjeta-clicable{cursor:pointer;transition:transform .1s ease,box-shadow .1s ease}
-.tarjeta-clicable:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.08)}
+.tarjeta-clicable{cursor:pointer;transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease}
+/* Mismo hover que .card-ui-interactive (catálogo): elevación + borde terracota. */
+.tarjeta-clicable:hover,.tarjeta-clicable:focus-visible{transform:translateY(-3px);box-shadow:var(--shadow-hover);border-color:var(--color-accent-deep)}
+.tarjeta-clicable:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px}
 
 .badge{display:inline-block;width:fit-content;padding:.25em .8em;border-radius:999px;font-size:.8rem;font-weight:700;letter-spacing:.02em}
 .badge-tradicional{background:#f3e3d3;color:#8a5a2b}

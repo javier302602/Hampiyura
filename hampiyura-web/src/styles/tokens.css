@@ -74,8 +74,12 @@
   /* Sombras -- suaves y discretas, un único set en vez de valores rgba() repartidos */
   --shadow-sm:0 2px 6px rgba(15,47,38,.08);
   --shadow-md:0 8px 20px rgba(15,47,38,.10);
-  --shadow-hover:var(--shadow-md);
-  --card-shadow:none;
+  /* Tarjetas (claro): elevación suave en reposo + más marcada al pasar el mouse, y un borde algo más firme que
+     --color-border para que la foto y el borde de la tarjeta no se pierdan contra el fondo crema. */
+  --card-shadow:0 1px 2px rgba(15,47,38,.07),0 6px 16px rgba(15,47,38,.09);
+  --shadow-hover:0 2px 4px rgba(15,47,38,.08),0 16px 32px rgba(15,47,38,.18);
+  --card-border:color-mix(in srgb,var(--color-border) 62%,#17352b);
+  --media-ring:rgba(15,47,38,.14);
   --shadow-lg:0 16px 34px rgba(15,47,38,.14);
 
   color-scheme:light dark;
@@ -125,6 +129,8 @@
 
     --shadow-sm:inset 0 1px 0 rgba(255,255,255,.05),0 2px 8px rgba(0,0,0,.5);
     --card-shadow:var(--shadow-sm);
+    --card-border:var(--color-border);
+    --media-ring:rgba(255,255,255,.10);
     --shadow-hover:0 0 0 1px color-mix(in srgb,var(--color-accent-deep) 55%,transparent),0 10px 28px rgba(181,104,55,.22);
     --shadow-md:inset 0 1px 0 rgba(255,255,255,.06),0 10px 24px rgba(0,0,0,.55);
     --shadow-lg:inset 0 1px 0 rgba(255,255,255,.07),0 18px 40px rgba(0,0,0,.65);
@@ -163,6 +169,8 @@
 
   --shadow-sm:inset 0 1px 0 rgba(255,255,255,.05),0 2px 8px rgba(0,0,0,.5);
     --card-shadow:var(--shadow-sm);
+    --card-border:var(--color-border);
+    --media-ring:rgba(255,255,255,.10);
     --shadow-hover:0 0 0 1px color-mix(in srgb,var(--color-accent-deep) 55%,transparent),0 10px 28px rgba(181,104,55,.22);
   --shadow-md:inset 0 1px 0 rgba(255,255,255,.06),0 10px 24px rgba(0,0,0,.55);
   --shadow-lg:inset 0 1px 0 rgba(255,255,255,.07),0 18px 40px rgba(0,0,0,.65);

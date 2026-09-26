@@ -52,7 +52,7 @@ function NotificacionesPage({ onVolver, onAbrirConsulta }: Props) {
 
       {!cargando && !error && notificaciones.length > 0 && (
         <>
-          <button onClick={manejarMarcarTodas} disabled={!hayNoLeidas} style={{ marginBottom: '1rem' }}>Marcar todas como leídas</button>
+          <Button variant="secondary" onClick={manejarMarcarTodas} disabled={!hayNoLeidas} style={{ marginBottom: '1rem' }}>Marcar todas como leídas</Button>
           {notificaciones.map((n) => {
             const navegacion = resolverNavegacion(n);
             return (
@@ -64,8 +64,8 @@ function NotificacionesPage({ onVolver, onAbrirConsulta }: Props) {
                 <span>{n.mensaje}{navegacion && ' →'}</span>
                 <span className="comentario-meta">{new Date(n.fecha).toLocaleString()} · {n.leida ? 'Leída' : 'No leída'}</span>
                 <div style={{ display: 'flex', gap: '.6rem' }} onClick={(e) => e.stopPropagation()}>
-                  {!n.leida && <button onClick={() => manejarMarcarUna(n.id)}>Marcar como leída</button>}
-                  <button onClick={() => manejarEliminar(n.id)}>Eliminar</button>
+                  {!n.leida && <Button size="sm" variant="secondary" onClick={() => manejarMarcarUna(n.id)}>Marcar como leída</Button>}
+                  <Button size="sm" variant="ghost" onClick={() => manejarEliminar(n.id)}>Eliminar</Button>
                 </div>
               </article>
             );
