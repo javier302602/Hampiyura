@@ -31,7 +31,6 @@ function MiPlanPage() {
               <div><span className="mi-plan-etiqueta">Plan activo</span><strong>{plan.plan}</strong></div>
               <div><span className="mi-plan-etiqueta">Vencimiento</span><strong>{plan.plan === 'Explorador' ? 'No vence' : fecha(plan.vencimiento)}</strong></div>
               <div><span className="mi-plan-etiqueta">Estado de pago</span><strong>{plan.estadoPago ? <Badge variant={VARIANTE_ESTADO_PAGO[plan.estadoPago]}>{plan.estadoPago}</Badge> : 'Sin suscripción'}</strong></div>
-              {plan.destacado && <div><span className="mi-plan-etiqueta">Destacado</span><strong><Badge variant={VARIANTE_ESTADO_PAGO[plan.destacado.estadoPago]}>{plan.destacado.estadoPago}</Badge> {plan.destacado.vencimiento ? `hasta ${fecha(plan.destacado.vencimiento)}` : ''}</strong></div>}
             </div>
 
             <h3>Contactos desbloqueados</h3>

@@ -62,7 +62,7 @@ describe('M-15 · acceso al contacto (regla de negocio)', () => {
     expect(await acceso.puedeVerContacto({ id: 'c', rol: 'UsuarioRegistrado' }, 'prodA')).toBe(true);
     expect(await acceso.puedeVerContacto({ id: 'c', rol: 'UsuarioRegistrado' }, 'prodB')).toBe(false);
   });
-  test('el propio productor y el administrador ven siempre; el plan Destacado NO da acceso a contactos ajenos', async () => {
+  test('el propio productor y el administrador ven siempre; un pago histórico de Destacado NO da acceso a contactos ajenos', async () => {
     const dest = pago({ plan: 'Destacado', usuarioId: 'prod9', monto: 15 }); dest.confirmar('admin');
     const acceso = new AccesoContactoService(repoEn([dest]));
     expect(await acceso.puedeVerContacto({ id: 'prodA', rol: 'Productor' }, 'prodA')).toBe(true);
@@ -127,11 +127,11 @@ describe('M-15 · solicitud de pago', () => {
     expect((await u.ejecutar({ ...base, concepto: 'Plan', plan: 'Negocio' })).props.monto).toBe(precioDe('Negocio'));
     expect((await u.ejecutar({ ...base, concepto: 'Desbloqueo', productorId: 'prodA' })).props.monto).toBe(precioDe('DesbloqueoPuntual'));
   });
-  test('rechaza método inválido, comprobante ajeno a la plataforma y Destacado para no productores', async () => {
+  test('rechaza método inválido, comprobante ajeno a la plataforma y el plan Destacado, que ya no existe', async () => {
     const { uc: u } = uc();
     await expect(u.ejecutar({ ...base, metodo: 'Paypal', concepto: 'Plan', plan: 'Negocio' })).rejects.toThrow(/Yape o Plin/);
     await expect(u.ejecutar({ ...base, comprobanteUrl: 'https://evil.example/x.png', concepto: 'Plan', plan: 'Negocio' })).rejects.toThrow(/comprobante/i);
-    await expect(u.ejecutar({ ...base, concepto: 'Plan', plan: 'Destacado' })).rejects.toThrow(/Productor/);
+    await expect(u.ejecutar({ ...base, concepto: 'Plan', plan: 'Destacado' })).rejects.toThrow(/Negocio o Institucional/);
   });
   test('no se puede desbloquear a un productor no contactable ni pagar dos veces lo mismo pendiente', async () => {
     await expect(uc(false).uc.ejecutar({ ...base, concepto: 'Desbloqueo', productorId: 'x' })).rejects.toThrow(/no está disponible/);

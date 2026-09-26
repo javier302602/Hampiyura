@@ -27,10 +27,6 @@ export class AccesoContactoService {
     return elegido ? { plan: elegido.props.plan as 'Negocio' | 'Institucional', vigenteHasta: elegido.props.vigenteHasta } : { plan: 'Explorador' };
   }
 
-  async destacadoVigente(productorId: string, ahora = new Date()): Promise<boolean> {
-    return (await this.pagos.listarPorUsuario(productorId)).some((p) => p.props.concepto === 'Plan' && p.props.plan === 'Destacado' && p.estaVigente(ahora));
-  }
-
   async desbloqueoVigente(usuarioId: string, productorId: string, ahora = new Date()): Promise<PagoContacto | undefined> {
     return (await this.pagos.listarPorUsuario(usuarioId)).find((p) => p.props.concepto === 'Desbloqueo' && p.props.productorId === productorId && p.estaVigente(ahora));
   }
@@ -52,7 +48,7 @@ export interface CatalogoPublico {
 export class ListarPlanesUseCase {
   constructor(private readonly pagos: PagoContactoRepositoryPort, private readonly cobro: DatosDeCobro) {}
   async ejecutar(): Promise<CatalogoPublico> {
-    // Solo un CONTADOR VISIBLE: X % de lo confirmado en Negocio/Institucional/Destacado. No mueve dinero.
+    // Solo un CONTADOR VISIBLE: X % de lo confirmado en Negocio/Institucional. No mueve dinero.
     const confirmados = (await this.pagos.listar('Confirmado')).filter((p) => p.props.concepto === 'Plan');
     const total = confirmados.reduce((s, p) => s + p.props.monto, 0);
     return {
@@ -71,7 +67,6 @@ export interface ProductorContactable {
   biografia?: string;
   plantas: string[];
   zonas: string[];
-  destacado: boolean;
 }
 export interface ContactoProductor { telefono?: string; contactosDeProductos: string[]; }
 export interface FichaProductor extends ProductorContactable {
@@ -105,10 +100,9 @@ export class DirectorioProductoresUseCase {
         zonas.add(ub.props.zona);
       }
       if (plantas.size === 0) continue;
-      resultado.push({ id: u.props.id, nombre: u.props.nombre, nombreNegocio: u.props.nombreNegocio ?? undefined, region: u.props.region, biografia: u.props.biografia ?? undefined, plantas: [...plantas], zonas: [...zonas], destacado: await this.acceso.destacadoVigente(u.props.id) });
+      resultado.push({ id: u.props.id, nombre: u.props.nombre, nombreNegocio: u.props.nombreNegocio ?? undefined, region: u.props.region, biografia: u.props.biografia ?? undefined, plantas: [...plantas], zonas: [...zonas] });
     }
-    // "Destacado" = mayor visibilidad: aparece primero.
-    return resultado.sort((a, b) => Number(b.destacado) - Number(a.destacado) || a.nombre.localeCompare(b.nombre, 'es'));
+    return resultado.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
   }
 
   async listar(): Promise<ProductorContactable[]> { return this.contactables(); }
@@ -162,8 +156,7 @@ export class SolicitarPagoUseCase {
     const previos = await this.pagos.listarPorUsuario(input.usuarioId);
     let plan: PlanDePago | undefined; let productorId: string | undefined; let monto: number;
     if (input.concepto === 'Plan') {
-      if (!input.plan || !esPlanDePago(input.plan)) throw new ValidationError('Elige un plan de pago: Negocio, Institucional o Destacado');
-      if (input.plan === 'Destacado' && input.rol !== 'Productor') throw new UnauthorizedError('El plan Destacado es solo para cuentas de Productor');
+      if (!input.plan || !esPlanDePago(input.plan)) throw new ValidationError('Elige un plan de pago: Negocio o Institucional');
       plan = input.plan; monto = precioDe(plan);
       if (previos.some((p) => p.props.concepto === 'Plan' && p.props.plan === plan && p.props.estado === 'Pendiente')) throw new ValidationError('Ya tienes un pago de este plan esperando confirmación');
     } else if (input.concepto === 'Desbloqueo') {
@@ -214,7 +207,6 @@ export interface MiPlan {
   vencimiento?: Date;
   // Estado de pago de la suscripción más reciente (Pendiente / Confirmado / Vencido / Rechazado); null si nunca pagó un plan.
   estadoPago: EstadoPagoEfectivo | null;
-  destacado?: { estadoPago: EstadoPagoEfectivo; vencimiento?: Date };
   desbloqueos: { productorId: string; productorNombre: string; vigenteHasta: Date }[];
   pagos: PagoVisible[];
 }
@@ -224,7 +216,6 @@ export class MiPlanUseCase extends Presentador {
     const activo = await this.acceso.planActivo(usuarioId);
     const propios = (await this.pagos.listarPorUsuario(usuarioId)).sort((a, b) => b.props.creadoEn.getTime() - a.props.creadoEn.getTime());
     const suscripciones = propios.filter((p) => p.props.concepto === 'Plan' && (p.props.plan === 'Negocio' || p.props.plan === 'Institucional'));
-    const destacada = propios.find((p) => p.props.concepto === 'Plan' && p.props.plan === 'Destacado');
     const pagos = await Promise.all(propios.map((p) => this.aVista(p)));
     const desbloqueos = await Promise.all(propios.filter((p) => p.props.concepto === 'Desbloqueo' && p.estaVigente()).map(async (p) => ({
       productorId: p.props.productorId!, productorNombre: (await this.usuarios.buscarPorId(p.props.productorId!))?.props.nombre ?? p.props.productorId!, vigenteHasta: p.props.vigenteHasta!,
@@ -232,7 +223,6 @@ export class MiPlanUseCase extends Presentador {
     return {
       plan: activo.plan, vencimiento: activo.vigenteHasta,
       estadoPago: activo.plan !== 'Explorador' ? 'Confirmado' : (suscripciones[0]?.estadoEfectivo() ?? null),
-      destacado: destacada ? { estadoPago: destacada.estadoEfectivo(), vencimiento: destacada.props.vigenteHasta } : undefined,
       desbloqueos, pagos,
     };
   }

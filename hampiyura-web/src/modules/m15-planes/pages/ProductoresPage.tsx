@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Lock, MapPin, Phone, Sprout, Star, Unlock } from 'lucide-react';
+import { Lock, MapPin, Phone, Sprout, Unlock } from 'lucide-react';
 import { listarProductores, obtenerProductor, RUTAS_M15, type FichaProductor, type ProductorContactable } from '../api/planes.api';
 import Button from '../../../shared/ui/Button';
 import Badge from '../../../shared/ui/Badge';
@@ -32,7 +32,6 @@ export function ProductoresPage() {
             <article key={p.id} className="tarjeta-clicable" style={{ flex: '1 1 300px' }} tabIndex={0} role="button" aria-label={`Ver a ${nombreVisible(p)}`}
               onClick={() => navigate(`${RUTAS_M15.productores}/${p.id}`)} onKeyDown={(e) => { if (e.key === 'Enter') navigate(`${RUTAS_M15.productores}/${p.id}`); }}>
               <div style={{ display: 'flex', gap: '.4rem', flexWrap: 'wrap' }}>
-                {p.destacado && <Badge variant="accent" icon={<Star size={13} aria-hidden="true" />}>Destacado</Badge>}
                 <Badge variant="success">Ficha de cultivo validada</Badge>
               </div>
               <strong>{nombreVisible(p)}</strong>
@@ -63,7 +62,6 @@ export function ProductorPage() {
         <>
           <SectionHeader eyebrow="Productor" title={nombreVisible(ficha)} description={ficha.biografia} />
           <div style={{ display: 'flex', gap: '.4rem', flexWrap: 'wrap', margin: '0 0 1rem' }}>
-            {ficha.destacado && <Badge variant="accent" icon={<Star size={13} aria-hidden="true" />}>Destacado</Badge>}
             <Badge variant="success">Ficha de cultivo validada</Badge>
           </div>
           <dl className="detalle-campos" style={{ maxWidth: 640 }}>

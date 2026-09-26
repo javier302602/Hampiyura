@@ -2,7 +2,7 @@ import { apiRequest } from '../../../shared/api/client';
 
 // M-15 · Contacto pagado y planes. Mismos contratos que el backend (planes.use-cases.ts).
 export interface DefinicionPlan {
-  id: 'Explorador' | 'DesbloqueoPuntual' | 'Negocio' | 'Institucional' | 'Productor' | 'Destacado';
+  id: 'Explorador' | 'DesbloqueoPuntual' | 'Negocio' | 'Institucional' | 'Productor';
   nombre: string;
   paraQuien: string;
   incluye: string[];
@@ -29,12 +29,11 @@ export interface MiPlan {
   plan: 'Explorador' | 'Negocio' | 'Institucional';
   vencimiento?: string;
   estadoPago: EstadoPago | null;
-  destacado?: { estadoPago: EstadoPago; vencimiento?: string };
   desbloqueos: { productorId: string; productorNombre: string; vigenteHasta: string }[];
   pagos: PagoVisible[];
 }
 export interface ProductorContactable {
-  id: string; nombre: string; nombreNegocio?: string; region: string; biografia?: string; plantas: string[]; zonas: string[]; destacado: boolean;
+  id: string; nombre: string; nombreNegocio?: string; region: string; biografia?: string; plantas: string[]; zonas: string[];
 }
 export interface FichaProductor extends ProductorContactable {
   contactoDisponible: boolean;

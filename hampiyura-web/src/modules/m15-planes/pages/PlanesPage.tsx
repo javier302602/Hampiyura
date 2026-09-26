@@ -49,7 +49,6 @@ function PlanesPage() {
         ? <Button variant="primary" onClick={() => irAPagar(p.id)}>Desbloquear este contacto</Button>
         : <Button variant="secondary" onClick={() => navigate(RUTAS_M15.productores)}>Elegir un productor</Button>;
     }
-    if (p.id === 'Destacado' && sesion && !(sesion.rol === 'Productor')) return <Badge variant="neutral">Solo cuentas de Productor</Badge>;
     if ((p.id === 'Negocio' || p.id === 'Institucional') && planActual === p.id) return <Badge variant="success" icon={<Check size={14} aria-hidden="true" />}>Tu plan actual</Badge>;
     return <Button variant={p.id === 'Negocio' ? 'primary' : 'secondary'} onClick={() => irAPagar(p.id)}>{sesion ? `Elegir ${p.nombre}` : 'Iniciar sesión para elegir'}</Button>;
   }

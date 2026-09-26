@@ -9,10 +9,10 @@
 // cuenta (Productor, Empresario, Institución de investigación): cambiar de tipo es gratis y no activa ni exige ningún plan, y
 // cualquier usuario puede contratar cualquier plan. Publicar productos solo tiene la comisión del 5% (CG-004).
 
-export const PLANES = ['Explorador', 'Negocio', 'Institucional', 'Productor', 'Destacado'] as const;
+export const PLANES = ['Explorador', 'Negocio', 'Institucional', 'Productor'] as const;
 export type Plan = typeof PLANES[number];
 // Planes que se pagan (y por eso tienen vencimiento). Explorador y Productor son gratuitos.
-export const PLANES_DE_PAGO = ['Negocio', 'Institucional', 'Destacado'] as const;
+export const PLANES_DE_PAGO = ['Negocio', 'Institucional'] as const;
 export type PlanDePago = typeof PLANES_DE_PAGO[number];
 export function esPlanDePago(v: string): v is PlanDePago { return (PLANES_DE_PAGO as readonly string[]).includes(v); }
 
@@ -25,7 +25,7 @@ export type ConceptoPago = typeof CONCEPTOS_PAGO[number];
 
 // Suscripciones mensuales y desbloqueo puntual: misma vigencia (30 días desde la confirmación).
 export const DIAS_VIGENCIA = 30;
-// Hipótesis: el documento habla de "un porcentaje" de los ingresos de Negocio/Institucional/Destacado para un
+// Hipótesis: el documento habla de "un porcentaje" de los ingresos de Negocio/Institucional para un
 // fondo de conservación, sin cifra. Solo se usa para un CONTADOR VISIBLE; no mueve dinero real (FASE posterior).
 export const PORCENTAJE_FONDO_CONSERVACION = 10;
 
@@ -70,13 +70,9 @@ export const CATALOGO_PLANES: DefinicionPlan[] = [
     incluye: ['Publicar cultivos, preparaciones y productos gratis', 'Ficha básica visible en el mapa', 'Aparecer en el directorio de contacto una vez validada tu ficha de cultivo'],
     proximamente: [], precio: 0, precioTexto: 'Gratis', periodicidad: 'gratis', referencial: true,
   },
-  {
-    id: 'Destacado', nombre: 'Productor Destacado', paraQuien: 'Productores que quieren más visibilidad (opcional)',
-    incluye: ['Todo lo del plan Productor', 'Aparecer primero en el directorio, con la etiqueta "Destacado"'],
-    proximamente: ['Estadísticas de interés recibido'],
-    precio: 15, precioTexto: 'S/ 15 al mes', periodicidad: 'mensual', referencial: true,
-  },
 ];
+// Ronda 21: el plan "Productor Destacado" se retiró del catálogo (era un plan de venta/visibilidad, no de acceso al contacto).
+// Los pagos históricos con plan='Destacado' se conservan en la base como historial, pero ya no dan ningún beneficio.
 
 export function precioDe(id: 'DesbloqueoPuntual' | PlanDePago): number {
   const d = CATALOGO_PLANES.find((p) => p.id === id);
