@@ -53,6 +53,9 @@ function PlantaDetailPage({ plantaId, onVolver }: Props) {
       <p><em>{planta.nombreCientifico}</em> — familia {planta.familia}</p>
       <p>Región: {planta.region} · Hábitat: {planta.habitat}</p>
       {obtenerImagenPlanta(planta) && <img className="imagen-ficha-planta" src={obtenerImagenPlanta(planta)} alt={planta.nombreComun} />}
+      {planta.imagenPrincipal && planta.imagenAutor && (
+        <p className="fuente-cita">Foto: {planta.imagenAutor} · {planta.imagenLicencia}{planta.imagenFuenteUrl && <> · <a href={planta.imagenFuenteUrl} target="_blank" rel="noopener noreferrer">Ver origen</a></>}</p>
+      )}
       <AlertaConservacion conservacion={planta.conservacion} />
 
       <h3>Partes utilizadas y usos</h3>

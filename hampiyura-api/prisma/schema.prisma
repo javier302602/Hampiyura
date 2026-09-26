@@ -111,6 +111,10 @@ model Planta {
   region String
   habitat String
   imagenPrincipal String?
+  // Atribución de la foto (Ronda 29): autor, licencia y página de origen; se muestran junto a la imagen en la ficha.
+  imagenAutor String?
+  imagenLicencia String?
+  imagenFuenteUrl String?
   // Ubicación de observación (GPS/mapa al proponer). Nunca se expone en el catálogo público (RN-07: la
   // ubicación exacta de una planta puede ponerla en riesgo); solo la ve quien valida.
   latitud Float?

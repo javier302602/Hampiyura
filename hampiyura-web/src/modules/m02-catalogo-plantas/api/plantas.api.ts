@@ -9,6 +9,10 @@ export interface Planta {
   region: string;
   habitat: string;
   imagenPrincipal?: string;
+  // Atribución de la foto (autor, licencia y página de origen).
+  imagenAutor?: string;
+  imagenLicencia?: string;
+  imagenFuenteUrl?: string;
 }
 
 // GET /plantas/:id (ObtenerPlantaUseCase) enriquece la ficha con el resumen de conservación de
