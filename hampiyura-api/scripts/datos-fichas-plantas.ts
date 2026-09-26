@@ -185,3 +185,40 @@ export const FICHAS_PLANTAS: FichaPlanta[] = [
     // (el formulario y su aviso son de conocimiento tradicional; las dosis animales podrían leerse como dosis humanas).
     preparaciones: [] },
 ];
+
+// Ronda 30 — Distribución natural documentada (Kew POWO), para la 2.ª capa del mapa (M-03). Cada punto es el centro APROXIMADO de un
+// país/región que el texto de hábitat de la ficha nombra literalmente; NO es la ubicación de un cultivo ni de una parcela.
+// Donde el texto dice solo "América tropical" no se marca ese continente entero: solo los lugares nombrados (p. ej. "incluido Perú").
+export interface PuntoDistribucion { zona: string; lat: number; lng: number }
+const PE: PuntoDistribucion = { zona: 'Perú', lat: -9.2, lng: -75.0 };
+const PE_AMAZ: PuntoDistribucion = { zona: 'Perú (cuenca amazónica)', lat: -5.0, lng: -74.0 };
+const p = (zona: string, lat: number, lng: number): PuntoDistribucion => ({ zona, lat, lng });
+export const DISTRIBUCION_NATURAL: Record<string, PuntoDistribucion[]> = {
+  'Zea mays': [p('México (centro y suroeste)', 19.5, -100.0), p('Guatemala (oeste)', 15.0, -91.5)],
+  'Coffea arabica': [p('Sudán del Sur (sur)', 6.5, 30.5), p('Etiopía (suroeste)', 6.5, 37.0), p('Kenia (norte)', 3.5, 37.5)],
+  'Musa spp.': [p('Asia tropical y subtropical (centro aproximado)', 15.0, 100.0)],
+  'Theobroma cacao': [PE_AMAZ],
+  'Persea americana': [p('México (centro)', 19.5, -100.0), p('Costa Rica', 9.9, -84.2)],
+  'Annona muricata': [p('México (sur)', 17.0, -94.0), p('Venezuela', 7.0, -66.0), PE],
+  'Bixa orellana': [p('México', 23.6, -102.5), PE],
+  'Mentha piperita': [p('Europa (centro aproximado)', 50.0, 10.0), p('Asia Central (centro aproximado)', 45.0, 65.0)],
+  'Eucalyptus globulus': [p('Sureste de Australia (Victoria/Tasmania)', -38.0, 145.5)],
+  'Morinda citrifolia': [p('Sudeste asiático (centro aproximado)', 10.0, 105.0), p('Australasia tropical (centro aproximado)', -12.0, 135.0)],
+  'Plantago major': [p('Europa (centro aproximado)', 50.0, 10.0), p('Norte y centro de Asia (centro aproximado)', 55.0, 90.0), p('Norte de África (centro aproximado)', 28.0, 15.0), p('Sur de África (centro aproximado)', -28.0, 24.0)],
+  'Croton lechleri': [p('Bolivia', -16.5, -64.5), p('Colombia', 4.0, -73.0), p('Ecuador', -1.4, -78.4), PE_AMAZ],
+  'Uncaria tomentosa': [p('Trinidad', 10.5, -61.3), PE],
+  'Phyllanthus niruri': [p('Argentina', -34.0, -64.0), p('México', 23.6, -102.5), PE],
+  'Maytenus macrocarpa': [p('Bolivia', -16.5, -64.5), p('Brasil (norte)', -3.0, -60.0), p('Colombia', 4.0, -73.0), p('Ecuador', -1.4, -78.4), PE, p('Venezuela', 7.0, -66.0)],
+  'Genipa americana': [p('México (sur)', 17.0, -94.0), PE],
+  'Dracontium loretense': [p('Costa Rica', 9.9, -84.2), PE],
+  'Plukenetia volubilis': [p('Antillas de Barlovento', 13.5, -61.0), PE],
+  'Myrciaria dubia': [p('Amazonía sudamericana (centro aproximado)', -4.0, -63.0), PE_AMAZ],
+  'Petiveria alliacea': [PE],
+  'Copaifera spp.': [p('Bolivia', -16.5, -64.5), p('Brasil (norte)', -3.0, -60.0), PE],
+  'Ficus insipida': [p('México', 23.6, -102.5), PE],
+  'Piper aduncum': [PE],
+  'Gentianella alborosea': [p('Perú (Junín, Andes altos)', -11.5, -75.2)],
+  'Smallanthus sonchifolius': [p('Bolivia', -16.5, -64.5), p('Colombia', 4.0, -73.0), p('Ecuador', -1.4, -78.4), PE],
+  'Ilex guayusa': [p('Venezuela', 7.0, -66.0), PE],
+  'Mansoa alliacea': [p('Cuenca amazónica (centro aproximado)', -4.0, -63.0), p('Caribe (centro aproximado)', 18.0, -75.0), PE],
+};

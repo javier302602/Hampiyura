@@ -89,8 +89,8 @@ export class PrismaTokenAccionRepository implements TokenAccionRepositoryPort {
 export class PrismaPlantaRepository implements PlantaRepositoryPort {
   constructor(private readonly prisma:PrismaClient) {}
   async guardar(p:Planta){await this.prisma.planta.create({data:p.props as any});}
-  async listar(){const xs=await this.prisma.planta.findMany(); return xs.map(x=>new Planta({...x,imagenPrincipal:x.imagenPrincipal??undefined,imagenAutor:x.imagenAutor??undefined,imagenLicencia:x.imagenLicencia??undefined,imagenFuenteUrl:x.imagenFuenteUrl??undefined}));}
-  async buscarPorId(id:string){const x=await this.prisma.planta.findUnique({where:{id}}); return x?new Planta({...x,imagenPrincipal:x.imagenPrincipal??undefined,imagenAutor:x.imagenAutor??undefined,imagenLicencia:x.imagenLicencia??undefined,imagenFuenteUrl:x.imagenFuenteUrl??undefined}):null;}
+  async listar(){const xs=await this.prisma.planta.findMany(); return xs.map(x=>new Planta({...x,imagenPrincipal:x.imagenPrincipal??undefined,imagenAutor:x.imagenAutor??undefined,imagenLicencia:x.imagenLicencia??undefined,imagenFuenteUrl:x.imagenFuenteUrl??undefined,distribucionNatural:(x.distribucionNatural as any)??undefined}));}
+  async buscarPorId(id:string){const x=await this.prisma.planta.findUnique({where:{id}}); return x?new Planta({...x,imagenPrincipal:x.imagenPrincipal??undefined,imagenAutor:x.imagenAutor??undefined,imagenLicencia:x.imagenLicencia??undefined,imagenFuenteUrl:x.imagenFuenteUrl??undefined,distribucionNatural:(x.distribucionNatural as any)??undefined}):null;}
   async eliminar(id:string){await this.prisma.planta.delete({where:{id}});}
   async contar(){return this.prisma.planta.count();}
   async actualizarEstadoValidacion(id:string, estado:EstadoValidacion){await this.prisma.planta.update({where:{id},data:{estadoValidacion:estado}});}

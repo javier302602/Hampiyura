@@ -256,6 +256,14 @@ p{font-size:1.1rem;line-height:1.6;max-width:620px;color:var(--color-text)}
 .mapa-cultivo-controles label{display:grid;gap:.3rem;font-weight:700;font-size:.9rem}
 .mapa-cultivo-controles input,.mapa-cultivo-controles select{font:inherit;padding:.5em .7em;border-radius:8px;border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text);min-width:220px}
 
+.mapa-leyenda{display:grid;gap:.4rem;margin:.75rem 0;padding:.7rem .9rem;border:1px solid var(--color-border);border-radius:10px;background:var(--color-surface)}
+.mapa-leyenda label{display:flex;gap:.5rem;align-items:center;font-size:.9rem;flex-wrap:wrap}
+.mapa-leyenda-pin{display:inline-block;width:14px;height:14px;flex:none}
+.mapa-leyenda-cultivo{background:#2a81cb;border-radius:50% 50% 50% 0;transform:rotate(-45deg)}
+.mapa-natural-pin span{display:block;width:14px;height:14px;background:#0f766e;border:2px solid #fff;transform:rotate(45deg);box-shadow:0 0 0 1px #0b3d32}
+.mapa-natural-cluster{display:flex;align-items:center;justify-content:center}
+.mapa-natural-cluster b{display:flex;align-items:center;justify-content:center;width:30px;height:30px;background:#0f766e;color:#fff;border:3px solid #fff;border-radius:6px;transform:rotate(45deg);box-shadow:0 0 0 1px #0b3d32}
+.mapa-natural-cluster i{font-style:normal;font-weight:700;transform:rotate(-45deg)}
 .mapa-cultivo-layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:1rem;margin:0 -2rem;padding:0 2rem}
 .mapa-cultivo-mapa{height:clamp(420px,60vh,640px);width:100%;border-radius:12px}
 .mapa-cultivo-lista{height:clamp(420px,60vh,640px);overflow-y:auto;display:flex;flex-direction:column;gap:.5rem;padding-right:.25rem}

@@ -6,6 +6,7 @@ import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import { listarMapaCultivo, type UbicacionCultivoVisible } from '../api/mapa-cultivo.api';
 import { CENTRO_PERU_AMAZONICO, agregarTileLayer } from '../leaflet-setup';
 import { esValidador, getSession } from '../../../shared/auth/session';
+import { listarPlantas, type Planta } from '../../m02-catalogo-plantas/api/plantas.api';
 
 interface Props {
   // Permite que el popup del marcador enlace a la ficha completa de la planta (mismo mecanismo de
@@ -29,6 +30,11 @@ function MapaCultivoPage({ onSeleccionarPlanta }: Props) {
   const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
   const marcadoresPorIdRef = useRef<Map<string, L.Marker>>(new Map());
   const filasListaRef = useRef<Map<string, HTMLButtonElement>>(new Map());
+  // 2.ª capa (Ronda 30): distribución NATURAL documentada de cada especie. Va aparte de los cultivos registrados y nunca se mezcla con ellos.
+  const naturalRef = useRef<L.MarkerClusterGroup | null>(null);
+  const [plantas, setPlantas] = useState<Planta[]>([]);
+  const [verCultivos, setVerCultivos] = useState(true);
+  const [verNatural, setVerNatural] = useState(true);
 
   const [ubicaciones, setUbicaciones] = useState<UbicacionCultivoVisible[]>([]);
   const [cargando, setCargando] = useState(true);
@@ -49,6 +55,8 @@ function MapaCultivoPage({ onSeleccionarPlanta }: Props) {
       .catch((err) => setError(err instanceof Error ? err.message : 'No se pudo cargar el mapa de distribución.'))
       .finally(() => setCargando(false));
   }, [verPendientes, puedeVerPendientes]);
+
+  useEffect(() => { listarPlantas().then(setPlantas).catch(() => setPlantas([])); }, []);
 
   // Opciones de los filtros: se derivan de los datos ya cargados en vez de mantener listas fijas
   // que se podrían desincronizar. "Tipo de cultivo" y "familia" son los únicos campos de
@@ -78,6 +86,15 @@ function MapaCultivoPage({ onSeleccionarPlanta }: Props) {
     });
   }, [ubicaciones, busqueda, tipoCultivoFiltro, familiaFiltro]);
 
+  // Puntos de distribución natural que pasan la búsqueda/familia actuales (el filtro de tipo de cultivo no aplica: es propio de las fichas de cultivo).
+  const puntosNaturales = useMemo(() => {
+    const texto = busqueda.trim().toLowerCase();
+    return plantas
+      .filter((p) => (p.distribucionNatural?.length ?? 0) > 0 && (!familiaFiltro || p.familia === familiaFiltro)
+        && (!texto || p.nombreComun.toLowerCase().includes(texto) || p.nombreCientifico.toLowerCase().includes(texto)))
+      .flatMap((p) => (p.distribucionNatural ?? []).map((d) => ({ planta: p, ...d })));
+  }, [plantas, busqueda, familiaFiltro]);
+
   const conCoordenadas = useMemo(() => filtradas.filter((u) => u.latitud !== null && u.longitud !== null), [filtradas]);
   const sinCoordenadas = useMemo(() => filtradas.filter((u) => u.latitud === null || u.longitud === null), [filtradas]);
 
@@ -88,9 +105,12 @@ function MapaCultivoPage({ onSeleccionarPlanta }: Props) {
     agregarTileLayer(mapa);
     const cluster = L.markerClusterGroup();
     cluster.addTo(mapa);
+    const natural = L.markerClusterGroup({ iconCreateFunction: (c) => L.divIcon({ html: `<b><i>${c.getChildCount()}</i></b>`, className: 'mapa-natural-cluster', iconSize: [34, 34] }) });
+    natural.addTo(mapa);
     mapaRef.current = mapa;
     clusterRef.current = cluster;
-    return () => { mapa.remove(); mapaRef.current = null; clusterRef.current = null; };
+    naturalRef.current = natural;
+    return () => { mapa.remove(); mapaRef.current = null; clusterRef.current = null; naturalRef.current = null; };
   }, []);
 
   // Redibuja los marcadores (agrupados) cada vez que cambia el resultado filtrado -- y recentra el
@@ -114,6 +134,31 @@ function MapaCultivoPage({ onSeleccionarPlanta }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- onSeleccionarPlanta es estable (viene de App.tsx como setState)
   }, [conCoordenadas]);
 
+  // Capa de distribución natural: marcadores propios (rombo azul-verdoso) con popup que aclara que NO es un cultivo registrado.
+  useEffect(() => {
+    const natural = naturalRef.current;
+    if (!natural) return;
+    natural.clearLayers();
+    for (const d of puntosNaturales) {
+      natural.addLayer(L.marker([d.lat, d.lng], { icon: L.divIcon({ html: '<span></span>', className: 'mapa-natural-pin', iconSize: [16, 16] }), title: `${d.planta.nombreComun} — ${d.zona}` })
+        .bindPopup(crearPopupNatural(d.planta, d.zona, onSeleccionarPlanta)));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [puntosNaturales]);
+
+  // Mostrar/ocultar cada capa por separado.
+  useEffect(() => {
+    const mapa = mapaRef.current;
+    if (!mapa || !clusterRef.current || !naturalRef.current) return;
+    if (verCultivos) mapa.addLayer(clusterRef.current); else mapa.removeLayer(clusterRef.current);
+    if (verNatural) mapa.addLayer(naturalRef.current); else mapa.removeLayer(naturalRef.current);
+  }, [verCultivos, verNatural]);
+
+  // Sin cultivos registrados, el mapa arranca mostrando América (donde están la mayoría de las distribuciones) en vez de un punto vacío.
+  useEffect(() => {
+    if (!cargando && ubicaciones.length === 0 && mapaRef.current) mapaRef.current.setView([-5, -70], 3);
+  }, [cargando, ubicaciones.length]);
+
   function marcarActiva(id: string) {
     setUbicacionActivaId(id);
     filasListaRef.current.get(id)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
@@ -133,8 +178,13 @@ function MapaCultivoPage({ onSeleccionarPlanta }: Props) {
     <section>
       <h2>Mapa de distribución de cultivos</h2>
       <p className="comentario-meta">
-        Ubicaciones de cultivo registradas por la comunidad. Se usa OpenTopoMap + Leaflet, con relieve y curvas de nivel, sin necesidad de clave de API de pago.
+        Dos capas distintas: los cultivos registrados por productores de la comunidad y, aparte, la distribución natural documentada de cada especie. Se usa OpenTopoMap + Leaflet, con relieve y curvas de nivel, sin necesidad de clave de API de pago.
       </p>
+
+      <div className="mapa-leyenda" role="group" aria-label="Capas del mapa">
+        <label><input type="checkbox" checked={verCultivos} onChange={(e) => setVerCultivos(e.target.checked)} /> <span className="mapa-leyenda-pin mapa-leyenda-cultivo" aria-hidden="true" /> <strong>Cultivos registrados por la comunidad</strong> (ubicación real que un productor registró)</label>
+        <label><input type="checkbox" checked={verNatural} onChange={(e) => setVerNatural(e.target.checked)} /> <span className="mapa-leyenda-pin mapa-natural-pin" aria-hidden="true"><span /></span> <strong>Distribución natural documentada de la especie</strong> (fuente Kew POWO; centro aproximado de un país o región — no es una ubicación de cultivo)</label>
+      </div>
 
       {puedeVerPendientes && (
         <label style={{ display: 'flex', gap: '.5rem', alignItems: 'center', margin: '.5rem 0' }}>
@@ -179,7 +229,7 @@ function MapaCultivoPage({ onSeleccionarPlanta }: Props) {
           <div ref={contenedorRef} className="mapa-cultivo-mapa" />
           <div className="mapa-cultivo-lista" aria-label="Lista de ubicaciones de cultivo, sincronizada con el mapa">
             {cargando && <p>Cargando ubicaciones…</p>}
-            {!cargando && filtradas.length === 0 && <p>Ninguna ubicación coincide con la búsqueda/filtro actual.</p>}
+            {!cargando && filtradas.length === 0 && ubicaciones.length > 0 && <p>Ninguna ubicación coincide con la búsqueda/filtro actual.</p>}
             {conCoordenadas.map((u) => (
               <button
                 key={u.id}
@@ -211,7 +261,7 @@ function MapaCultivoPage({ onSeleccionarPlanta }: Props) {
           </div>
         </div>
       )}
-      {!cargando && !error && ubicaciones.length === 0 && <p>Todavía no hay ubicaciones de cultivo registradas.</p>}
+      {!cargando && !error && ubicaciones.length === 0 && <p>Todavía no hay ubicaciones de cultivo registradas por productores: esa capa se llenará cuando alguien las registre. Mientras tanto, el mapa muestra la distribución natural documentada de cada especie.</p>}
     </section>
   );
 }
@@ -220,6 +270,20 @@ function MapaCultivoPage({ onSeleccionarPlanta }: Props) {
 // engancharle un manejador de click de verdad al nombre de la planta -- evita innerHTML con datos
 // del backend (los `textContent` de abajo ya escapan todo) y evita tener que exponer un callback
 // global en window sólo para que un <button> dentro de un string HTML pueda dispararlo.
+function crearPopupNatural(p: Planta, zona: string, onSeleccionarPlanta: (plantaId: string) => void): HTMLElement {
+  const c = document.createElement('div');
+  c.className = 'mapa-cultivo-popup';
+  const nombre = document.createElement('button');
+  nombre.type = 'button'; nombre.className = 'mapa-cultivo-popup-planta'; nombre.textContent = p.nombreComun; nombre.title = 'Ver ficha completa de la planta';
+  nombre.addEventListener('click', () => onSeleccionarPlanta(p.id));
+  c.appendChild(nombre);
+  const z = document.createElement('div'); z.textContent = `Distribución natural: ${zona}`; c.appendChild(z);
+  const aviso = document.createElement('div'); aviso.className = 'fuente-cita';
+  aviso.textContent = 'Distribución natural documentada de la especie (Kew POWO) — no es una ubicación de cultivo real registrada por un productor.';
+  c.appendChild(aviso);
+  return c;
+}
+
 function crearPopup(u: UbicacionCultivoVisible, onSeleccionarPlanta: (plantaId: string) => void): HTMLElement {
   const contenedor = document.createElement('div');
   contenedor.className = 'mapa-cultivo-popup';

@@ -1,6 +1,6 @@
 import { EstadoValidacion } from '../value-objects/estado-validacion.vo';
 
-export interface PlantaProps { id: string; nombreComun: string; nombreCientifico: string; familia: string; region: string; habitat: string; imagenPrincipal?: string; imagenAutor?: string; imagenLicencia?: string; imagenFuenteUrl?: string; latitud?: number | null; longitud?: number | null; estadoValidacion: EstadoValidacion; }
+export interface PlantaProps { id: string; nombreComun: string; nombreCientifico: string; familia: string; region: string; habitat: string; imagenPrincipal?: string; imagenAutor?: string; imagenLicencia?: string; imagenFuenteUrl?: string; distribucionNatural?: { zona: string; lat: number; lng: number }[]; latitud?: number | null; longitud?: number | null; estadoValidacion: EstadoValidacion; }
 // Devuelve las props sin la ubicación de observación: es lo único que sale por el catálogo público.
 export function propsPublicasDePlanta(p: PlantaProps): Omit<PlantaProps, 'latitud' | 'longitud'> { const { latitud: _la, longitud: _lo, ...resto } = p; return resto; }
 export class Planta {

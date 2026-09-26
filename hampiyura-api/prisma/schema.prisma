@@ -115,6 +115,8 @@ model Planta {
   imagenAutor String?
   imagenLicencia String?
   imagenFuenteUrl String?
+  // Distribución natural documentada (Kew POWO), a nivel de país/región: [{zona,lat,lng}]. Alimenta la 2.ª capa del mapa de cultivos; no es una ubicación de cultivo.
+  distribucionNatural Json?
   // Ubicación de observación (GPS/mapa al proponer). Nunca se expone en el catálogo público (RN-07: la
   // ubicación exacta de una planta puede ponerla en riesgo); solo la ve quien valida.
   latitud Float?

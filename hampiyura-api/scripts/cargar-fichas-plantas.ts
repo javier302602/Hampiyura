@@ -6,7 +6,7 @@
 // cuenta Administrador, con su registro de validación, igual que las combinaciones Parte+Uso de la Ronda 28.
 import { PrismaClient } from '@prisma/client';
 import { randomUUID } from 'crypto';
-import { FICHAS_PLANTAS } from './datos-fichas-plantas';
+import { FICHAS_PLANTAS, DISTRIBUCION_NATURAL } from './datos-fichas-plantas';
 
 const APLICAR = process.argv.includes('--aplicar');
 const prisma = new PrismaClient();
@@ -25,7 +25,9 @@ const binomial = (c: string) => c.replace(/\(.*?\)/g, '').split(/\s+/).filter((x
     const planta = todas.find((x) => binomial(x.nombreCientifico) === f.bin);
     if (!planta) { console.log(`✗ No está en la BD: ${f.bin}`); continue; }
 
-    const datos: Record<string, string> = {};
+    const datos: Record<string, any> = {};
+    const dist = DISTRIBUCION_NATURAL[f.bin];
+    if (dist && JSON.stringify(planta.distribucionNatural) !== JSON.stringify(dist)) datos.distribucionNatural = dist;
     if (planta.habitat !== f.habitat) { datos.habitat = f.habitat; habitats++; }
     if (f.foto && planta.imagenPrincipal !== f.foto.url) {
       Object.assign(datos, { imagenPrincipal: f.foto.url, imagenAutor: f.foto.autor, imagenLicencia: f.foto.licencia, imagenFuenteUrl: f.foto.fuenteUrl }); fotos++;

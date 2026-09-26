@@ -13,6 +13,8 @@ export interface Planta {
   imagenAutor?: string;
   imagenLicencia?: string;
   imagenFuenteUrl?: string;
+  // Distribución natural documentada (Kew POWO), a nivel de país/región. No es una ubicación de cultivo.
+  distribucionNatural?: { zona: string; lat: number; lng: number }[];
 }
 
 // GET /plantas/:id (ObtenerPlantaUseCase) enriquece la ficha con el resumen de conservación de

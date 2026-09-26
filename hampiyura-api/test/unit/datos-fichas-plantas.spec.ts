@@ -69,3 +69,18 @@ describe('fichas de plantas (Ronda 29)', () => {
     }
   });
 });
+
+import { DISTRIBUCION_NATURAL } from '../../scripts/datos-fichas-plantas';
+describe('distribución natural (Ronda 30)', () => {
+  it('cada planta tiene al menos un punto con coordenadas válidas y nombre de zona', () => {
+    for (const f of FICHAS_PLANTAS) {
+      const pts = DISTRIBUCION_NATURAL[f.bin];
+      expect(pts?.length).toBeGreaterThan(0);
+      for (const d of pts) { expect(d.zona.trim()).not.toBe(''); expect(Math.abs(d.lat)).toBeLessThanOrEqual(90); expect(Math.abs(d.lng)).toBeLessThanOrEqual(180); }
+    }
+  });
+  it('Hercampuri solo se ubica en Perú (Junín, Andes altos), como dice Kew POWO', () => {
+    expect(DISTRIBUCION_NATURAL['Gentianella alborosea']).toHaveLength(1);
+    expect(DISTRIBUCION_NATURAL['Gentianella alborosea'][0].zona).toMatch(/Junín/);
+  });
+});
