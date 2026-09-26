@@ -95,6 +95,33 @@ Las contraseñas se **generan al azar en tu máquina** (18 caracteres, distintas
 persona por un canal privado y luego borra el archivo. Si corres el script otra vez el mismo día y falta alguna cuenta, sus claves se **añaden**
 al final del mismo archivo. Cada persona debe cambiar su clave desde *Mi perfil*.
 
+**¿No puedes iniciar sesión ("Credenciales inválidas")?** Ese mensaje sale si la cuenta NO existe en la base a la que se conecta la API
+o si la clave no coincide. Nunca es "un bug de la clave": lo más común es usar la clave de OTRO entorno (cada instalación genera claves
+distintas) o haber creado las cuentas en otra base. Con Docker, en este orden (todo **dentro del contenedor de la API**, que es la base real):
+
+```bash
+# 1) ¿A qué base está conectada la API y existen las 12 cuentas y están Activas? (no modifica nada; no imprime claves)
+docker compose exec api npx tsx scripts/diagnosticar-login.ts
+# opcional: ¿esta clave concreta valida para este correo?
+docker compose exec -e CLAVE_PRUEBA="la-clave" api npx tsx scripts/diagnosticar-login.ts junior@hampiyura.local
+
+# 2) Si faltan cuentas: créalas (solo crea las que faltan)
+docker compose exec -e CREDENCIALES_ARCHIVO=/app/state/credenciales-equipo.txt api npx tsx scripts/crear-cuentas-equipo.ts --aplicar
+
+# 3) Si existen pero nadie sabe la clave: restablece TODAS con claves nuevas (o solo algunas con --correo=...)
+docker compose exec -e CREDENCIALES_ARCHIVO=/app/state/credenciales-equipo.txt api npx tsx scripts/restablecer-claves-equipo.ts --aplicar
+
+# 4) Lee las claves nuevas (solo tú), pásalas por un canal privado y BORRA el archivo
+docker compose exec api cat /app/state/credenciales-equipo.txt
+docker compose exec api rm /app/state/credenciales-equipo.txt
+```
+
+El archivo se escribe en `/app/state`, que es un **volumen**: sobrevive a reinicios y a `docker compose up -d --build`. Si NO usas
+`CREDENCIALES_ARCHIVO`, se escribe fuera de un volumen y se pierde al recrear el contenedor. En **Git Bash de Windows** antepón
+`MSYS_NO_PATHCONV=1` al comando (si no, cambia `/app/state` por una ruta de Windows). El correo no distingue mayúsculas ni espacios
+alrededor; la clave sí distingue todo y no admite espacios al copiarla. El administrador del seed (`SEED_ADMIN_*`) entra con la clave del `.env`
+(cámbiala si el sitio es público; para restablecerla: `--correo=admin@hampiyura.local`).
+
 **Plan B (sin Docker para la API/frontend):** `docker compose up -d db` levanta solo PostgreSQL y el resto se corre a
 mano con `npm` (sección 2b). Si prefieres tu propio PostgreSQL, crea una base vacía `hampiyura`, apunta `DATABASE_URL`
 a ella y ejecuta `npx prisma migrate deploy` (crea todas las tablas) y `npm run seed` (datos base), y después los cuatro scripts de datos de

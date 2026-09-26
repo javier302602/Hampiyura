@@ -7,24 +7,12 @@
 // imprimen ni se suben nunca. Si ese archivo ya existe ese día, se AÑADEN al final (no se pierden las anteriores).
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
-import { randomUUID, randomInt } from 'crypto';
-import { appendFileSync, existsSync } from 'fs';
-import path from 'path';
+import { randomUUID } from 'crypto';
 import { CUENTAS_EQUIPO, planificarCuentas } from './datos-cuentas-equipo';
+import { contraseñaAleatoria, escribirCredenciales, rutaCredenciales } from './util-credenciales';
 
 const APLICAR = process.argv.includes('--aplicar');
 const prisma = new PrismaClient();
-
-// 18 caracteres sin ambiguos (sin 0/O/1/l/I), con mayúscula, minúscula, número y símbolo garantizados.
-function contraseña(): string {
-  const may = 'ABCDEFGHJKLMNPQRSTUVWXYZ', min = 'abcdefghijkmnopqrstuvwxyz', num = '23456789', sim = '#$%&*+-=?@';
-  const todos = may + min + num + sim;
-  const pick = (s: string) => s[randomInt(s.length)];
-  const chars = [pick(may), pick(min), pick(num), pick(sim)];
-  while (chars.length < 18) chars.push(pick(todos));
-  for (let i = chars.length - 1; i > 0; i--) { const j = randomInt(i + 1); [chars[i], chars[j]] = [chars[j], chars[i]]; }
-  return chars.join('');
-}
 
 (async () => {
   const existentes = await prisma.usuario.findMany({ select: { correo: true, rol: true } });
@@ -34,12 +22,10 @@ function contraseña(): string {
   for (const c of porCrear) console.log(`  ${APLICAR ? '+ creada ' : '· crearía'}     ${c.correo.padEnd(42)} ${c.rol}`);
 
   if (APLICAR && porCrear.length > 0) {
-    const nuevas = porCrear.map((c) => ({ c, clave: contraseña() }));
+    const nuevas = porCrear.map((c) => ({ c, clave: contraseñaAleatoria() }));
     // Primero el archivo de credenciales (si no se puede escribir, se aborta ANTES de crear cuentas cuya clave se perdería).
-    // CREDENCIALES_ARCHIVO (opcional) cambia dónde se escriben; por defecto, la raíz del proyecto.
-    const archivo = process.env.CREDENCIALES_ARCHIVO ? path.resolve(process.env.CREDENCIALES_ARCHIVO) : path.resolve(__dirname, '..', '..', `credenciales-equipo-${new Date().toISOString().slice(0, 10)}.txt`);
-    const encabezado = existsSync(archivo) ? '' : 'CREDENCIALES DEL EQUIPO HAMPIYURA -- pásalas por un canal privado y borra este archivo después.\n\n';
-    appendFileSync(archivo, encabezado + nuevas.map(({ c, clave }) => `${c.rol.padEnd(22)} ${c.nombre.padEnd(26)} ${c.correo.padEnd(42)} ${clave}`).join('\n') + '\n', { mode: 0o600 });
+    const archivo = rutaCredenciales();
+    escribirCredenciales(archivo, nuevas.map(({ c, clave }) => ({ rol: c.rol, nombre: c.nombre, correo: c.correo, clave })));
     for (const { c, clave } of nuevas) {
       await prisma.usuario.create({ data: { id: randomUUID(), nombre: c.nombre, correo: c.correo, contraseñaHash: await bcrypt.hash(clave, 10), rol: c.rol as any, estado: 'Activo', idioma: 'es', nivelConocimiento: 'Pendiente', region: 'Pendiente' } });
     }
