@@ -5,7 +5,7 @@
 
 .section-header{display:flex;align-items:flex-end;justify-content:space-between;gap:var(--space-4);flex-wrap:wrap;margin-bottom:var(--space-6)}
 .section-header-text{display:grid;gap:var(--space-2);max-width:640px}
-.section-header-eyebrow{font-size:var(--font-size-label);text-transform:uppercase;letter-spacing:.08em;color:var(--color-accent);font-weight:var(--font-weight-bold);margin:0}
+.section-header-eyebrow{font-size:var(--font-size-label);text-transform:uppercase;letter-spacing:.08em;color:var(--color-accent-text);font-weight:var(--font-weight-bold);margin:0}
 .section-header-title{font-size:var(--font-size-h2);font-weight:var(--font-weight-bold);color:var(--color-text);margin:0;line-height:var(--line-height-tight)}
 .section-header-desc{font-size:var(--font-size-body);color:var(--color-text-muted);margin:0}
 

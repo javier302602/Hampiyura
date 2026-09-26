@@ -1,0 +1,64 @@
+/* M-15 · Contacto pagado y planes. Solo tokens del design system (claro/oscuro). */
+.planes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:var(--space-5);margin:var(--space-5) 0}
+.plan-card{
+  display:flex;flex-direction:column;gap:var(--space-3);
+  background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);
+  padding:var(--space-5);box-shadow:var(--card-shadow);
+}
+.plan-card-destacada{border:2px solid var(--color-accent-deep);box-shadow:var(--shadow-md)}
+.plan-card h3{margin:0;font-size:var(--font-size-h3)}
+.plan-precio{margin:.15em 0 0;font-size:1.6rem;font-weight:var(--font-weight-bold);color:var(--color-text);line-height:1.2}
+.plan-referencial{margin:0;font-size:var(--font-size-caption);color:var(--color-text-muted)}
+.plan-para{margin:0;font-size:var(--font-size-small);color:var(--color-text-muted)}
+.plan-lista{list-style:none;margin:0;padding:0;display:grid;gap:var(--space-2);font-size:var(--font-size-small)}
+.plan-lista li{display:flex;gap:var(--space-2);align-items:flex-start;color:var(--color-text)}
+.plan-lista svg{flex-shrink:0;margin-top:3px;color:var(--color-success)}
+.plan-proximamente{border-top:1px dashed var(--color-border);padding-top:var(--space-3);font-size:var(--font-size-small);color:var(--color-text-muted)}
+.plan-proximamente p{display:flex;gap:var(--space-1);align-items:center;margin:0 0 var(--space-1);font-weight:var(--font-weight-medium);font-size:inherit;color:inherit}
+.plan-proximamente ul{margin:0;padding-left:1.2em}
+.plan-card footer{margin-top:auto;padding-top:var(--space-3)}
+.plan-card footer .btn{max-width:100%;white-space:normal;text-align:center;height:auto}
+
+.planes-contexto{display:flex;gap:var(--space-3);align-items:flex-start;background:var(--color-info-bg);color:var(--color-info);border:1px solid color-mix(in srgb,var(--color-info) 35%,transparent);border-radius:var(--radius-md);padding:var(--space-4);margin:var(--space-4) 0}
+.planes-contexto p{margin:.2em 0 0;font-size:var(--font-size-small);color:inherit;max-width:none}
+.planes-contexto svg{flex-shrink:0;margin-top:2px}
+.planes-pie{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:var(--space-4);margin-top:var(--space-5)}
+.planes-pie-bloque{display:grid;gap:var(--space-2);justify-items:start;border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-4);background:var(--color-surface)}
+.planes-pie-bloque p{margin:0;font-size:var(--font-size-small);max-width:none}
+
+/* Botón con aspecto de enlace (navegación dentro de un párrafo) */
+.enlace-boton{background:none;border:none;padding:0;font:inherit;font-weight:var(--font-weight-bold);color:var(--color-text);text-decoration:underline;cursor:pointer}
+.enlace-boton:hover{color:var(--color-accent-hover)}
+.lista-simple{margin:0 0 var(--space-4);padding-left:1.2em;display:grid;gap:var(--space-1)}
+
+/* Pago */
+.pago-monto{margin:0;font-size:2rem;font-weight:var(--font-weight-bold);color:var(--color-text)}
+.pago-monto span{font-size:var(--font-size-small);font-weight:var(--font-weight-regular);color:var(--color-text-muted)}
+.pago-destino{margin:0;padding:var(--space-3) var(--space-4);border-radius:var(--radius-md);background:var(--color-accent-soft);color:var(--color-text);font-size:var(--font-size-body);max-width:none}
+.formulario .metodo-pago{border:none;padding:0;margin:0;display:flex;gap:var(--space-3);flex-wrap:wrap}
+.formulario .metodo-pago legend{font-weight:var(--font-weight-bold);font-size:.95rem;padding:0;margin-bottom:var(--space-2)}
+.formulario .metodo-opcion{display:flex;flex-direction:row;align-items:center;gap:var(--space-2);padding:.6em 1em;border:1px solid var(--color-border);border-radius:var(--radius-pill);background:var(--color-surface);cursor:pointer;font-weight:var(--font-weight-medium)}
+.formulario .metodo-opcion input{width:16px;height:16px;padding:0}
+.formulario .metodo-opcion-activa{border:2px solid var(--color-accent-deep);background:var(--color-accent-soft)}
+.formulario .metodo-opcion:focus-within{outline:2px solid var(--color-accent);outline-offset:2px}
+.comprobante-preview{max-width:240px;max-height:320px;object-fit:contain;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg)}
+.comprobante-grande{display:block;max-width:100%;max-height:420px;margin:0 auto;object-fit:contain;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-bg)}
+.comprobante-enlace{display:block}
+.pago-enviado{display:grid;gap:var(--space-3);justify-items:start;max-width:640px}
+.pago-enviado p{max-width:none}
+
+/* Mi plan */
+.mi-plan-resumen{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--space-3);margin:var(--space-4) 0}
+.mi-plan-resumen>div{display:grid;gap:var(--space-1);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-4);box-shadow:var(--card-shadow)}
+.mi-plan-resumen strong{font-size:1.2rem;color:var(--color-text)}
+.mi-plan-etiqueta{font-size:var(--font-size-caption);text-transform:uppercase;letter-spacing:.05em;color:var(--color-text-muted);font-weight:var(--font-weight-medium)}
+
+/* Directorio y contacto */
+.productor-dato{display:flex;gap:var(--space-2);align-items:center;font-size:var(--font-size-small);color:var(--color-text)}
+.contacto-abierto,.contacto-bloqueado{margin-top:var(--space-5);max-width:640px;border-radius:var(--radius-md);padding:var(--space-4) var(--space-5);display:grid;gap:var(--space-2);justify-items:start}
+.contacto-abierto{background:var(--color-success-bg);border:1px solid color-mix(in srgb,var(--color-success) 40%,transparent);color:var(--color-success)}
+.contacto-abierto p{color:inherit;margin:0;font-weight:var(--font-weight-bold)}
+.contacto-abierto h3,.contacto-bloqueado h3{display:flex;gap:var(--space-2);align-items:center;margin:0}
+.contacto-abierto .comentario-meta{color:inherit;font-weight:var(--font-weight-regular)}
+.contacto-bloqueado{background:var(--color-surface);border:2px dashed var(--color-border)}
+.contacto-bloqueado p{margin:0;max-width:none}

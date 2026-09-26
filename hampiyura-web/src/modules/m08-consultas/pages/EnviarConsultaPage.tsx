@@ -1,4 +1,7 @@
-import { FormEvent, useState } from 'react';
+import { ChangeEvent, FormEvent, useState } from 'react';
+import { ImagePlus, MapPin, X } from 'lucide-react';
+import { subirMedia, leerArchivoComoBase64 } from '../../m06-publicaciones/api/publicaciones.api';
+import SelectorUbicacionMapa from '../../m03-cultivo/components/SelectorUbicacionMapa';
 import Button from '../../../shared/ui/Button';
 import { crearConsulta, TIPOS_CONSULTA, ETIQUETAS_TIPO_CONSULTA, type TipoConsulta, type Consulta } from '../api/consultas.api';
 import { getSession } from '../../../shared/auth/session';
@@ -16,14 +19,33 @@ function EnviarConsultaPage({ onVerMisConsultas, onVolver }: Props) {
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [enviada, setEnviada] = useState<Consulta | null>(null);
+  const [imagenes, setImagenes] = useState<string[]>([]);
+  const [subiendoFoto, setSubiendoFoto] = useState(false);
+  const [conUbicacion, setConUbicacion] = useState(false);
+  const [coordenadas, setCoordenadas] = useState<{ lat: number; lon: number } | null>(null);
   const haySesion = !!getSession();
+
+  // Fotos de la consulta (hasta 5): se suben a la plataforma igual que en las demás pantallas. Gratis: no depende de ningún plan.
+  async function alElegirFotos(e: ChangeEvent<HTMLInputElement>) {
+    const archivos = Array.from(e.target.files ?? []);
+    e.target.value = '';
+    if (archivos.length === 0) return;
+    if (imagenes.length + archivos.length > 5) { setError('Puedes adjuntar hasta 5 fotos.'); return; }
+    setSubiendoFoto(true); setError(null);
+    try {
+      const nuevas: string[] = [];
+      for (const a of archivos) nuevas.push((await subirMedia(a.name, await leerArchivoComoBase64(a))).url);
+      setImagenes((prev) => [...prev, ...nuevas]);
+    } catch (err) { setError(err instanceof Error ? err.message : 'No se pudo subir la foto.'); }
+    finally { setSubiendoFoto(false); }
+  }
 
   async function manejarSubmit(e: FormEvent) {
     e.preventDefault();
     setEnviando(true);
     setError(null);
     try {
-      const creada = await crearConsulta({ tipo, descripcion });
+      const creada = await crearConsulta({ tipo, descripcion, imagenes: imagenes.length ? imagenes : undefined, latitud: conUbicacion ? coordenadas?.lat : undefined, longitud: conUbicacion ? coordenadas?.lon : undefined });
       setEnviada(creada);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo enviar la consulta.');
@@ -70,6 +92,33 @@ function EnviarConsultaPage({ onVerMisConsultas, onVolver }: Props) {
           Descripción
           <textarea value={descripcion} onChange={(e) => setDescripcion(e.target.value)} required />
         </label>
+        <div className="form-section">
+          <h3 className="form-section-title">Fotos y ubicación (opcional)</h3>
+          <p className="form-section-desc">Sirven para explicar mejor el problema (por ejemplo, una hoja enferma o dónde está la planta). Adjuntarlas es gratis y no depende de ningún plan.</p>
+          <label>
+            Fotos (hasta 5)
+            <input type="file" accept="image/*" multiple onChange={alElegirFotos} disabled={subiendoFoto || imagenes.length >= 5} />
+          </label>
+          {subiendoFoto && <p className="comentario-meta">Subiendo fotos…</p>}
+          {imagenes.length > 0 && (
+            <div className="galeria-imagenes">
+              {imagenes.map((url) => (
+                <div key={url}>
+                  <img src={url} alt="Foto adjunta a la consulta" />
+                  <button type="button" className="icon-btn" aria-label="Quitar foto" onClick={() => setImagenes((prev) => prev.filter((u) => u !== url))}><X size={14} aria-hidden="true" /></button>
+                </div>
+              ))}
+            </div>
+          )}
+          {!conUbicacion ? (
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => setConUbicacion(true)}><MapPin size={15} aria-hidden="true" /> Agregar ubicación</button>
+          ) : (
+            <>
+              <SelectorUbicacionMapa permitirGps onCambiarUbicacion={(lat, lon) => setCoordenadas({ lat, lon })} />
+              <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setConUbicacion(false); setCoordenadas(null); }}>Quitar la ubicación</button>
+            </>
+          )}
+        </div>
         {!haySesion && (
           <p className="comentario-meta">
             No tienes una sesión activa: esta consulta se enviará como visitante y no vas a poder consultar su
@@ -77,7 +126,7 @@ function EnviarConsultaPage({ onVerMisConsultas, onVolver }: Props) {
           </p>
         )}
         {error && <p className="error-formulario">{error}</p>}
-        <button type="submit" disabled={enviando || !descripcion.trim()}>{enviando ? 'Enviando…' : 'Enviar consulta'}</button>
+        <button type="submit" disabled={enviando || subiendoFoto || !descripcion.trim() || (conUbicacion && !coordenadas)}>{enviando ? 'Enviando…' : 'Enviar consulta'}</button>
       </form>
     </section>
   );

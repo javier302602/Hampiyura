@@ -7,5 +7,8 @@ export interface CrearConsultaInput {
   tipo: string;
   descripcion: string;
   autorId?: string;
+  imagenes?: string[];
+  latitud?: number;
+  longitud?: number;
 }
 export interface CrearConsultaPort { ejecutar(input: CrearConsultaInput): Promise<Consulta>; }

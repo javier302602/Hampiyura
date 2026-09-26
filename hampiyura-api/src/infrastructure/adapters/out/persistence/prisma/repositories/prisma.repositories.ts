@@ -6,6 +6,8 @@ import { TokenAccion } from '../../../../../../domain/entities/token-accion.enti
 import { Planta } from '../../../../../../domain/entities/planta.entity';
 import { ParteUso } from '../../../../../../domain/entities/parte-uso.entity';
 import { Uso } from '../../../../../../domain/entities/uso.entity';
+import { PagoContacto } from '../../../../../../domain/entities/pago-contacto.entity';
+import { PagoContactoRepositoryPort } from '../../../../../../domain/ports/out/pago-contacto.repository.port';
 import { Reporte } from '../../../../../../domain/entities/reporte.entity';
 import { Publicacion } from '../../../../../../domain/entities/publicacion.entity';
 import { Comentario } from '../../../../../../domain/entities/comentario.entity';
@@ -105,6 +107,18 @@ export class PrismaUsoRepository implements UsoRepositoryPort {
   async buscarPorId(id:string){const x=await this.prisma.uso.findUnique({where:{id}}); return x?new Uso({...x,descripcion:x.descripcion??undefined}):null;}
   async buscarPorNombre(nombre:string){const x=await this.prisma.uso.findUnique({where:{nombre}}); return x?new Uso({...x,descripcion:x.descripcion??undefined}):null;}
 }
+// M-15: pagos con comprobante (planes y desbloqueos puntuales).
+export class PrismaPagoContactoRepository implements PagoContactoRepositoryPort {
+  constructor(private readonly prisma:PrismaClient) {}
+  private aDominio(x:any):PagoContacto {
+    return new PagoContacto({ ...x, plan:(x.plan??undefined), productorId:x.productorId??undefined, numeroOperacion:x.numeroOperacion??undefined, revisadoPorId:x.revisadoPorId??undefined, revisadoEn:x.revisadoEn??undefined, motivoRechazo:x.motivoRechazo??undefined, vigenteDesde:x.vigenteDesde??undefined, vigenteHasta:x.vigenteHasta??undefined });
+  }
+  async guardar(p:PagoContacto){await this.prisma.pagoContacto.create({data:p.props as any});}
+  async actualizar(p:PagoContacto){const {id,...datos}=p.props; await this.prisma.pagoContacto.update({where:{id},data:datos as any});}
+  async buscarPorId(id:string){const x=await this.prisma.pagoContacto.findUnique({where:{id}}); return x?this.aDominio(x):null;}
+  async listarPorUsuario(usuarioId:string){const xs=await this.prisma.pagoContacto.findMany({where:{usuarioId}}); return xs.map((x)=>this.aDominio(x));}
+  async listar(estado?:'Pendiente'|'Confirmado'|'Rechazado'){const xs=await this.prisma.pagoContacto.findMany({where:estado?{estado}:undefined,orderBy:{creadoEn:'desc'}}); return xs.map((x)=>this.aDominio(x));}
+}
 export class PrismaReporteRepository implements ReporteRepositoryPort {
   constructor(private readonly prisma:PrismaClient) {}
   async guardar(r:Reporte){await this.prisma.reporte.create({data:r.props as any});}
@@ -200,6 +214,9 @@ export class PrismaConsultaRepository implements ConsultaRepositoryPort {
       areaAsignada: (x.areaAsignada ?? undefined) as AreaEspecialidad | undefined,
       asignadoA: x.asignadoA ?? undefined,
       fechaPrimeraRespuestaEquipo: x.fechaPrimeraRespuestaEquipo ?? undefined,
+      imagenes: x.imagenes ?? [],
+      latitud: x.latitud ?? undefined,
+      longitud: x.longitud ?? undefined,
     } as ConsultaProps);
   }
   async guardar(c:Consulta){await this.prisma.consulta.create({data:c.props as any});}

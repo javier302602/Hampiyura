@@ -23,6 +23,10 @@ export interface ConsultaProps {
   // RNF-302 (¤24h): se registra la fecha del primer mensaje del equipo para poder medir después
   // cuánto tardó la primera respuesta -- sin necesidad de un cron/alerta automática para el hackathon.
   fechaPrimeraRespuestaEquipo?: Date;
+  // Fotos (URLs de /uploads) y ubicación opcionales: gratis, sin depender de ningún plan (M-15).
+  imagenes?: string[];
+  latitud?: number | null;
+  longitud?: number | null;
 }
 
 // RN-06: alta automática para reportes que ameritan atención urgente (planta en peligro, o

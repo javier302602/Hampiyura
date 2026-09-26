@@ -42,10 +42,17 @@ export class CrearConsultaUseCase implements CrearConsultaPort {
   async ejecutar(input: CrearConsultaInput): Promise<Consulta> {
     if (!esTipoConsulta(input.tipo)) throw new ValidationError(`Tipo de consulta no reconocido: ${input.tipo}`);
     if (!input.descripcion?.trim()) throw new ValidationError('La descripción de la consulta es obligatoria');
+    const { latitud, longitud } = input;
+    if ((latitud == null) !== (longitud == null)) throw new ValidationError('La ubicación necesita latitud y longitud juntas');
+    if (latitud != null && (latitud < -90 || latitud > 90 || (longitud as number) < -180 || (longitud as number) > 180)) throw new ValidationError('Ubicación fuera de rango');
+    const imagenes = input.imagenes ?? [];
+    if (imagenes.length > 5) throw new ValidationError('Puedes adjuntar hasta 5 fotos');
+    if (imagenes.some((u) => !u.startsWith('/uploads/'))) throw new ValidationError('Las fotos deben subirse a la plataforma');
     const ahora = new Date();
     const consulta = new Consulta({
       id: randomUUID(),
       autorId: input.autorId,
+      imagenes, latitud, longitud,
       tipo: input.tipo,
       descripcion: input.descripcion,
       estado: 'Pendiente',

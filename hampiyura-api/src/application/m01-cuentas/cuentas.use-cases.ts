@@ -110,6 +110,41 @@ export class ObtenerPerfilUseCase {
     return perfil;
   }
 }
+// Perfil (campos básicos): teléfono, región, biografía corta y, solo para Productor, el nombre de su negocio.
+export interface ActualizarPerfilInput { telefono?: string | null; region?: string; biografia?: string | null; nombreNegocio?: string | null; }
+export class ActualizarPerfilUseCase {
+  constructor(private readonly usuarios:UsuarioRepositoryPort) {}
+  async ejecutar(usuarioId:string, input:ActualizarPerfilInput):Promise<PerfilVisible> {
+    const usuario = await this.usuarios.buscarPorId(usuarioId);
+    if (!usuario) throw new NotFoundError('Usuario no encontrado');
+    const limpio = (v?:string|null) => (v == null ? undefined : v.trim() === '' ? null : v.trim());
+    if (input.telefono !== undefined) {
+      const t = limpio(input.telefono);
+      if (t && !/^[+0-9()\-\s]{6,20}$/.test(t)) throw new ValidationError('El teléfono solo puede llevar números, espacios, + - ( ) (6 a 20 caracteres)');
+      usuario.props.telefono = t;
+    }
+    if (input.region !== undefined) {
+      const r = input.region.trim();
+      if (!r) throw new ValidationError('La región no puede quedar vacía');
+      if (r.length > 120) throw new ValidationError('La región es demasiado larga (máximo 120 caracteres)');
+      usuario.props.region = r;
+    }
+    if (input.biografia !== undefined) {
+      const b = limpio(input.biografia);
+      if (b && b.length > 300) throw new ValidationError('La biografía admite hasta 300 caracteres');
+      usuario.props.biografia = b;
+    }
+    if (input.nombreNegocio !== undefined) {
+      const n = limpio(input.nombreNegocio);
+      if (n && usuario.props.rol !== 'Productor') throw new ValidationError('El nombre de negocio es solo para cuentas de Productor');
+      if (n && n.length > 80) throw new ValidationError('El nombre del negocio admite hasta 80 caracteres');
+      usuario.props.nombreNegocio = n;
+    }
+    await this.usuarios.actualizar(usuario);
+    const { contraseñaHash, ...perfil } = usuario.props;
+    return perfil;
+  }
+}
 export class CambiarContraseñaUseCase {
   constructor(private readonly usuarios:UsuarioRepositoryPort) {}
   async ejecutar(usuarioId:string, contraseñaActual:string, contraseñaNueva:string, confirmacion:string):Promise<void> {

@@ -60,7 +60,7 @@ function PanelCertificacion({ producto, onActualizado }: { producto: ProductoVis
   );
 }
 
-function ProductoDetailPage({ productoId, onVolver }: { productoId: string; onVolver: () => void }) {
+function ProductoDetailPage({ productoId, onVolver, onContactar }: { productoId: string; onVolver: () => void; onContactar?: (productorId: string) => void }) {
   const [producto, setProducto] = useState<ProductoVisible | null>(null);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -130,8 +130,15 @@ function ProductoDetailPage({ productoId, onVolver }: { productoId: string; onVo
       <p>{producto.informacionProceso}</p>
       {producto.fechaElaboracion && <span>Fecha de elaboración: {new Date(producto.fechaElaboracion).toLocaleDateString()}</span>}
 
-      {producto.revisadoPorEquipo && (
+      {producto.revisadoPorEquipo && producto.contactoVendedor && (
         <p className="sello-verificado">✔ Contacto del vendedor: {producto.contactoVendedor}</p>
+      )}
+      {producto.contactoBloqueado && (
+        <div className="contacto-bloqueado" role="region" aria-label="Contacto bloqueado">
+          <h3>El contacto del vendedor está bloqueado</h3>
+          <p>Necesitas un plan activo o desbloquear el contacto de este productor. La información del producto sigue siendo gratis.</p>
+          <button type="button" className="btn btn-primary" onClick={() => onContactar?.(producto.productorId)}>Contactar</button>
+        </div>
       )}
 
       <RequireRole permitido={esValidador}>

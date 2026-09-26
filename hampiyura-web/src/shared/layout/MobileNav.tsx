@@ -1,4 +1,4 @@
-import { Bell, Flag, FlaskConical, Home, Inbox, LayoutDashboard, LogOut, MessageSquare, Package, Sprout, TreeDeciduous, UserRound, Users, X } from 'lucide-react';
+import { Bell, Flag, Wallet, FlaskConical, Home, Inbox, LayoutDashboard, LogOut, MessageSquare, Package, Sprout, TreeDeciduous, UserRound, Users, X } from 'lucide-react';
 import type { Session } from '../auth/session';
 import { clearSession, esAdministrador, esValidador } from '../auth/session';
 import SearchBar from '../../modules/m12-busqueda-recomendaciones/components/SearchBar';
@@ -63,6 +63,7 @@ function MobileNav({ sesion, puedeGestionar, onCerrar, ...nav }: Props) {
               <>
                 <button onClick={() => ir(nav.onIrAPanelAdmin)}><LayoutDashboard size={17} aria-hidden="true" /> Panel admin</button>
                 <button onClick={() => ir(nav.onIrAUsuariosAdmin)}><Users size={17} aria-hidden="true" /> Usuarios</button>
+                <button onClick={() => ir(nav.onIrAPagosAdmin)}><Wallet size={17} aria-hidden="true" /> Pagos y planes</button>
               </>
             )}
           </>

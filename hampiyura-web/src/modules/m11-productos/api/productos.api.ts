@@ -33,7 +33,9 @@ export interface Producto {
   longitud?: number;
   informacionProceso: string;
   fechaElaboracion?: string;
-  contactoVendedor: string;
+  // M-15: null cuando quien consulta no tiene plan activo ni desbloqueo vigente de este productor.
+  contactoVendedor: string | null;
+  contactoBloqueado?: boolean;
   documentacionCertificacion?: string;
   requiereRevisionReforzada: boolean;
   etiquetaValidadoDocumental: boolean;

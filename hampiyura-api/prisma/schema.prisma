@@ -75,6 +75,10 @@ model Usuario {
   // eligió el perfil: se registra una sola vez (booleano derivado de que esta fecha no sea null) y
   // cubre todas las publicaciones futuras, en vez de repetir el mismo checkbox en cada producto.
   aceptoComisionEn DateTime?
+  // Perfil (campos básicos): teléfono, presentación breve y, para Productor, nombre de su negocio.
+  telefono String?
+  biografia String?
+  nombreNegocio String?
   cultivos Cultivo[]
   validaciones ValidacionContenido[]
   notificaciones Notificacion[]
@@ -226,6 +230,31 @@ model Valoracion {
   publicacion Publicacion @relation(fields: [publicacionId], references: [id], onDelete: Cascade)
   @@unique([publicacionId, autorId])
 }
+// M-15 · Contacto pagado y planes. Un registro = un pago con comprobante (Yape/Plin) que un administrador
+// confirma o rechaza. concepto='Plan' (Negocio/Empresarial/Destacado, con vencimiento) o 'Desbloqueo'
+// (contacto puntual de UN productor). El "plan activo" y el estado Vencido se DERIVAN de estos registros
+// (Confirmado + vigenteHasta), no se guardan aparte: nada queda "activo" por olvido de un cron.
+model PagoContacto {
+  id String @id @default(uuid())
+  usuarioId String
+  concepto String
+  plan String?
+  productorId String?
+  monto Float
+  metodo String
+  numeroOperacion String?
+  comprobanteUrl String
+  estado String
+  creadoEn DateTime
+  revisadoPorId String?
+  revisadoEn DateTime?
+  motivoRechazo String?
+  vigenteDesde DateTime?
+  vigenteHasta DateTime?
+
+  @@index([usuarioId])
+  @@index([estado])
+}
 model Consulta {
   id String @id @default(uuid())
   autorId String?
@@ -238,6 +267,10 @@ model Consulta {
   fechaCreacion DateTime
   fechaActualizacion DateTime
   fechaPrimeraRespuestaEquipo DateTime?
+  // Fotos y ubicación opcionales (gratis, sin depender de ningún plan).
+  imagenes String[] @default([])
+  latitud Float?
+  longitud Float?
   mensajes MensajeConsulta[]
 }
 model MensajeConsulta {

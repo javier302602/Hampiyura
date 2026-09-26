@@ -8,6 +8,7 @@
 @import "./styles/components/home.css";
 @import "./styles/components/form-sections.css";
 @import "./styles/components/modal.css";
+@import "./styles/components/planes.css";
 @import "./styles/components/perfil.css";
 @import "./styles/components/auth.css";
 
@@ -180,8 +181,8 @@ p{font-size:1.1rem;line-height:1.6;max-width:620px;color:var(--color-text)}
    ninguno de los 3 se deriva automáticamente de otro. */
 .indicadores-producto{display:flex;gap:.6rem;flex-wrap:wrap;margin:.6rem 0}
 .indicador-etiqueta{display:inline-flex;align-items:center;gap:.4em;padding:.5em .9em;border-radius:10px;font-weight:700;font-size:.95rem;border:2px solid}
-.indicador-activo{background:#e3f3e8;color:#1e7a42;border-color:#a9dcbc}
-.indicador-inactivo{background:var(--color-bg);color:#8a8a7a;border-color:var(--color-border)}
+.indicador-activo{background:var(--color-success-bg);color:var(--color-success);border-color:color-mix(in srgb,var(--color-success) 40%,transparent)}
+.indicador-inactivo{background:var(--color-bg);color:var(--color-text-muted);border-color:var(--color-border)}
 
 /* CG-004 (M-03 · mapa de cultivo, RF-271): pantalla propia -- se le da más aire que a una tarjeta
    normal rompiendo el ancho de <main> con el mismo truco de márgenes negativos que ya usa .hero,

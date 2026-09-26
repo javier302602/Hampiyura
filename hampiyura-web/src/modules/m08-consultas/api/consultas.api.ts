@@ -43,6 +43,10 @@ export interface Consulta {
   fechaCreacion: string;
   fechaActualizacion: string;
   fechaPrimeraRespuestaEquipo?: string;
+  // Fotos y ubicación opcionales (gratis, no dependen de ningún plan).
+  imagenes?: string[];
+  latitud?: number | null;
+  longitud?: number | null;
 }
 
 export interface MensajeConsulta {
@@ -56,7 +60,7 @@ export interface MensajeConsulta {
 
 export interface ConsultaConHilo extends Consulta { mensajes: MensajeConsulta[]; }
 
-export interface CrearConsultaInput { tipo: TipoConsulta; descripcion: string; }
+export interface CrearConsultaInput { tipo: TipoConsulta; descripcion: string; imagenes?: string[]; latitud?: number; longitud?: number; }
 export function crearConsulta(input: CrearConsultaInput): Promise<Consulta> {
   return apiRequest<Consulta>('/consultas', { method: 'POST', body: JSON.stringify(input) });
 }

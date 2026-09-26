@@ -34,5 +34,11 @@ export function cambiarContrasena(contraseñaActual: string, contraseñaNueva: s
 // GET /cuentas/perfil no existía en el backend (FASE 7 solo dejó login/registro/recuperación) --
 // se agregó ahora porque sin él "perfil básico" es irrecuperable tras refrescar la página (el JWT
 // solo trae sub+rol, y login() no devuelve nombre). Ver Plan de Gestión de Cambios.
-export interface Perfil { id: string; nombre: string; correo: string; rol: string; idioma: string; nivelConocimiento: string; region: string; estado: string; aceptoComisionEn?: string | null; }
+export interface Perfil { id: string; nombre: string; correo: string; rol: string; idioma: string; nivelConocimiento: string; region: string; estado: string; aceptoComisionEn?: string | null; telefono?: string | null; biografia?: string | null; nombreNegocio?: string | null; }
 export function obtenerPerfil(): Promise<Perfil> { return apiRequest<Perfil>('/cuentas/perfil'); }
+
+// Campos básicos editables del perfil. Cadena vacía = borrar el campo. nombreNegocio solo lo acepta el rol Productor.
+export interface ActualizarPerfilInput { telefono?: string; region?: string; biografia?: string; nombreNegocio?: string; }
+export function actualizarPerfil(input: ActualizarPerfilInput): Promise<Perfil> {
+  return apiRequest<Perfil>('/cuentas/perfil', { method: 'PATCH', body: JSON.stringify(input) });
+}

@@ -7,6 +7,11 @@ import UsosPage from './modules/m04-usos-partes/pages/UsosPage';
 import PublicacionesFeedPage from './modules/m06-publicaciones/pages/PublicacionesFeedPage';
 import PublicacionDetailPage from './modules/m06-publicaciones/pages/PublicacionDetailPage';
 import ProductosDirectorioPage from './modules/m11-productos/pages/ProductosDirectorioPage';
+import PlanesPage from './modules/m15-planes/pages/PlanesPage';
+import PagarPage from './modules/m15-planes/pages/PagarPage';
+import MiPlanPage from './modules/m15-planes/pages/MiPlanPage';
+import PagosAdminPage from './modules/m15-planes/pages/PagosAdminPage';
+import { ProductoresPage, ProductorPage } from './modules/m15-planes/pages/ProductoresPage';
 import ProductoDetailPage from './modules/m11-productos/pages/ProductoDetailPage';
 import PublicarProductoPage from './modules/m11-productos/pages/PublicarProductoPage';
 import ResultadosBusquedaPage from './modules/m12-busqueda-recomendaciones/pages/ResultadosBusquedaPage';
@@ -37,7 +42,7 @@ const RUTAS = {
   publicaciones: '/m06-publicaciones', consultas: '/m08-consultas', validacion: '/m09-validacion-moderacion/bandeja', reportes: '/m09-validacion-moderacion/reportes',
   productos: '/m11-productos-emprendimientos', busqueda: '/m12-busqueda-recomendaciones/resultados',
   admin: '/m13-analitica-estadisticas/panel', adminUsuarios: '/m13-analitica-estadisticas/usuarios',
-  notificaciones: '/m14-notificaciones', cuentas: '/m01-cuentas',
+  notificaciones: '/m14-notificaciones', cuentas: '/m01-cuentas', planes: '/m15-planes',
 } as const;
 
 function RutaPlanta() {
@@ -53,7 +58,7 @@ function RutaPublicacion() {
 function RutaProducto() {
   const { productoId = '' } = useParams();
   const navigate = useNavigate();
-  return <ProductoDetailPage productoId={productoId} onVolver={() => navigate(RUTAS.productos)} />;
+  return <ProductoDetailPage productoId={productoId} onVolver={() => navigate(RUTAS.productos)} onContactar={(productorId) => navigate(`${RUTAS.planes}?productor=${encodeURIComponent(productorId)}`)} />;
 }
 function RutaConsulta() {
   const { consultaId = '' } = useParams();
@@ -95,6 +100,7 @@ function App() {
       onIrARegistrarFichaCultivo={() => navigate(RUTAS.fichaCultivoNueva)}
       onIrAPanelAdmin={() => navigate(RUTAS.admin)}
       onIrAUsuariosAdmin={() => navigate(RUTAS.adminUsuarios)}
+      onIrAPagosAdmin={() => navigate(`${RUTAS.planes}/pagos`)}
       onIrAHome={() => navigate(RUTAS.home)}
       onIrACatalogo={() => navigate(RUTAS.catalogo)}
       onIrAProponerPlanta={() => navigate(RUTAS.proponerPlanta)}
@@ -138,6 +144,12 @@ function App() {
         <Route path={`${RUTAS.consultas}/:consultaId`} element={<RutaConsulta />} />
         <Route path={RUTAS.validacion} element={<RequireRole permitido={esValidador}><BandejaValidacionPage /></RequireRole>} />
         <Route path={RUTAS.reportes} element={<RequireRole permitido={esValidador}><BandejaReportesPage onVerPublicacion={(id) => navigate(`${RUTAS.publicaciones}/${encodeURIComponent(id)}`)} /></RequireRole>} />
+        <Route path={RUTAS.planes} element={<PlanesPage />} />
+        <Route path={`${RUTAS.planes}/pagar`} element={<PagarPage />} />
+        <Route path={`${RUTAS.planes}/mi-plan`} element={<MiPlanPage />} />
+        <Route path={`${RUTAS.planes}/pagos`} element={<RequireRole permitido={esAdministrador}><PagosAdminPage /></RequireRole>} />
+        <Route path={`${RUTAS.planes}/productores`} element={<ProductoresPage />} />
+        <Route path={`${RUTAS.planes}/productores/:productorId`} element={<ProductorPage />} />
         <Route path={RUTAS.admin} element={<RequireRole permitido={esAdministrador}><PanelAdminPage /></RequireRole>} />
         <Route path={RUTAS.adminUsuarios} element={<RequireRole permitido={esAdministrador}><UsuariosAdminPage /></RequireRole>} />
         <Route path="*" element={<Navigate to={RUTAS.home} replace />} />

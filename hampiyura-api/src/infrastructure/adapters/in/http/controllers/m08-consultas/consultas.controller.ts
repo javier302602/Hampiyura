@@ -11,7 +11,7 @@ function id(req:Request):string { return String(req.params.id); }
 
 // RF-263: un visitante sin cuenta puede enviar una consulta general -- esta ruta no exige sesión
 // (attachUserIfPresent, mismo mecanismo ya usado en M-06), pero si hay sesión se adjunta autorId.
-const crearSchema=z.object({tipo:z.enum(TIPOS_CONSULTA),descripcion:z.string().min(1)});
+const crearSchema=z.object({tipo:z.enum(TIPOS_CONSULTA),descripcion:z.string().min(1),imagenes:z.array(z.string()).max(5).optional(),latitud:z.number().min(-90).max(90).optional(),longitud:z.number().min(-180).max(180).optional()});
 export async function crearConsulta(req:Request,res:Response){
   const input=crearSchema.parse(req.body);
   const autorId=(req as AuthenticatedRequest).user?.id;

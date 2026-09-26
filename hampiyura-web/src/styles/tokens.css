@@ -18,6 +18,8 @@
   --color-accent-contrast:#ffffff;
   --color-accent-hover:#94552d;
   --color-accent-soft:#f3e3d3;
+  /* Terracota como TEXTO pequeño (eyebrows, badges de acento): la terracota de botón mide 4.2-4.75:1; esta variante llega a AAA. */
+  --color-accent-text:#6d3b1a;
   --color-accent-deep:#b56837;  /* terracota de la paleta, para acentos NO textuales (bordes, barras, brillos) en ambos temas */
   --color-surface-elevated:#ffffff;
   --warm-glow:transparent;
@@ -103,6 +105,7 @@
     --color-accent:#f0ab78;
     --color-accent-contrast:#08201a;
     --color-accent-hover:#f7bf97;
+    --color-accent-text:#f0ab78;
     --color-accent-soft:#33210f;
 
     --color-success:#6fcf97;   --color-success-bg:#123524;
@@ -140,6 +143,7 @@
   --color-accent:#f0ab78;
   --color-accent-contrast:#08201a;
   --color-accent-hover:#f7bf97;
+  --color-accent-text:#f0ab78;
   --color-accent-soft:#33210f;
 
   --color-success:#6fcf97;   --color-success-bg:#123524;

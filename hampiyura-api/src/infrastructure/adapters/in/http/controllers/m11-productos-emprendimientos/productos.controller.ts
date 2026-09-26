@@ -46,11 +46,12 @@ export async function publicarProducto(req:Request,res:Response){
   const producto=await container.publicarProducto.ejecutar({...resto, plantasIds, plantasUtilizadas, productorId, fechaElaboracion:fechaElaboracion?new Date(fechaElaboracion):undefined});
   res.status(201).json(producto.props);
 }
-export async function obtenerProducto(req:Request,res:Response){const producto=await container.obtenerProducto.ejecutar(String(req.params.id)); res.json(producto);}
+// M-15: el contacto del vendedor solo lo ve quien tenga plan activo o un desbloqueo vigente de ese productor.
+export async function obtenerProducto(req:Request,res:Response){const producto=await container.obtenerProducto.ejecutar(String(req.params.id)); const [protegido]=await container.protegerContactoProductos.aplicar([producto],auth(req)); res.json(protegido);}
 export async function listarProductos(req:Request,res:Response){
   const filtros={localidad:req.query.localidad?String(req.query.localidad):undefined, plantaId:req.query.plantaId?String(req.query.plantaId):undefined};
   const productos=await container.listarProductos.ejecutar(filtros);
-  res.json(productos);
+  res.json(await container.protegerContactoProductos.aplicar(productos,auth(req)));
 }
 export async function marcarValidadoDocumentalmente(req:Request,res:Response){const producto=await container.marcarValidadoDocumentalmente.ejecutar(String(req.params.id)); res.json(producto.props);}
 const certificarSchema=z.object({documentacion:z.string().min(1)});

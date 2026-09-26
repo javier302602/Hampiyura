@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { obtenerConsulta, agregarMensajeConsulta, cerrarConsulta, reabrirConsulta, ETIQUETAS_TIPO_CONSULTA, type ConsultaConHilo } from '../api/consultas.api';
 import IndicadorPrioridad from '../components/IndicadorPrioridad';
+import MiniMapaUbicacion from '../../m03-cultivo/components/MiniMapaUbicacion';
 import { getSession, esValidador } from '../../../shared/auth/session';
 
 // Pantalla compartida entre "Mis consultas" (RF-263) y la bandeja del equipo (RF-264) -- mismo
@@ -66,6 +67,17 @@ function ConsultaDetailPage({ consultaId, onVolver }: { consultaId: string; onVo
       </div>
       <IndicadorPrioridad prioridad={consulta.prioridad} />
       <p>{consulta.descripcion}</p>
+      {consulta.imagenes && consulta.imagenes.length > 0 && (
+        <div className="detalle-imagenes">
+          {consulta.imagenes.map((url) => <a key={url} href={url} target="_blank" rel="noopener noreferrer"><img src={url} alt="Foto adjunta a la consulta" /></a>)}
+        </div>
+      )}
+      {consulta.latitud != null && consulta.longitud != null && (
+        <div style={{ maxWidth: 520 }}>
+          <p className="comentario-meta">Ubicación indicada: {consulta.latitud.toFixed(5)}, {consulta.longitud.toFixed(5)}</p>
+          <MiniMapaUbicacion latitud={consulta.latitud} longitud={consulta.longitud} etiqueta="Ubicación de la consulta" />
+        </div>
+      )}
       <span className="comentario-meta">Creada: {new Date(consulta.fechaCreacion).toLocaleString()}</span>
 
       <h3>Mensajes</h3>

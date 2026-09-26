@@ -4,7 +4,7 @@ import { PrismaUsuarioRepository, PrismaCultivoRepository, PrismaValidacionRepos
 import { PersistenteNotificadorAdapter } from '../adapters/out/notifications/persistente-notificador.adapter';
 import { ConsoleEmailAdapter } from '../adapters/out/email/console-email.adapter';
 import { LocalAlmacenamientoMediaAdapter } from '../adapters/out/media/local-almacenamiento-media.adapter';
-import { RegistrarUsuarioUseCase, LoginUseCase, ActivarCuentaUseCase, SolicitarRecuperacionContraseñaUseCase, RestablecerContraseñaUseCase, CambiarContraseñaUseCase, ObtenerPerfilUseCase } from '../../application/m01-cuentas/cuentas.use-cases';
+import { RegistrarUsuarioUseCase, LoginUseCase, ActivarCuentaUseCase, SolicitarRecuperacionContraseñaUseCase, RestablecerContraseñaUseCase, CambiarContraseñaUseCase, ObtenerPerfilUseCase, ActualizarPerfilUseCase } from '../../application/m01-cuentas/cuentas.use-cases';
 import { RegistrarPlantaUseCase, ProponerPlantaUseCase, ListarPlantasUseCase, ObtenerPlantaUseCase } from '../../application/m02-catalogo-plantas/catalogo-plantas.use-cases';
 import { RegistrarFichaCultivoUseCase } from '../../application/m03-cultivo/registrar-ficha-cultivo.use-case';
 import { ObtenerFichaCultivoUseCase } from '../../application/m03-cultivo/obtener-ficha-cultivo.use-case';
@@ -16,6 +16,9 @@ import { RegistrarUsoUseCase, ListarUsosUseCase } from '../../application/m04-us
 import { RegistrarParteUsoUseCase, ObtenerParteUsoUseCase, ListarPartesUsoUseCase } from '../../application/m04-usos-partes/partes-uso.use-cases';
 import { AprobarContenidoUseCase, ObservarContenidoUseCase, RechazarContenidoUseCase, ListarPendientesUseCase } from '../../application/m09-validacion-moderacion/validacion.use-cases';
 import { ObtenerDetalleValidacionUseCase } from '../../application/m09-validacion-moderacion/detalle-validacion.use-case';
+import { AccesoContactoService, ListarPlanesUseCase, MiPlanUseCase, SolicitarPagoUseCase, ListarPagosAdminUseCase, ResolverPagoUseCase, DirectorioProductoresUseCase, ProtegerContactoProductosUseCase } from '../../application/m15-planes/planes.use-cases';
+import { PrismaPagoContactoRepository } from '../adapters/out/persistence/prisma/repositories/prisma.repositories';
+import { env as envM15 } from './env';
 import { ReportarContenidoUseCase, ListarReportesPendientesUseCase, ListarReportesUseCase, ActualizarEstadoReporteUseCase } from '../../application/m09-validacion-moderacion/reportes.use-cases';
 import { ListarUsuariosUseCase, SuspenderUsuarioUseCase, ReactivarUsuarioUseCase, CambiarRolUsuarioUseCase, EliminarPlantaUseCase, ObtenerPanelAdminUseCase, ObtenerAuditoriaUseCase } from '../../application/m13-analitica-estadisticas/administracion.use-cases';
 import { ListarNotificacionesUseCase, MarcarTodasLeidasUseCase, MarcarLeidaUseCase, EliminarNotificacionUseCase } from '../../application/m14-seguridad-notificaciones/notificaciones.use-cases';
@@ -35,6 +38,8 @@ const notificador=new PersistenteNotificadorAdapter(notificaciones); const email
 // Registro de entidades que pasan por M-09: al aprobar/observar/rechazar una ValidacionContenido,
 // su tipoEntidad decide a qué repositorio reflejar el nuevo estado (ver entidad-validable.repository.port.ts).
 const registrarParteUsoUC=new RegistrarParteUsoUseCase(partesUso,usos,validaciones);
+const pagosContacto=new PrismaPagoContactoRepository(prisma); const accesoContacto=new AccesoContactoService(pagosContacto);
+const directorioProductores=new DirectorioProductoresUseCase(usuarios,mapaCultivo,cultivos,plantas,productos,accesoContacto);
 const entidadesValidables:RegistroEntidadesValidables={ Cultivo:cultivos, ParteUso:partesUso, Publicacion:publicaciones, Preparacion:preparaciones, Producto:productos, EstadoConservacion:estadosConservacion, Planta:plantas };
 export const container={
   registrarUsuario:new RegistrarUsuarioUseCase(usuarios,tokensAccion,email),
@@ -63,6 +68,14 @@ export const container={
   observar:new ObservarContenidoUseCase(validaciones,notificador,entidadesValidables),
   rechazar:new RechazarContenidoUseCase(validaciones,notificador,entidadesValidables),
   obtenerDetalleValidacion:new ObtenerDetalleValidacionUseCase(validaciones,usuarios,plantas,partesUso,usos,publicaciones,preparaciones,productos,estadosConservacion,cultivos),
+  listarPlanes:new ListarPlanesUseCase(pagosContacto,envM15.cobro),
+  miPlan:new MiPlanUseCase(pagosContacto,usuarios,accesoContacto),
+  solicitarPago:new SolicitarPagoUseCase(pagosContacto,directorioProductores,accesoContacto),
+  listarPagosAdmin:new ListarPagosAdminUseCase(pagosContacto,usuarios),
+  resolverPago:new ResolverPagoUseCase(pagosContacto,notificador),
+  directorioProductores,
+  protegerContactoProductos:new ProtegerContactoProductosUseCase(accesoContacto),
+  actualizarPerfil:new ActualizarPerfilUseCase(usuarios),
   listarPendientes:new ListarPendientesUseCase(validaciones,publicaciones,usuarios,preparaciones,partesUso,productos,estadosConservacion,plantas,cultivos),
   reportar:new ReportarContenidoUseCase(reportes),
   listarReportesPendientes:new ListarReportesPendientesUseCase(reportes),

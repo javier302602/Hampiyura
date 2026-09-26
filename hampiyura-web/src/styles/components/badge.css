@@ -16,4 +16,4 @@
 .badge-ui-warning{background:var(--color-warning-bg);color:var(--color-warning)}
 .badge-ui-info{background:var(--color-info-bg);color:var(--color-info)}
 .badge-ui-danger{background:var(--color-danger-bg);color:var(--color-danger)}
-.badge-ui-accent{background:var(--color-accent-soft);color:var(--color-accent-hover)}
+.badge-ui-accent{background:var(--color-accent-soft);color:var(--color-accent-text)}

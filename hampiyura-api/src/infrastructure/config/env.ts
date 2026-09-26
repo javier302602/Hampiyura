@@ -20,4 +20,10 @@ function leerJwtSecret(): string {
   return esEjemplo ? 'development-only-secret' : valor!;
 }
 
-export const env = { port: Number(process.env.PORT ?? 3000), jwtSecret: leerJwtSecret() };
+// Datos de cobro (M-15): a dónde se envía el Yape/Plin. Si no se configuran, la interfaz lo dice ("por
+// configurar") en vez de mostrar un número inventado.
+function cobro(nombre: 'YAPE' | 'PLIN') {
+  const numero = process.env[`PAGO_${nombre}_NUMERO`]?.trim();
+  return numero ? { numero, titular: process.env[`PAGO_${nombre}_TITULAR`]?.trim() || 'HampiYura' } : null;
+}
+export const env = { port: Number(process.env.PORT ?? 3000), jwtSecret: leerJwtSecret(), cobro: { yape: cobro('YAPE'), plin: cobro('PLIN') } };

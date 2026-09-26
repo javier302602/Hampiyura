@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { registrar, login, activarCuenta, solicitarRecuperacion, restablecerContraseña, cambiarContraseña, obtenerPerfil } from '../controllers/m01-cuentas.controller';
+import { registrar, login, activarCuenta, solicitarRecuperacion, restablecerContraseña, cambiarContraseña, obtenerPerfil, actualizarPerfil } from '../controllers/m01-cuentas.controller';
 import { registrarPlanta, proponerPlanta, listarPlantas, obtenerPlanta } from '../controllers/m02-catalogo-plantas/plantas.controller';
 import { registrarFicha, obtenerFicha, listarFichasPorPlanta, registrarUbicacionCultivo, obtenerUbicacionCultivo, listarMapaCultivo } from '../controllers/m03-cultivo.controller';
 import { registrarUso, listarUsos } from '../controllers/m04-usos-partes/usos.controller';
@@ -14,9 +14,14 @@ import { publicarProducto, obtenerProducto, listarProductos, marcarValidadoDocum
 import { registrarEstadoConservacion, obtenerEstadoConservacion, registrarAccionConservacion, listarAccionesConservacion } from '../controllers/m10-conservacion/conservacion.controller';
 import { buscarPlantas } from '../controllers/m12-busqueda-recomendaciones/busqueda.controller';
 import { crearConsulta, listarBandejaConsultas, listarMisConsultas, obtenerConsulta, agregarMensajeConsulta, cambiarEstadoConsulta, asignarConsulta } from '../controllers/m08-consultas/consultas.controller';
+import { listarPlanes, miPlan, solicitarPago, listarPagos, detallePago, confirmarPago, rechazarPago, listarProductores, obtenerProductor } from '../controllers/m15-planes/planes.controller';
 import { requireAuth, requireValidator, requireAdmin, requireProductor, attachUserIfPresent } from '../middlewares/role.middleware';
 export const router=Router();
-router.post('/cuentas/registro',registrar); router.post('/cuentas/login',login); router.post('/cuentas/activar',activarCuenta); router.post('/cuentas/recuperar-contrasena',solicitarRecuperacion); router.post('/cuentas/restablecer-contrasena',restablecerContraseña); router.post('/cuentas/cambiar-contrasena',requireAuth,cambiarContraseña); router.get('/cuentas/perfil',requireAuth,obtenerPerfil);
+// M-15 · Contacto pagado y planes
+router.get('/planes',listarPlanes); router.get('/planes/mi-plan',requireAuth,miPlan); router.post('/planes/pagos',requireAuth,solicitarPago);
+router.get('/planes/pagos',requireAdmin,listarPagos); router.get('/planes/pagos/:id',requireAdmin,detallePago); router.post('/planes/pagos/:id/confirmar',requireAdmin,confirmarPago); router.post('/planes/pagos/:id/rechazar',requireAdmin,rechazarPago);
+router.get('/productores',listarProductores); router.get('/productores/:id',attachUserIfPresent,obtenerProductor);
+router.post('/cuentas/registro',registrar); router.post('/cuentas/login',login); router.post('/cuentas/activar',activarCuenta); router.post('/cuentas/recuperar-contrasena',solicitarRecuperacion); router.post('/cuentas/restablecer-contrasena',restablecerContraseña); router.post('/cuentas/cambiar-contrasena',requireAuth,cambiarContraseña); router.get('/cuentas/perfil',requireAuth,obtenerPerfil); router.patch('/cuentas/perfil',requireAuth,actualizarPerfil);
 router.post('/plantas',requireValidator,registrarPlanta); router.post('/plantas/proponer',requireAuth,proponerPlanta); router.get('/plantas',listarPlantas); router.get('/plantas/:id',obtenerPlanta);
 router.post('/cultivos',requireValidator,registrarFicha); router.get('/cultivos/:id',obtenerFicha); router.get('/plantas/:plantaId/cultivos',listarFichasPorPlanta);
 router.post('/cultivos/:cultivoId/ubicacion',requireAuth,registrarUbicacionCultivo); router.get('/cultivos/:cultivoId/ubicacion',obtenerUbicacionCultivo);
@@ -39,7 +44,7 @@ router.get('/admin/auditoria',requireAdmin,obtenerAuditoria);
 router.get('/notificaciones',requireAuth,listarNotificaciones); router.patch('/notificaciones/marcar-leidas',requireAuth,marcarTodasLeidas); router.patch('/notificaciones/:id/marcar-leida',requireAuth,marcarLeida); router.delete('/notificaciones/:id',requireAuth,eliminarNotificacion);
 router.post('/preparaciones',requireAuth,documentarPreparacion); router.get('/preparaciones/:id',obtenerPreparacion); router.get('/partes-uso/:parteUsoId/preparaciones',listarPreparaciones);
 router.post('/productos/verificar-afirmaciones',verificarAfirmaciones);
-router.post('/productos',requireProductor,publicarProducto); router.get('/productos',listarProductos); router.get('/productos/:id',obtenerProducto);
+router.post('/productos',requireProductor,publicarProducto); router.get('/productos',attachUserIfPresent,listarProductos); router.get('/productos/:id',attachUserIfPresent,obtenerProducto);
 router.patch('/productos/:id/validar-documental',requireValidator,marcarValidadoDocumentalmente); router.patch('/productos/:id/certificar',requireValidator,marcarCertificado);
 router.post('/plantas/:plantaId/conservacion',requireValidator,registrarEstadoConservacion); router.get('/plantas/:plantaId/conservacion',obtenerEstadoConservacion);
 router.post('/plantas/:plantaId/acciones-conservacion',requireAuth,registrarAccionConservacion); router.get('/plantas/:plantaId/acciones-conservacion',listarAccionesConservacion);
