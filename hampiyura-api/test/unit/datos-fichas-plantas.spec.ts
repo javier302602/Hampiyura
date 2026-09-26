@@ -58,9 +58,9 @@ describe('fichas de plantas (Ronda 29)', () => {
     expect(ficha('Smallanthus sonchifolius').habitat).toMatch(/altoandinos, no en selva baja.*no se cultiva localmente/);
   });
 
-  it('las 3 fotos CC BY-NC quedan identificadas por su licencia (no permiten uso comercial)', () => {
-    const nc = FICHAS_PLANTAS.filter((f) => /NC/.test(f.foto!.licencia)).map((f) => f.bin).sort();
-    expect(nc).toEqual(['Copaifera spp.', 'Myrciaria dubia', 'Petiveria alliacea']);
+  it('ninguna foto tiene licencia no comercial (la plataforma monetiza): solo CC BY, CC BY-SA, CC0 o Arte Libre', () => {
+    for (const f of FICHAS_PLANTAS) expect(f.foto!.licencia).not.toMatch(/NC|NonCommercial/);
+    for (const f of FICHAS_PLANTAS) expect(f.foto!.licencia).toMatch(/CC BY|CC0|Arte Libre/);
   });
 
   it('ninguna preparación inventa campos: sin ingredientes/herramientas/tiempo/conservación en el dataset', () => {
