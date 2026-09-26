@@ -16,10 +16,10 @@
 body{margin:0;background:var(--color-bg);font-family:Inter,system-ui,sans-serif;color:var(--color-text)}
 
 /* Botones sin clase (los que nunca pasaron al componente Button): con el estilo nativo del navegador quedaban gris sobre verde en modo oscuro
-   (5,33:1). Van con los colores del tema (>=7:1). Va ANTES de las reglas por contexto (.formulario button, etc.), que siguen mandando. */
-button:not([class]){font:inherit;font-weight:600;padding:.45em .9em;border-radius:var(--radius-sm);border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text);cursor:pointer}
-button:not([class]):hover:not(:disabled){border-color:var(--color-accent-deep)}
-button:not([class]):disabled{opacity:.6;cursor:not-allowed}
+   (5,33:1). Van con los colores del tema (>=7:1). Con :where() su especificidad es CERO: cualquier regla por contexto (footer, .formulario button, etc.) sigue mandando. */
+:where(button:not([class])){font:inherit;font-weight:600;padding:.45em .9em;border-radius:var(--radius-sm);border:1px solid var(--color-border);background:var(--color-surface);color:var(--color-text);cursor:pointer}
+:where(button:not([class])):hover:not(:disabled){border-color:var(--color-accent-deep)}
+:where(button:not([class])):disabled{opacity:.6;cursor:not-allowed}
 
 /* Oculta visualmente pero deja disponible para lectores de pantalla -- reemplaza el patrón de
    "solo placeholder, sin <label>" encontrado en SearchBar/SelectorUbicacionMapa/etc. (auditoría). */
