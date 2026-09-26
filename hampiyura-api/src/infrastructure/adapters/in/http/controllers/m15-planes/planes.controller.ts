@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { z } from 'zod';
 import { container } from '../../../../../config/container';
 import { AuthenticatedRequest } from '../../middlewares/role.middleware';
+import { ValidationError } from '../../../../../../domain/errors/domain.errors';
 
 function usuario(req: Request) { return (req as AuthenticatedRequest).user; }
 
@@ -40,5 +41,11 @@ export async function rechazarPago(req: Request, res: Response) {
 }
 
 // --- directorio de productores contactables ---
-export async function listarProductores(_req: Request, res: Response) { res.json(await container.directorioProductores.listar()); }
+export async function listarProductores(req: Request, res: Response) {
+  const q = req.query;
+  const cantidadMinima = q.cantidadMinima !== undefined && q.cantidadMinima !== '' ? Number(q.cantidadMinima) : undefined;
+  if (cantidadMinima !== undefined && (!Number.isFinite(cantidadMinima) || cantidadMinima < 0)) throw new ValidationError('La cantidad mínima debe ser un número');
+  const filtros = { certificado: q.certificado === '1' || q.certificado === 'true', cantidadMinima, cerca: q.cerca ? String(q.cerca) : undefined };
+  res.json(await container.directorioProductores.listar(filtros, usuario(req)));
+}
 export async function obtenerProductor(req: Request, res: Response) { res.json(await container.directorioProductores.obtener(String(req.params.id), usuario(req))); }

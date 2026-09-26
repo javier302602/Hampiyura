@@ -37,7 +37,7 @@ export async function listarMapaCultivo(req:Request,res:Response){
 }
 
 // Guía de cultivo: solo Especialista en agronomía o Administrador (la regla vive en Cultivo.actualizarGuia).
-const guiaSchema=z.object({suelo:z.string().max(1500).nullable().optional(),nutrientes:z.string().max(1500).nullable().optional(),herramientas:z.string().max(1500).nullable().optional()});
+const guiaSchema=z.record(z.string(),z.string().max(1500).nullable());
 export async function actualizarGuiaCultivo(req:Request,res:Response){
   const input=guiaSchema.parse(req.body); const user=(req as AuthenticatedRequest).user;
   const cultivo=await container.actualizarGuiaCultivo.ejecutar(String(req.params.id),input,user);

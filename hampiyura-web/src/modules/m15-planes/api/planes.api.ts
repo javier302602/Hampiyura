@@ -2,7 +2,7 @@ import { apiRequest } from '../../../shared/api/client';
 
 // M-15 · Contacto pagado y planes. Mismos contratos que el backend (planes.use-cases.ts).
 export interface DefinicionPlan {
-  id: 'Explorador' | 'DesbloqueoPuntual' | 'Negocio' | 'Institucional' | 'Productor';
+  id: 'Explorador' | 'DesbloqueoPuntual' | 'Negocio' | 'Empresarial' | 'Institucional' | 'Productor';
   nombre: string;
   paraQuien: string;
   incluye: string[];
@@ -26,14 +26,14 @@ export interface PagoVisible {
   estado: EstadoPago; creadoEn: string; revisadoEn?: string; revisadoPorNombre?: string; motivoRechazo?: string; vigenteDesde?: string; vigenteHasta?: string;
 }
 export interface MiPlan {
-  plan: 'Explorador' | 'Negocio' | 'Institucional';
+  plan: 'Explorador' | 'Negocio' | 'Empresarial' | 'Institucional';
   vencimiento?: string;
   estadoPago: EstadoPago | null;
   desbloqueos: { productorId: string; productorNombre: string; vigenteHasta: string }[];
   pagos: PagoVisible[];
 }
 export interface ProductorContactable {
-  id: string; nombre: string; nombreNegocio?: string; region: string; biografia?: string; plantas: string[]; zonas: string[];
+  id: string; nombre: string; nombreNegocio?: string; region: string; biografia?: string; plantas: string[]; zonas: string[]; certificado: boolean; zonasProducto: string[]; cantidadMaxima?: number; cercania?: 'zona' | 'departamento';
 }
 export interface FichaProductor extends ProductorContactable {
   contactoDisponible: boolean;
@@ -66,7 +66,16 @@ export function rechazarPago(id: string, motivo: string): Promise<void> {
   return apiRequest<void>(`/planes/pagos/${encodeURIComponent(id)}/rechazar`, { method: 'POST', body: JSON.stringify({ motivo }) });
 }
 
-export function listarProductores(): Promise<ProductorContactable[]> { return apiRequest<ProductorContactable[]>('/productores'); }
+// Filtros avanzados (plan Empresarial o Institucional): el servidor los rechaza para quien no tenga ese plan.
+export interface FiltrosDirectorio { certificado?: boolean; cantidadMinima?: number; cerca?: string }
+export function listarProductores(f: FiltrosDirectorio = {}): Promise<ProductorContactable[]> {
+  const q = new URLSearchParams();
+  if (f.certificado) q.set('certificado', '1');
+  if (f.cantidadMinima !== undefined) q.set('cantidadMinima', String(f.cantidadMinima));
+  if (f.cerca) q.set('cerca', f.cerca);
+  const s = q.toString();
+  return apiRequest<ProductorContactable[]>(`/productores${s ? `?${s}` : ''}`);
+}
 export function obtenerProductor(id: string): Promise<FichaProductor> { return apiRequest<FichaProductor>(`/productores/${encodeURIComponent(id)}`); }
 
 export const RUTAS_M15 = {

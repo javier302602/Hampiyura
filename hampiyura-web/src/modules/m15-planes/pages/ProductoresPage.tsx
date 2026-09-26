@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Lock, MapPin, Phone, Sprout, Unlock } from 'lucide-react';
-import { listarProductores, obtenerProductor, RUTAS_M15, type FichaProductor, type ProductorContactable } from '../api/planes.api';
+import { listarProductores, obtenerProductor, obtenerMiPlan, RUTAS_M15, type FiltrosDirectorio, type FichaProductor, type ProductorContactable } from '../api/planes.api';
+import { listarZonasGenerales } from '../../m11-productos/api/productos.api';
+import { getSession, esAdministrador } from '../../../shared/auth/session';
 import Button from '../../../shared/ui/Button';
 import Badge from '../../../shared/ui/Badge';
 import SectionHeader from '../../../shared/ui/SectionHeader';
@@ -17,12 +19,54 @@ export function ProductoresPage() {
   const navigate = useNavigate();
   const [productores, setProductores] = useState<ProductorContactable[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  useEffect(() => { listarProductores().then(setProductores).catch(() => setError('No se pudo cargar el directorio.')); }, []);
+  // Filtros avanzados: solo con plan Empresarial o Institucional (el servidor lo vuelve a comprobar). Negocio y Explorador ven el directorio como siempre.
+  const sesion = getSession();
+  const [conFiltros, setConFiltros] = useState<boolean | null>(sesion && esAdministrador(sesion.rol) ? true : null);
+  const [zonas, setZonas] = useState<string[]>([]);
+  const [certificado, setCertificado] = useState(false);
+  const [cantidadMinima, setCantidadMinima] = useState('');
+  const [cerca, setCerca] = useState('');
+  function cargar(f: FiltrosDirectorio = {}) {
+    setError(null);
+    listarProductores(f).then(setProductores).catch((e) => setError(e instanceof Error ? e.message : 'No se pudo cargar el directorio.'));
+  }
+  useEffect(() => { cargar(); }, []);
+  useEffect(() => {
+    if (!sesion) { setConFiltros(false); return; }
+    if (esAdministrador(sesion.rol)) return;
+    obtenerMiPlan().then((p) => setConFiltros(p.plan === 'Empresarial' || p.plan === 'Institucional')).catch(() => setConFiltros(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => { if (conFiltros) listarZonasGenerales().then(setZonas).catch(() => {}); }, [conFiltros]);
+  function aplicar() { cargar({ certificado: certificado || undefined, cantidadMinima: cantidadMinima.trim() ? Number(cantidadMinima) : undefined, cerca: cerca || undefined }); }
+  function limpiar() { setCertificado(false); setCantidadMinima(''); setCerca(''); cargar(); }
 
   return (
     <section>
       <Button variant="ghost" onClick={() => navigate(RUTAS_M15.planes)}>← Ver planes</Button>
       <SectionHeader eyebrow="Directorio" title="Productores" description="Productores con una ficha de cultivo validada por un especialista. El contacto directo se abre con un plan o un desbloqueo puntual." />
+      {conFiltros === true && (
+        <form className="filtro-bar filtros-avanzados" aria-label="Filtros avanzados" onSubmit={(e) => { e.preventDefault(); aplicar(); }}>
+          <label className="filtro-check"><input type="checkbox" checked={certificado} onChange={(e) => setCertificado(e.target.checked)} /> Solo con producto certificado</label>
+          <label>Cantidad mínima ofrecida
+            <input type="number" min={0} step="any" value={cantidadMinima} onChange={(e) => setCantidadMinima(e.target.value)} placeholder="Ej. 20" />
+          </label>
+          <label>Cerca de la zona
+            <select value={cerca} onChange={(e) => setCerca(e.target.value)}>
+              <option value="">Cualquier zona</option>
+              {zonas.map((z) => <option key={z} value={z}>{z}</option>)}
+            </select>
+          </label>
+          <div className="filtros-acciones">
+            <Button type="submit" variant="primary">Aplicar filtros</Button>
+            <Button type="button" variant="secondary" onClick={limpiar}>Quitar filtros</Button>
+          </div>
+          <p className="comentario-meta">La cantidad se lee del primer número que el productor puso en “cantidad disponible”. La cercanía usa la zona general (provincia y departamento), nunca el punto exacto.</p>
+        </form>
+      )}
+      {conFiltros === false && (
+        <p className="filtros-bloqueados" role="note"><Lock size={15} aria-hidden="true" /> Los filtros avanzados (cantidad, certificación y cercanía) son del plan <strong>Empresarial</strong> o <strong>Institucional</strong>. <button type="button" className="enlace-plan" onClick={() => navigate(RUTAS_M15.planes)}>Ver planes</button></p>
+      )}
       {error && <ErrorState description={error} />}
       {!productores && !error && <LoadingState label="Cargando productores" />}
       {productores && productores.length === 0 && <EmptyState title="Todavía no hay productores contactables" description="Aparecerán cuando tengan una ficha de cultivo validada." />}
@@ -33,11 +77,15 @@ export function ProductoresPage() {
               onClick={() => navigate(`${RUTAS_M15.productores}/${p.id}`)} onKeyDown={(e) => { if (e.key === 'Enter') navigate(`${RUTAS_M15.productores}/${p.id}`); }}>
               <div style={{ display: 'flex', gap: '.4rem', flexWrap: 'wrap' }}>
                 <Badge variant="success">Ficha de cultivo validada</Badge>
+                {p.certificado && <Badge variant="info">Producto certificado</Badge>}
+                {p.cercania === 'zona' && <Badge variant="accent">Misma zona</Badge>}
+                {p.cercania === 'departamento' && <Badge variant="neutral">Mismo departamento</Badge>}
               </div>
               <strong>{nombreVisible(p)}</strong>
               {p.nombreNegocio && <span className="comentario-meta">{p.nombre}</span>}
               <span className="productor-dato"><MapPin size={14} aria-hidden="true" /> {p.region}</span>
               <span className="productor-dato"><Sprout size={14} aria-hidden="true" /> {p.plantas.join(', ')}</span>
+              {p.zonasProducto.length > 0 && <span className="productor-dato"><MapPin size={14} aria-hidden="true" /> Productos en: {p.zonasProducto.join(' · ')}</span>}
             </article>
           ))}
         </div>
@@ -82,7 +130,7 @@ export function ProductorPage() {
           ) : (
             <div className="contacto-bloqueado" role="region" aria-label="Contacto bloqueado">
               <h3><Lock size={18} aria-hidden="true" /> El contacto está bloqueado</h3>
-              <p>Necesitas un plan activo (Negocio o Institucional) o desbloquear el contacto de este productor.</p>
+              <p>Necesitas un plan activo o desbloquear el contacto de este productor.</p>
               <Button variant="primary" onClick={() => navigate(`${RUTAS_M15.planes}?productor=${encodeURIComponent(ficha.id)}`)}>Contactar</Button>
             </div>
           )}

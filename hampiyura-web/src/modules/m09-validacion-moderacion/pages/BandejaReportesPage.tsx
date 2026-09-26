@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { listarReportes, resolverReporte, etiquetaCategoriaReporte, type EstadoReporte, type Reporte } from '../api/reportes.api';
 import Button from '../../../shared/ui/Button';
 
@@ -14,7 +15,10 @@ const FILTROS: { valor: Filtro; etiqueta: string }[] = [
 // acciones y el mensaje real del backend si una acción falla. Los reportes son distintos de las
 // validaciones: son alertas sobre contenido YA publicado (hoy, comentarios), no aprobación de nuevo.
 function BandejaReportesPage({ onVerPublicacion }: { onVerPublicacion: (publicacionId: string) => void }) {
-  const [filtro, setFiltro] = useState<Filtro>('Pendiente');
+  // Las tarjetas del panel llegan aquí con ?estado=Pendiente|Revisado|Desestimado ya aplicado.
+  const [params] = useSearchParams();
+  const inicial = params.get('estado');
+  const [filtro, setFiltro] = useState<Filtro>(FILTROS.some((f) => f.valor === inicial) ? (inicial as Filtro) : 'Pendiente');
   const [reportes, setReportes] = useState<Reporte[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);

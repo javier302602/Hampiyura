@@ -13,13 +13,17 @@
   display:flex;flex-direction:column;justify-content:center;
   background:var(--color-bg);
 }
-.auth-logo{
-  display:inline-flex;align-items:center;gap:.4em;
-  font-weight:var(--font-weight-bold);color:var(--color-text);
-  margin-bottom:var(--space-4);width:fit-content;
-}
-/* El logo completo tiene texto verde oscuro sobre transparente: en oscuro va sobre una tarjeta crema para que se lea. */
-.auth-logo-completo{display:block;width:150px;height:150px;object-fit:contain;border-radius:var(--radius-lg);background:#f6f4ec;padding:6px}
+/* Marca del login/registro: centrada en la columna del formulario y más grande (240px en escritorio, 190px en móvil). */
+.auth-brand{align-self:flex-start;display:grid;justify-items:center;text-align:center;margin-bottom:var(--space-5);width:100%;max-width:420px}
+.auth-brand-completo{display:block;width:clamp(180px,52vw,240px);height:auto;aspect-ratio:1/1;object-fit:contain}
+.auth-brand-oscuro{display:none}
+.auth-brand-oscuro img{display:block;width:clamp(120px,36vw,150px);height:auto;filter:drop-shadow(0 0 22px rgba(240,171,120,.35)) drop-shadow(0 0 3px rgba(238,242,234,.55))}
+.auth-brand-nombre{font-size:clamp(1.8rem,7vw,2.3rem);font-weight:800;letter-spacing:.02em;color:var(--color-text);margin-top:.35rem}
+.auth-brand-lema{font-size:var(--font-size-small);color:var(--color-text-muted);max-width:300px;line-height:1.4}
+/* Modo oscuro: sin la caja blanca -- emblema con halo suave + texto claro. */
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .auth-brand-completo{display:none}:root:not([data-theme="light"]) .auth-brand-oscuro{display:grid;justify-items:center;gap:.25rem}}
+:root[data-theme="dark"] .auth-brand-completo{display:none}
+:root[data-theme="dark"] .auth-brand-oscuro{display:grid;justify-items:center;gap:.25rem}
 .auth-title{font-size:clamp(1.9rem,4vw,2.5rem);line-height:1.05;margin:.15em 0 .3em;color:var(--color-text)}
 .auth-desc{color:var(--color-text-muted);max-width:420px;margin:0 0 var(--space-5)}
 .auth-card{max-width:420px;width:100%}

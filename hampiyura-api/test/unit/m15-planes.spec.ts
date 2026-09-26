@@ -131,7 +131,7 @@ describe('M-15 · solicitud de pago', () => {
     const { uc: u } = uc();
     await expect(u.ejecutar({ ...base, metodo: 'Paypal', concepto: 'Plan', plan: 'Negocio' })).rejects.toThrow(/Yape o Plin/);
     await expect(u.ejecutar({ ...base, comprobanteUrl: 'https://evil.example/x.png', concepto: 'Plan', plan: 'Negocio' })).rejects.toThrow(/comprobante/i);
-    await expect(u.ejecutar({ ...base, concepto: 'Plan', plan: 'Destacado' })).rejects.toThrow(/Negocio o Institucional/);
+    await expect(u.ejecutar({ ...base, concepto: 'Plan', plan: 'Destacado' })).rejects.toThrow(/Negocio, Empresarial o Institucional/);
   });
   test('no se puede desbloquear a un productor no contactable ni pagar dos veces lo mismo pendiente', async () => {
     await expect(uc(false).uc.ejecutar({ ...base, concepto: 'Desbloqueo', productorId: 'x' })).rejects.toThrow(/no está disponible/);
@@ -197,5 +197,95 @@ describe('M-08 · consulta con fotos y ubicación (gratis)', () => {
     await expect(uc.ejecutar({ ...b, imagenes: Array(6).fill('/uploads/a.png') })).rejects.toThrow(/5 fotos/);
     await expect(uc.ejecutar({ ...b, imagenes: ['http://x/y.png'] })).rejects.toThrow(/plataforma/);
     await expect(uc.ejecutar({ ...b, latitud: -9 })).rejects.toThrow(/juntas/);
+  });
+});
+
+describe('Ronda 22 · escalera de planes: Negocio < Empresarial < Institucional', () => {
+  const confirmado = (plan: any, usuarioId = 'u1', id = plan) => { const p = pago({ id, plan, usuarioId, monto: precioDe(plan) }); p.confirmar('admin'); return p; };
+  test('precios del catálogo: Negocio 29, Empresarial 99, Institucional 120', () => {
+    expect([precioDe('Negocio'), precioDe('Empresarial'), precioDe('Institucional')]).toEqual([29, 99, 120]);
+  });
+  test('el plan activo es el de MAYOR nivel vigente y los tres dan acceso a contactos', async () => {
+    const acceso = new AccesoContactoService(repoEn([confirmado('Negocio'), confirmado('Empresarial')]));
+    expect((await acceso.planActivo('u1')).plan).toBe('Empresarial');
+    const inst = new AccesoContactoService(repoEn([confirmado('Empresarial'), confirmado('Institucional')]));
+    expect((await inst.planActivo('u1')).plan).toBe('Institucional');
+    for (const plan of ['Negocio', 'Empresarial', 'Institucional']) {
+      expect(await new AccesoContactoService(repoEn([confirmado(plan)])).puedeVerContacto({ id: 'u1', rol: 'UsuarioRegistrado' }, 'prodX')).toBe(true);
+    }
+  });
+  test('un plan pendiente o vencido no cuenta: vuelve a Explorador', async () => {
+    expect((await new AccesoContactoService(repoEn([pago({ plan: 'Empresarial' })])).planActivo('u1')).plan).toBe('Explorador');
+    const viejo = pago({ plan: 'Institucional' }); viejo.confirmar('admin', new Date(Date.now() - 40 * DIA));
+    expect((await new AccesoContactoService(repoEn([viejo])).planActivo('u1')).plan).toBe('Explorador');
+  });
+  test('filtros avanzados desde Empresarial; soporte prioritario solo Institucional', () => {
+    const { tieneFiltrosAvanzados, tieneSoportePrioritario } = require('../../src/domain/value-objects/plan.vo');
+    expect(['Explorador', 'Negocio', 'Empresarial', 'Institucional'].map(tieneFiltrosAvanzados)).toEqual([false, false, true, true]);
+    expect(['Explorador', 'Negocio', 'Empresarial', 'Institucional'].map(tieneSoportePrioritario)).toEqual([false, false, false, true]);
+  });
+});
+
+describe('Ronda 22 · filtros avanzados del directorio (Empresarial / Institucional)', () => {
+  const productor = (id: string, nombre: string, extra: any) => ({ id, nombre, region: 'x', plantas: ['Uña de gato'], zonas: [], certificado: false, zonasProducto: [], ...extra });
+  function armar(plan?: any, solicitanteRol = 'UsuarioRegistrado') {
+    const memoria: PagoContacto[] = [];
+    if (plan) { const p = pago({ id: 'x', plan, usuarioId: 'comp', monto: precioDe(plan) }); p.confirmar('admin'); memoria.push(p); }
+    const acceso = new AccesoContactoService(repoEn(memoria));
+    const uc: any = new DirectorioProductoresUseCase({} as any, {} as any, {} as any, {} as any, {} as any, acceso);
+    uc.contactables = async () => [
+      productor('a', 'Ana', { certificado: true, cantidadMaxima: 50, zonasProducto: ['Leoncio Prado, Huánuco'] }),
+      productor('b', 'Beto', { certificado: false, cantidadMaxima: 5, zonasProducto: ['Puerto Inca, Huánuco'] }),
+      productor('c', 'Cami', { certificado: true, zonasProducto: ['Maynas, Loreto'] }),
+    ];
+    return { uc, quien: { id: 'comp', rol: solicitanteRol } };
+  }
+  test('sin filtros lo ve cualquiera, incluso sin sesión (como siempre)', async () => {
+    const { uc } = armar();
+    expect((await uc.listar({})).length).toBe(3);
+    expect((await uc.listar()).length).toBe(3);
+  });
+  test('Explorador y Negocio NO pueden filtrar; Empresarial, Institucional y administrador sí', async () => {
+    for (const plan of [undefined, 'Negocio']) { const { uc, quien } = armar(plan); await expect(uc.listar({ certificado: true }, quien)).rejects.toThrow(/Empresarial o Institucional/); }
+    await expect(armar().uc.listar({ certificado: true })).rejects.toThrow(/Empresarial o Institucional/); // sin sesión
+    for (const plan of ['Empresarial', 'Institucional']) { const { uc, quien } = armar(plan); expect((await uc.listar({ certificado: true }, quien)).map((p: any) => p.id)).toEqual(['a', 'c']); }
+    const adm = armar(undefined, 'Administrador'); expect((await adm.uc.listar({ certificado: true }, adm.quien)).length).toBe(2);
+  });
+  test('cantidad mínima lee el primer número; sin cantidad indicada no cuenta', async () => {
+    const { uc, quien } = armar('Empresarial');
+    expect((await uc.listar({ cantidadMinima: 10 }, quien)).map((p: any) => p.id)).toEqual(['a']);
+    expect((await uc.listar({ cantidadMinima: 1 }, quien)).map((p: any) => p.id)).toEqual(['a', 'b']);
+    const { primerNumero } = require('../../src/application/m15-planes/planes.use-cases');
+    expect([primerNumero('20 unidades'), primerNumero('2,5 kg'), primerNumero('sin dato')]).toEqual([20, 2.5, undefined]);
+  });
+  test('cercanía por zona general: misma provincia primero, luego mismo departamento; nada de coordenadas', async () => {
+    const { uc, quien } = armar('Institucional');
+    const r = await uc.listar({ cerca: 'Leoncio Prado, Huánuco' }, quien);
+    expect(r.map((p: any) => [p.id, p.cercania])).toEqual([['a', 'zona'], ['b', 'departamento']]);
+    expect(JSON.stringify(r)).not.toMatch(/latitud|longitud/);
+    await expect(uc.listar({ cerca: 'Av. Alameda 123' }, quien)).rejects.toThrow(/zona/);
+  });
+});
+
+describe('Ronda 22 · soporte prioritario (plan Institucional)', () => {
+  const nueva = (soporte?: (id: string) => Promise<boolean>, autorId: string | undefined = 'u1') => {
+    const repo: any = { guardar: jest.fn() };
+    return new CrearConsultaUseCase(repo, soporte).ejecutar({ tipo: 'PreguntaGeneral', descripcion: 'Hola', autorId } as any);
+  };
+  test('con plan Institucional vigente la consulta nace "prioritaria"', async () => {
+    expect((await nueva(async () => true)).props.prioritaria).toBe(true);
+  });
+  test('sin plan Institucional, sin sesión o sin comprobación de plan: no es prioritaria', async () => {
+    expect((await nueva(async () => false)).props.prioritaria).toBe(false);
+    expect((await nueva(async () => true, '')).props.prioritaria).toBe(false);
+    expect((await nueva()).props.prioritaria).toBe(false);
+  });
+  test('la marca sale del plan REAL: Institucional sí; Negocio y Empresarial no', async () => {
+    const { tieneSoportePrioritario } = require('../../src/domain/value-objects/plan.vo');
+    for (const [plan, esperado] of [['Negocio', false], ['Empresarial', false], ['Institucional', true]] as const) {
+      const p = pago({ id: plan, plan, usuarioId: 'u1', monto: precioDe(plan) }); p.confirmar('admin');
+      const acceso = new AccesoContactoService(repoEn([p]));
+      expect((await nueva(async (id) => tieneSoportePrioritario((await acceso.planActivo(id)).plan))).props.prioritaria).toBe(esperado);
+    }
   });
 });

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { listarBandejaConsultas, TIPOS_CONSULTA, ETIQUETAS_TIPO_CONSULTA, OPCIONES_FILTRO_ESTADO, ETIQUETAS_ESTADO_CONSULTA, esResuelta, AREAS_ESPECIALIDAD, type Consulta, type FiltrosBandejaConsultas, type EstadoConsulta } from '../api/consultas.api';
 import IndicadorPrioridad from '../components/IndicadorPrioridad';
 
@@ -9,9 +10,14 @@ function BandejaConsultasPage({ onSeleccionar }: { onSeleccionar: (id: string) =
   const [consultas, setConsultas] = useState<Consulta[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filtros, setFiltros] = useState<FiltrosBandejaConsultas>({});
+  // Las tarjetas del panel llegan aquí con ?estado=Pendiente|EnRevision|Resuelta ya aplicado.
+  const [params] = useSearchParams();
+  const estadoInicial = params.get('estado');
+  const [filtros, setFiltros] = useState<FiltrosBandejaConsultas>(estadoInicial === 'Pendiente' || estadoInicial === 'EnRevision' ? { estado: estadoInicial } : {});
   // "Resuelta" agrupa Respondida y Cerrada (mismo significado al leerlo): se filtra aquí y no se manda al servidor.
-  const [soloResueltas, setSoloResueltas] = useState(false);
+  // Orden de la lista: las prioritarias (plan Institucional) primero, o simplemente lo más reciente.
+  const [orden, setOrden] = useState<'prioritarias' | 'recientes'>('prioritarias');
+  const [soloResueltas, setSoloResueltas] = useState(estadoInicial === 'Resuelta');
 
   function cargar() {
     setCargando(true);
@@ -39,14 +45,23 @@ function BandejaConsultasPage({ onSeleccionar }: { onSeleccionar: (id: string) =
         </select>
       </div>
 
+      <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap' }}>
+        <label htmlFor="orden-consultas" style={{ fontWeight: 600 }}>Ordenar por</label>
+        <select id="orden-consultas" value={orden} onChange={(e) => setOrden(e.target.value as 'prioritarias' | 'recientes')}>
+          <option value="prioritarias">Prioritarias primero</option>
+          <option value="recientes">Más recientes</option>
+        </select>
+      </div>
+
       {cargando && <p>Cargando bandeja de consultas…</p>}
       {error && <p>{error}</p>}
       {!cargando && !error && consultas.length === 0 && <p>No hay consultas que coincidan con el filtro.</p>}
       {!cargando && !error && consultas.length > 0 && (
         <div className="cards">
-          {consultas.map((c) => (
+          {[...consultas].sort((a, b) => (orden === 'prioritarias' ? Number(!!b.prioritaria) - Number(!!a.prioritaria) : 0) || new Date(b.fechaCreacion).getTime() - new Date(a.fechaCreacion).getTime()).map((c) => (
             <article key={c.id} className="tarjeta-clicable" onClick={() => onSeleccionar(c.id)}>
               <strong>{ETIQUETAS_TIPO_CONSULTA[c.tipo]}</strong>
+              {c.prioritaria && <span className="badge badge-prioritaria">★ Prioritaria</span>}
               <span className="badge badge-estado">{ETIQUETAS_ESTADO_CONSULTA[c.estado]}</span>
               {c.areaAsignada && <span className="badge badge-estado">Área: {c.areaAsignada}</span>}
               <IndicadorPrioridad prioridad={c.prioridad} />

@@ -24,6 +24,9 @@ export interface ConsultaProps {
   // cuánto tardó la primera respuesta -- sin necesidad de un cron/alerta automática para el hackathon.
   fechaPrimeraRespuestaEquipo?: Date;
   // Fotos (URLs de /uploads) y ubicación opcionales: gratis, sin depender de ningún plan (M-15).
+  // Soporte prioritario (plan Institucional): se marca al enviar la consulta, si quien la envía tiene ese plan vigente. La
+  // bandeja del equipo la distingue y permite ordenar por esto; no hay una cola aparte.
+  prioritaria?: boolean;
   imagenes?: string[];
   latitud?: number | null;
   longitud?: number | null;

@@ -18,6 +18,7 @@ import { AprobarContenidoUseCase, ObservarContenidoUseCase, RechazarContenidoUse
 import { ListarSeguimientoUseCase, ObtenerSeguimientoUseCase, ActualizarContactoSeguimientoUseCase, RegistrarValidacionCientificaUseCase } from '../../application/m04-usos-partes/seguimiento-cientifico.use-cases';
 import { SolicitarTipoCuentaUseCase, ObtenerMiTipoCuentaUseCase, SolicitudCuentaValidable } from '../../application/m01-cuentas/solicitud-tipo-cuenta.use-cases';
 import { ActualizarGuiaCultivoUseCase } from '../../application/m03-cultivo/guia-cultivo.use-case';
+import { tieneSoportePrioritario } from '../../domain/value-objects/plan.vo';
 import { ObtenerDetalleValidacionUseCase } from '../../application/m09-validacion-moderacion/detalle-validacion.use-case';
 import { AccesoContactoService, ListarPlanesUseCase, MiPlanUseCase, SolicitarPagoUseCase, ListarPagosAdminUseCase, ResolverPagoUseCase, DirectorioProductoresUseCase, ProtegerContactoProductosUseCase } from '../../application/m15-planes/planes.use-cases';
 import { PrismaPagoContactoRepository, PrismaSolicitudCuentaRepository } from '../adapters/out/persistence/prisma/repositories/prisma.repositories';
@@ -126,7 +127,7 @@ export const container={
   registrarAccionConservacion:new RegistrarAccionConservacionUseCase(accionesConservacion,plantas),
   listarAccionesConservacion:new ListarAccionesConservacionUseCase(accionesConservacion),
   buscarPlantas:new BuscarPlantasUseCase(plantas,publicaciones,partesUso,usos),
-  crearConsulta:new CrearConsultaUseCase(consultas),
+  crearConsulta:new CrearConsultaUseCase(consultas,async (usuarioId)=>tieneSoportePrioritario((await accesoContacto.planActivo(usuarioId)).plan)),
   listarBandejaConsultas:new ListarBandejaConsultasUseCase(consultas),
   listarMisConsultas:new ListarMisConsultasUseCase(consultas,usuarios),
   obtenerConsulta:new ObtenerConsultaUseCase(consultas,mensajesConsulta),

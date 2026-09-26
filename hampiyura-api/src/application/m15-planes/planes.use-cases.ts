@@ -7,7 +7,8 @@ import { CultivoRepositoryPort } from '../../domain/ports/out/cultivo.repository
 import { PlantaRepositoryPort } from '../../domain/ports/out/planta.repository.port';
 import { ProductoRepositoryPort } from '../../domain/ports/out/producto.repository.port';
 import { NotificadorPort } from '../../domain/ports/out/notificador.port';
-import { CATALOGO_PLANES, DefinicionPlan, PORCENTAJE_FONDO_CONSERVACION, esMetodoPago, esPlanDePago, precioDe, PlanDePago, MetodoPago, ConceptoPago } from '../../domain/value-objects/plan.vo';
+import { CATALOGO_PLANES, DefinicionPlan, PORCENTAJE_FONDO_CONSERVACION, PlanActivo, NIVEL_PLAN, tieneFiltrosAvanzados, esMetodoPago, esPlanDePago, precioDe, PlanDePago, MetodoPago, ConceptoPago } from '../../domain/value-objects/plan.vo';
+import { ZONAS_GENERALES, ZONA_NO_ESPECIFICADA, OTRA_ZONA } from '../../domain/value-objects/zona-general.vo';
 import { NotFoundError, UnauthorizedError, ValidationError } from '../../domain/errors/domain.errors';
 
 export interface DatosDeCobro { yape: { numero: string; titular: string } | null; plin: { numero: string; titular: string } | null; }
@@ -15,16 +16,16 @@ export interface Solicitante { id: string; rol: string; }
 
 // ---------- Acceso al contacto (regla de negocio del cap. 3 del modelo) ----------
 // El contacto de un productor lo ve: el propio productor, un administrador, quien tenga un plan de pago
-// VIGENTE (Negocio o Institucional: contactos ilimitados) o quien tenga un desbloqueo VIGENTE de ESE productor.
+// VIGENTE (Negocio, Empresarial o Institucional: contactos ilimitados) o quien tenga un desbloqueo VIGENTE de ESE productor.
 // Un plan pagado NO se salta nada más: no altera la validación M-09 ni las ubicaciones exactas (RN-07).
 export class AccesoContactoService {
   constructor(private readonly pagos: PagoContactoRepositoryPort) {}
 
-  async planActivo(usuarioId: string, ahora = new Date()): Promise<{ plan: 'Explorador' | 'Negocio' | 'Institucional'; vigenteHasta?: Date }> {
-    const propios = (await this.pagos.listarPorUsuario(usuarioId)).filter((p) => p.props.concepto === 'Plan' && (p.props.plan === 'Negocio' || p.props.plan === 'Institucional') && p.estaVigente(ahora));
-    const institucional = propios.filter((p) => p.props.plan === 'Institucional').sort((a, b) => b.props.vigenteHasta!.getTime() - a.props.vigenteHasta!.getTime())[0];
-    const elegido = institucional ?? propios.sort((a, b) => b.props.vigenteHasta!.getTime() - a.props.vigenteHasta!.getTime())[0];
-    return elegido ? { plan: elegido.props.plan as 'Negocio' | 'Institucional', vigenteHasta: elegido.props.vigenteHasta } : { plan: 'Explorador' };
+  // Devuelve el plan de MAYOR nivel que esté vigente (Institucional > Empresarial > Negocio); sin ninguno, Explorador.
+  async planActivo(usuarioId: string, ahora = new Date()): Promise<{ plan: PlanActivo; vigenteHasta?: Date }> {
+    const propios = (await this.pagos.listarPorUsuario(usuarioId)).filter((p) => p.props.concepto === 'Plan' && p.props.plan !== undefined && (p.props.plan as string) in NIVEL_PLAN && p.estaVigente(ahora));
+    const elegido = propios.sort((a, b) => NIVEL_PLAN[b.props.plan as PlanActivo] - NIVEL_PLAN[a.props.plan as PlanActivo] || b.props.vigenteHasta!.getTime() - a.props.vigenteHasta!.getTime())[0];
+    return elegido ? { plan: elegido.props.plan as PlanActivo, vigenteHasta: elegido.props.vigenteHasta } : { plan: 'Explorador' };
   }
 
   async desbloqueoVigente(usuarioId: string, productorId: string, ahora = new Date()): Promise<PagoContacto | undefined> {
@@ -67,7 +68,22 @@ export interface ProductorContactable {
   biografia?: string;
   plantas: string[];
   zonas: string[];
+  // Datos de sus productos YA aprobados (públicos y gratis: la zona es la general de la lista fija, nunca el punto exacto).
+  certificado: boolean;
+  zonasProducto: string[];
+  cantidadMaxima?: number;
+  // Solo cuando se filtra por cercanía: 'zona' = misma provincia, 'departamento' = mismo departamento.
+  cercania?: 'zona' | 'departamento';
 }
+
+// Filtros avanzados del directorio (plan Empresarial o Institucional). Sin coordenadas: la cercanía usa la zona general.
+export interface FiltrosDirectorio { certificado?: boolean; cantidadMinima?: number; cerca?: string; }
+// "Cantidad" del producto es texto libre ("20 unidades"): se lee el PRIMER número; si no hay, ese producto no cuenta para este filtro.
+export function primerNumero(texto?: string): number | undefined {
+  const m = texto?.match(/\d+(?:[.,]\d+)?/);
+  return m ? Number(m[0].replace(',', '.')) : undefined;
+}
+const departamentoDe = (zona: string) => zona.split(', ')[1];
 export interface ContactoProductor { telefono?: string; contactosDeProductos: string[]; }
 export interface FichaProductor extends ProductorContactable {
   contactoDisponible: boolean;
@@ -91,6 +107,7 @@ export class DirectorioProductoresUseCase {
     const ubicaciones = await this.mapa.listarTodas();
     const validada = new Map<string, boolean>();
     const resultado: ProductorContactable[] = [];
+    const productosAprobados = (await this.productos.listar()).filter((p) => p.esVisiblePublicamente());
     for (const u of productores) {
       const plantas = new Set<string>(); const zonas = new Set<string>();
       for (const ub of ubicaciones.filter((x) => x.props.autorId === u.props.id)) {
@@ -100,12 +117,40 @@ export class DirectorioProductoresUseCase {
         zonas.add(ub.props.zona);
       }
       if (plantas.size === 0) continue;
-      resultado.push({ id: u.props.id, nombre: u.props.nombre, nombreNegocio: u.props.nombreNegocio ?? undefined, region: u.props.region, biografia: u.props.biografia ?? undefined, plantas: [...plantas], zonas: [...zonas] });
+      resultado.push({ id: u.props.id, nombre: u.props.nombre, nombreNegocio: u.props.nombreNegocio ?? undefined, region: u.props.region, biografia: u.props.biografia ?? undefined, plantas: [...plantas], zonas: [...zonas], ...this.datosDeProductos(productosAprobados.filter((p) => p.props.productorId === u.props.id)) });
     }
     return resultado.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
   }
 
-  async listar(): Promise<ProductorContactable[]> { return this.contactables(); }
+  private datosDeProductos(productos: { props: { localidad: string; cantidad?: string; etiquetaCertificado: boolean } }[]) {
+    const cantidades = productos.map((p) => primerNumero(p.props.cantidad)).filter((n): n is number => n !== undefined);
+    return {
+      certificado: productos.some((p) => p.props.etiquetaCertificado),
+      zonasProducto: [...new Set(productos.map((p) => p.props.localidad).filter((z) => z && z !== ZONA_NO_ESPECIFICADA))],
+      cantidadMaxima: cantidades.length ? Math.max(...cantidades) : undefined,
+    };
+  }
+
+  // Sin filtros = como siempre (para todos). Con cualquier filtro avanzado: solo plan Empresarial o Institucional vigente (o administrador).
+  async listar(filtros: FiltrosDirectorio = {}, solicitante?: Solicitante): Promise<ProductorContactable[]> {
+    const todos = await this.contactables();
+    const hayFiltros = !!filtros.certificado || filtros.cantidadMinima !== undefined || !!filtros.cerca;
+    if (!hayFiltros) return todos;
+    const autorizado = !!solicitante && (solicitante.rol === 'Administrador' || tieneFiltrosAvanzados((await this.acceso.planActivo(solicitante.id)).plan));
+    if (!autorizado) throw new UnauthorizedError('Los filtros avanzados son del plan Empresarial o Institucional');
+    if (filtros.cerca && !ZONAS_GENERALES.includes(filtros.cerca)) throw new ValidationError('Elige una zona de la lista');
+    let salida = todos;
+    if (filtros.certificado) salida = salida.filter((p) => p.certificado);
+    if (filtros.cantidadMinima !== undefined) salida = salida.filter((p) => p.cantidadMaxima !== undefined && p.cantidadMaxima >= filtros.cantidadMinima!);
+    if (filtros.cerca) {
+      const dep = filtros.cerca === OTRA_ZONA ? undefined : departamentoDe(filtros.cerca);
+      salida = salida.flatMap((p) => {
+        const cercania = p.zonasProducto.includes(filtros.cerca!) ? 'zona' as const : (dep && p.zonasProducto.some((z) => departamentoDe(z) === dep)) ? 'departamento' as const : undefined;
+        return cercania ? [{ ...p, cercania }] : [];
+      }).sort((a, b) => (a.cercania === 'zona' ? 0 : 1) - (b.cercania === 'zona' ? 0 : 1) || a.nombre.localeCompare(b.nombre, 'es'));
+    }
+    return salida;
+  }
 
   async obtener(productorId: string, solicitante?: Solicitante): Promise<FichaProductor> {
     const ficha = (await this.contactables()).find((p) => p.id === productorId);
@@ -156,7 +201,7 @@ export class SolicitarPagoUseCase {
     const previos = await this.pagos.listarPorUsuario(input.usuarioId);
     let plan: PlanDePago | undefined; let productorId: string | undefined; let monto: number;
     if (input.concepto === 'Plan') {
-      if (!input.plan || !esPlanDePago(input.plan)) throw new ValidationError('Elige un plan de pago: Negocio o Institucional');
+      if (!input.plan || !esPlanDePago(input.plan)) throw new ValidationError('Elige un plan de pago: Negocio, Empresarial o Institucional');
       plan = input.plan; monto = precioDe(plan);
       if (previos.some((p) => p.props.concepto === 'Plan' && p.props.plan === plan && p.props.estado === 'Pendiente')) throw new ValidationError('Ya tienes un pago de este plan esperando confirmación');
     } else if (input.concepto === 'Desbloqueo') {
@@ -203,7 +248,7 @@ class Presentador {
 
 // Mi plan: plan activo, vencimiento y estado de pago del usuario, más sus desbloqueos y su historial.
 export interface MiPlan {
-  plan: 'Explorador' | 'Negocio' | 'Institucional';
+  plan: PlanActivo;
   vencimiento?: Date;
   // Estado de pago de la suscripción más reciente (Pendiente / Confirmado / Vencido / Rechazado); null si nunca pagó un plan.
   estadoPago: EstadoPagoEfectivo | null;
@@ -215,7 +260,7 @@ export class MiPlanUseCase extends Presentador {
   async ejecutar(usuarioId: string): Promise<MiPlan> {
     const activo = await this.acceso.planActivo(usuarioId);
     const propios = (await this.pagos.listarPorUsuario(usuarioId)).sort((a, b) => b.props.creadoEn.getTime() - a.props.creadoEn.getTime());
-    const suscripciones = propios.filter((p) => p.props.concepto === 'Plan' && (p.props.plan === 'Negocio' || p.props.plan === 'Institucional'));
+    const suscripciones = propios.filter((p) => p.props.concepto === 'Plan' && (p.props.plan as string) in NIVEL_PLAN);
     const pagos = await Promise.all(propios.map((p) => this.aVista(p)));
     const desbloqueos = await Promise.all(propios.filter((p) => p.props.concepto === 'Desbloqueo' && p.estaVigente()).map(async (p) => ({
       productorId: p.props.productorId!, productorNombre: (await this.usuarios.buscarPorId(p.props.productorId!))?.props.nombre ?? p.props.productorId!, vigenteHasta: p.props.vigenteHasta!,

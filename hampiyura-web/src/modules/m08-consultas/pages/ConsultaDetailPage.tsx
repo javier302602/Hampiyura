@@ -69,6 +69,7 @@ function ConsultaDetailPage({ consultaId, onVolver }: { consultaId: string; onVo
       <h2>{ETIQUETAS_TIPO_CONSULTA[consulta.tipo]}</h2>
       <div style={{ display: 'flex', gap: '.4rem', flexWrap: 'wrap' }}>
         <span className="badge badge-estado">{ETIQUETAS_ESTADO_CONSULTA[consulta.estado]}</span>
+        {consulta.prioritaria && <span className="badge badge-prioritaria">★ Prioritaria</span>}
         {consulta.areaAsignada && <span className="badge badge-estado">Área: {consulta.areaAsignada}</span>}
       </div>
       <IndicadorPrioridad prioridad={consulta.prioridad} />

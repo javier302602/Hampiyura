@@ -49,7 +49,7 @@ function PlanesPage() {
         ? <Button variant="primary" onClick={() => irAPagar(p.id)}>Desbloquear este contacto</Button>
         : <Button variant="secondary" onClick={() => navigate(RUTAS_M15.productores)}>Elegir un productor</Button>;
     }
-    if ((p.id === 'Negocio' || p.id === 'Institucional') && planActual === p.id) return <Badge variant="success" icon={<Check size={14} aria-hidden="true" />}>Tu plan actual</Badge>;
+    if ((p.id === 'Negocio' || p.id === 'Empresarial' || p.id === 'Institucional') && planActual === p.id) return <Badge variant="success" icon={<Check size={14} aria-hidden="true" />}>Tu plan actual</Badge>;
     return <Button variant={p.id === 'Negocio' ? 'primary' : 'secondary'} onClick={() => irAPagar(p.id)}>{sesion ? `Elegir ${p.nombre}` : 'Iniciar sesión para elegir'}</Button>;
   }
 
@@ -70,7 +70,7 @@ function PlanesPage() {
           <Lock size={18} aria-hidden="true" />
           <div>
             <strong>{productor ? `Para contactar a ${nombreDe(productor)} necesitas un plan o un desbloqueo.` : 'Para ver este contacto necesitas un plan o un desbloqueo.'}</strong>
-            <p>El desbloqueo puntual abre solo el contacto de este productor durante 30 días; un plan (Negocio o Institucional) abre los contactos de todos.</p>
+            <p>El desbloqueo puntual abre solo el contacto de este productor durante 30 días; un plan (Negocio, Empresarial o Institucional) abre los contactos de todos.</p>
           </div>
         </div>
       )}

@@ -4,7 +4,7 @@ import { apiRequest } from '../../../shared/api/client';
 // agronómico -- solo el estado y un mensaje. `id`/`plantaId` sí llegan siempre (se necesitan para
 // poder registrar una ubicación aunque la ficha todavía no esté validada).
 // Guía de cultivo (la redacta un especialista en agronomía): null = pendiente, nunca se rellena por el sistema.
-export interface GuiaCultivo { suelo: string | null; nutrientes: string | null; herramientas: string | null; actualizadaEn: string | null }
+export interface GuiaCultivo { campos: Record<string, string | null>; completada: number; total: number; actualizadaEn: string | null }
 export type FichaCultivoVisible =
   | { disponible: true; id: string; plantaId: string; zonaCultivo: string; metodoPropagacion: string; estadoValidacion: string; guia: GuiaCultivo }
   | { disponible: false; id: string; plantaId: string; estadoValidacion: string; mensaje: string; guia: GuiaCultivo };
@@ -14,7 +14,7 @@ export function listarFichasPorPlanta(plantaId: string): Promise<FichaCultivoVis
 }
 
 // Guía de cultivo: solo Especialista en agronomía o Administrador (el servidor lo exige).
-export async function actualizarGuiaCultivo(id: string, input: { suelo: string; nutrientes: string; herramientas: string }): Promise<GuiaCultivo> {
+export async function actualizarGuiaCultivo(id: string, input: Record<string, string>): Promise<GuiaCultivo> {
   const ficha = await apiRequest<FichaCultivoVisible>(`/cultivos/${encodeURIComponent(id)}/guia`, { method: 'PATCH', body: JSON.stringify(input) });
   return ficha.guia;
 }

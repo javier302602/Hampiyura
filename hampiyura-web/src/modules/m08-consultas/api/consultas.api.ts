@@ -53,6 +53,8 @@ export interface Consulta {
   descripcion: string;
   estado: EstadoConsulta;
   prioridad: 'Normal' | 'Alta';
+  // Soporte prioritario (plan Institucional al enviarla). Distinto de la prioridad Alta, que sale del tipo de consulta.
+  prioritaria?: boolean;
   areaAsignada?: AreaEspecialidad;
   asignadoA?: string;
   fechaCreacion: string;

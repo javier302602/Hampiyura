@@ -9,10 +9,16 @@
 // cuenta (Productor, Empresario, Institución de investigación): cambiar de tipo es gratis y no activa ni exige ningún plan, y
 // cualquier usuario puede contratar cualquier plan. Publicar productos solo tiene la comisión del 5% (CG-004).
 
-export const PLANES = ['Explorador', 'Negocio', 'Institucional', 'Productor'] as const;
+export const PLANES = ['Explorador', 'Negocio', 'Empresarial', 'Institucional', 'Productor'] as const;
 export type Plan = typeof PLANES[number];
 // Planes que se pagan (y por eso tienen vencimiento). Explorador y Productor son gratuitos.
-export const PLANES_DE_PAGO = ['Negocio', 'Institucional'] as const;
+export const PLANES_DE_PAGO = ['Negocio', 'Empresarial', 'Institucional'] as const;
+// Escalera de acceso al contacto (Ronda 22): cada nivel incluye lo del anterior. Explorador = sin plan.
+export type PlanActivo = 'Explorador' | PlanDePago;
+export const NIVEL_PLAN: Record<PlanActivo, number> = { Explorador: 0, Negocio: 1, Empresarial: 2, Institucional: 3 };
+// Filtros avanzados del directorio: Empresarial e Institucional. Soporte prioritario: solo Institucional.
+export const tieneFiltrosAvanzados = (p: PlanActivo) => NIVEL_PLAN[p] >= NIVEL_PLAN.Empresarial;
+export const tieneSoportePrioritario = (p: PlanActivo) => p === 'Institucional';
 export type PlanDePago = typeof PLANES_DE_PAGO[number];
 export function esPlanDePago(v: string): v is PlanDePago { return (PLANES_DE_PAGO as readonly string[]).includes(v); }
 
@@ -56,13 +62,19 @@ export const CATALOGO_PLANES: DefinicionPlan[] = [
   {
     id: 'Negocio', nombre: 'Negocio', paraQuien: 'Quien necesita contactar a varios productores para comprarles: negocios, emprendedores, herbolarios. No hace falta para vender ni para ser Empresario',
     incluye: ['Todo lo del plan Explorador', 'Contactos ilimitados de productores'],
-    proximamente: ['Mensajería directa en la plataforma', 'Alertas de disponibilidad y temporada', 'Filtros avanzados (cantidad, certificación, cercanía)'],
+    proximamente: ['Mensajería directa en la plataforma', 'Alertas de disponibilidad y temporada'],
     precio: 29, precioTexto: 'S/ 29 al mes', periodicidad: 'mensual', referencial: true,
   },
   {
+    id: 'Empresarial', nombre: 'Empresarial', paraQuien: 'Empresas y negocios que compran con frecuencia y necesitan filtrar la oferta de los productores',
+    incluye: ['Todo lo del plan Negocio', 'Filtros avanzados en el directorio de productores: cantidad ofrecida, certificación y cercanía por zona'],
+    proximamente: [],
+    precio: 99, precioTexto: 'S/ 99 al mes', periodicidad: 'mensual', referencial: true,
+  },
+  {
     id: 'Institucional', nombre: 'Institucional', paraQuien: 'Institutos, universidades, ONG y entidades públicas: lo paga un solo administrador en nombre de la institución',
-    incluye: ['Todo lo del plan Negocio'],
-    proximamente: ['Soporte prioritario', 'Reportes y datos agregados de la bioeconomía regional (sin datos personales de productores)'],
+    incluye: ['Todo lo del plan Empresarial', 'Soporte prioritario: tus consultas al equipo se marcan como "Prioritaria"'],
+    proximamente: ['Reportes y datos agregados de la bioeconomía regional (sin datos personales de productores)'],
     precio: 120, precioTexto: 'S/ 120 al mes', periodicidad: 'mensual', referencial: true,
   },
   {

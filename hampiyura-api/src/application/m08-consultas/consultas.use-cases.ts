@@ -38,7 +38,8 @@ export function puedeVerArea(rolSolicitante: string, areaConsulta: AreaEspeciali
 }
 
 export class CrearConsultaUseCase implements CrearConsultaPort {
-  constructor(private readonly repo: ConsultaRepositoryPort) {}
+  // tienePlanInstitucional: consulta si el autor tiene hoy soporte prioritario (plan Institucional vigente). Opcional: sin él, nunca es prioritaria.
+  constructor(private readonly repo: ConsultaRepositoryPort, private readonly tieneSoportePrioritario?: (usuarioId: string) => Promise<boolean>) {}
   async ejecutar(input: CrearConsultaInput): Promise<Consulta> {
     if (!esTipoConsulta(input.tipo)) throw new ValidationError(`Tipo de consulta no reconocido: ${input.tipo}`);
     if (!input.descripcion?.trim()) throw new ValidationError('La descripción de la consulta es obligatoria');
@@ -49,9 +50,11 @@ export class CrearConsultaUseCase implements CrearConsultaPort {
     if (imagenes.length > 5) throw new ValidationError('Puedes adjuntar hasta 5 fotos');
     if (imagenes.some((u) => !u.startsWith('/uploads/'))) throw new ValidationError('Las fotos deben subirse a la plataforma');
     const ahora = new Date();
+    const prioritaria = !!input.autorId && !!this.tieneSoportePrioritario && await this.tieneSoportePrioritario(input.autorId);
     const consulta = new Consulta({
       id: randomUUID(),
       autorId: input.autorId,
+      prioritaria,
       imagenes, latitud, longitud,
       tipo: input.tipo,
       descripcion: input.descripcion,

@@ -18,7 +18,16 @@ function AuthLayout({ eyebrow, title, description, children, footer }: Props) {
   return (
     <div className="auth-layout">
       <div className="auth-panel">
-        <span className="auth-logo"><img className="auth-logo-completo" src="/img/logo-hampiyura.png" alt="HampiYura — plataforma digital de plantas medicinales de la Amazonía" width="150" height="150" /></span>
+        {/* Marca centrada y grande. Claro: logo completo (texto verde oscuro sobre transparente). Oscuro: emblema sin caja + nombre y
+            lema como TEXTO real claro (el logo completo no se lee sobre verde oscuro); CSS elige cuál según el tema. */}
+        <div className="auth-brand">
+          <img className="auth-brand-completo" src="/img/logo-hampiyura.png" alt="HampiYura — plataforma digital de plantas medicinales de la Amazonía" width="240" height="240" />
+          <div className="auth-brand-oscuro">
+            <img src="/img/logo-emblema.png" alt="" width="150" height="150" />
+            <span className="auth-brand-nombre">HampiYura</span>
+            <span className="auth-brand-lema">Plataforma digital de plantas medicinales de la Amazonía</span>
+          </div>
+        </div>
         <p className="eyebrow">{eyebrow}</p>
         <h1 className="auth-title">{title}</h1>
         {description && <p className="auth-desc">{description}</p>}

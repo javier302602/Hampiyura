@@ -5,9 +5,9 @@ import { EstadoValidacion } from '../../../value-objects/estado-validacion.vo';
 // por un especialista; en ese caso solo se expone el estado y un mensaje de espera.
 // Guía de cultivo (Ronda 19): visible para cualquiera, aunque la ficha aún no esté validada, porque solo la escribe un
 // especialista en agronomía. Todos los campos null = "pendiente de un especialista".
-export interface GuiaCultivoVisible { suelo: string | null; nutrientes: string | null; herramientas: string | null; actualizadaEn: Date | null; }
+export interface GuiaCultivoVisible { campos: Record<string, string | null>; completada: number; total: number; actualizadaEn: Date | null; }
 export type FichaCultivoVisible =
-  | ({ disponible: true; guia: GuiaCultivoVisible } & Omit<Cultivo['props'], 'guiaSuelo' | 'guiaNutrientes' | 'guiaHerramientas' | 'guiaEspecialistaId' | 'guiaActualizadaEn'>)
+  | ({ disponible: true; guia: GuiaCultivoVisible } & Omit<Cultivo['props'], 'guia' | 'guiaEspecialistaId' | 'guiaActualizadaEn'>)
   | { disponible: false; id: string; plantaId: string; estadoValidacion: EstadoValidacion; mensaje: string; guia: GuiaCultivoVisible };
 
 export interface ObtenerFichaCultivoPort { ejecutar(id: string): Promise<FichaCultivoVisible>; }

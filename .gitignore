@@ -36,3 +36,4 @@ capturas-identidad-visual/
 backups/
 credenciales-equipo*.txt
 hampiyura-api/scripts/crear-cuentas-equipo.ts
+credenciales-equipo*

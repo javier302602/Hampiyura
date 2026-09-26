@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { CheckCircle2, Eye, XCircle } from 'lucide-react';
 import { listarPagos, obtenerDetallePago, confirmarPago, rechazarPago, type PagoVisible } from '../api/planes.api';
 import { VARIANTE_ESTADO_PAGO } from './MiPlanPage';
@@ -83,7 +84,10 @@ function DetallePago({ id, onCerrar, onResuelto }: { id: string; onCerrar: () =>
 }
 
 function PagosAdminPage() {
-  const [filtro, setFiltro] = useState<Filtro>('Pendiente');
+  // Las tarjetas del panel llegan aquí con ?estado=Pendiente|Confirmado|Rechazado ya aplicado.
+  const [params] = useSearchParams();
+  const inicial = params.get('estado');
+  const [filtro, setFiltro] = useState<Filtro>(FILTROS.some((f) => f.valor === inicial) ? (inicial as Filtro) : 'Pendiente');
   const [pagos, setPagos] = useState<PagoVisible[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);

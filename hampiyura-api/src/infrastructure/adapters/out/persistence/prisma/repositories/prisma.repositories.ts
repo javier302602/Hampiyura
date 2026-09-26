@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { Usuario } from '../../../../../../domain/entities/usuario.entity';
 import { Cultivo } from '../../../../../../domain/entities/cultivo.entity';
 import { ValidacionContenido } from '../../../../../../domain/entities/validacion-contenido.entity';
@@ -71,7 +71,7 @@ export class PrismaCultivoRepository implements CultivoRepositoryPort {
   async buscarPorId(id:string){const x=await this.prisma.cultivo.findUnique({where:{id}}); return x?this.aDominio(x):null;}
   async listarPorPlanta(plantaId:string){const xs=await this.prisma.cultivo.findMany({where:{plantaId}}); return xs.map((x)=>this.aDominio(x));}
   async actualizarEstadoValidacion(id:string, estado:EstadoValidacion){await this.prisma.cultivo.update({where:{id},data:{estadoValidacion:estado}});}
-  async actualizarGuia(c:Cultivo){const p=c.props; await this.prisma.cultivo.update({where:{id:p.id},data:{guiaSuelo:p.guiaSuelo??null,guiaNutrientes:p.guiaNutrientes??null,guiaHerramientas:p.guiaHerramientas??null,guiaEspecialistaId:p.guiaEspecialistaId??null,guiaActualizadaEn:p.guiaActualizadaEn??null}});}
+  async actualizarGuia(c:Cultivo){const p=c.props; await this.prisma.cultivo.update({where:{id:p.id},data:{guia:(p.guia??Prisma.DbNull) as any,guiaEspecialistaId:p.guiaEspecialistaId??null,guiaActualizadaEn:p.guiaActualizadaEn??null}});}
 }
 export class PrismaValidacionRepository implements ValidacionContenidoRepositoryPort {
   constructor(private readonly prisma:PrismaClient) {}

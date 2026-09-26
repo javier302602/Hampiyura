@@ -150,9 +150,8 @@ model Cultivo {
   fuente String
   // Ronda 19: guía para quien quiera sembrar. La escribe SOLO un especialista en agronomía (o un administrador);
   // nace vacía y NUNCA se rellena por el sistema: vacío = pendiente de un especialista.
-  guiaSuelo String?
-  guiaNutrientes String?
-  guiaHerramientas String?
+  // Ronda 22: la guía es un JSON con las secciones de CAMPOS_GUIA (suelo, pH, drenaje, nutrientes, calendario, riego, clima, plagas...).
+  guia Json?
   guiaEspecialistaId String?
   guiaActualizadaEn DateTime?
   estadoValidacion EstadoValidacion
@@ -290,6 +289,8 @@ model Consulta {
   latitud Float?
   longitud Float?
   mensajes MensajeConsulta[]
+  // Ronda 22: consulta hecha por alguien con plan Institucional vigente al momento de enviarla (soporte prioritario).
+  prioritaria Boolean @default(false)
 }
 model MensajeConsulta {
   id String @id @default(uuid())

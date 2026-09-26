@@ -1,0 +1,1 @@
+ALTER TABLE "Consulta" ADD COLUMN "prioritaria" BOOLEAN NOT NULL DEFAULT false;

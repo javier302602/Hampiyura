@@ -21,6 +21,7 @@
   /* Terracota como TEXTO pequeño (eyebrows, badges de acento): la terracota de botón mide 4.2-4.75:1; esta variante llega a AAA. */
   --color-accent-text:#6d3b1a;
   --stat-bg:#dcecf7; --stat-border:#a9cbe3; --stat-text:#17352b; --stat-number:#6d3b1a; --stat-muted:#3d3d3d;
+  --deco-trama-opacidad:.55; --deco-marca-opacidad:.07;
   --color-accent-deep:#b56837;  /* terracota de la paleta, para acentos NO textuales (bordes, barras, brillos) en ambos temas */
   --color-surface-elevated:#ffffff;
   --warm-glow:transparent;

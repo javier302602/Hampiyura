@@ -20,7 +20,7 @@ export const router=Router();
 // M-15 · Contacto pagado y planes
 router.get('/planes',listarPlanes); router.get('/planes/mi-plan',requireAuth,miPlan); router.post('/planes/pagos',requireAuth,solicitarPago);
 router.get('/planes/pagos',requireAdmin,listarPagos); router.get('/planes/pagos/:id',requireAdmin,detallePago); router.post('/planes/pagos/:id/confirmar',requireAdmin,confirmarPago); router.post('/planes/pagos/:id/rechazar',requireAdmin,rechazarPago);
-router.get('/productores',listarProductores); router.get('/productores/:id',attachUserIfPresent,obtenerProductor);
+router.get('/productores',attachUserIfPresent,listarProductores); router.get('/productores/:id',attachUserIfPresent,obtenerProductor);
 router.post('/cuentas/solicitud-tipo-cuenta',requireAuth,solicitarTipoCuenta); router.get('/cuentas/solicitud-tipo-cuenta',requireAuth,obtenerMiTipoCuenta);
 router.post('/cuentas/registro',registrar); router.post('/cuentas/login',login); router.post('/cuentas/activar',activarCuenta); router.post('/cuentas/recuperar-contrasena',solicitarRecuperacion); router.post('/cuentas/restablecer-contrasena',restablecerContraseña); router.post('/cuentas/cambiar-contrasena',requireAuth,cambiarContraseña); router.get('/cuentas/perfil',requireAuth,obtenerPerfil); router.patch('/cuentas/perfil',requireAuth,actualizarPerfil);
 router.post('/plantas',requireValidator,registrarPlanta); router.post('/plantas/proponer',requireAuth,proponerPlanta); router.get('/plantas',listarPlantas); router.get('/plantas/:id',obtenerPlanta);
