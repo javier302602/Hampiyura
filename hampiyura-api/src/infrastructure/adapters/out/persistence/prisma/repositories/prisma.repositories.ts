@@ -56,7 +56,8 @@ import { AreaEspecialidad } from '../../../../../../domain/value-objects/area-es
 
 export class PrismaUsuarioRepository implements UsuarioRepositoryPort {
   constructor(private readonly prisma:PrismaClient) {}
-  async buscarPorCorreo(correo:string){const x=await this.prisma.usuario.findUnique({where:{correo}}); return x?new Usuario({...x,rol:x.rol}):null;}
+  // El correo no distingue mayúsculas ("Junior@..." con la J que autocorrige el teléfono debe entrar igual que "junior@...").
+  async buscarPorCorreo(correo:string){const x=await this.prisma.usuario.findFirst({where:{correo:{equals:correo.trim(),mode:"insensitive"}}}); return x?new Usuario({...x,rol:x.rol}):null;}
   async buscarPorId(id:string){const x=await this.prisma.usuario.findUnique({where:{id}}); return x?new Usuario({...x,rol:x.rol}):null;}
   async guardar(u:Usuario){await this.prisma.usuario.create({data:u.props as any});}
   async actualizar(u:Usuario){await this.prisma.usuario.update({where:{id:u.props.id},data:u.props as any});}

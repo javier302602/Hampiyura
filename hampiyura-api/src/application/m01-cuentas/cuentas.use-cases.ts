@@ -38,7 +38,7 @@ export class RegistrarUsuarioUseCase {
     const contraseña = new ContraseñaSegura(input.contraseña);
     const esEmpresa = input.tipoRegistro === 'empresa';
     const usuario = new Usuario({
-      id:randomUUID(), nombre:input.nombre, correo:input.correo, contraseñaHash:await bcrypt.hash(contraseña.valor, 10),
+      id:randomUUID(), nombre:input.nombre, correo:input.correo.trim().toLowerCase(), contraseñaHash:await bcrypt.hash(contraseña.valor, 10),
       rol: esEmpresa ? 'Productor' : 'UsuarioRegistrado',
       idioma:'es', nivelConocimiento:'Pendiente', region:'Pendiente',
       estado: esEmpresa ? 'PendienteActivacion' : 'Activo',
