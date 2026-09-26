@@ -74,12 +74,13 @@ describe('Solicitud de cambio de tipo de cuenta (Ronda 18)', () => {
     expect(ctx.usuarios.actualizar).not.toHaveBeenCalled();
     expect(s.props.estadoValidacion).toBe('Rechazado');
   });
-  test('mi tipo de cuenta: el plan sugerido sale del catálogo (Productor gratis; Empresario Negocio; Institución Empresarial)', async () => {
-    for (const [tipo, plan, gratis] of [['Productor', 'Productor', true], ['Empresario', 'Negocio', false], ['Institucion', 'Empresarial', false]] as const) {
+  test('mi tipo de cuenta no menciona ningún plan: aprobar el tipo es gratis y no activa nada de M-15', async () => {
+    for (const tipo of ['Productor', 'Empresario', 'Institucion'] as const) {
       const ctx = armar();
       await ctx.uc.ejecutar({ usuarioId: 'u1', tipo, nombreOrganizacion: 'X', descripcion });
       const mi = await new ObtenerMiTipoCuentaUseCase(ctx.solicitudes, ctx.validaciones, ctx.usuarios).ejecutar('u1');
-      expect(mi.solicitud?.plan).toMatchObject({ id: plan, gratis });
+      expect(mi.solicitud).not.toBeNull();
+      expect(JSON.stringify(mi)).not.toMatch(/plan/i);
       expect(mi.puedeSolicitar).toBe(false); // ya tiene una en curso
     }
   });

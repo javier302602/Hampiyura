@@ -41,13 +41,13 @@ export function obtenerPerfil(): Promise<Perfil> { return apiRequest<Perfil>('/c
 export type TipoCuentaSolicitable = 'Productor' | 'Empresario' | 'Institucion';
 export const TIPOS_CUENTA: { valor: TipoCuentaSolicitable; etiqueta: string; ayuda: string }[] = [
   { valor: 'Productor', etiqueta: 'Productor', ayuda: 'Cultivas, recolectas o elaboras productos con plantas. Publicar es gratis.' },
-  { valor: 'Empresario', etiqueta: 'Empresario', ayuda: 'Tienes un negocio (cosmética natural, gastronomía, herbolario…) y buscas contactar productores.' },
+  { valor: 'Empresario', etiqueta: 'Empresario', ayuda: 'Tienes un negocio o emprendimiento (cosmética natural, gastronomía, herbolario…).' },
   { valor: 'Institucion', etiqueta: 'Institución de investigación', ayuda: 'Universidad, ONG, centro de investigación o entidad pública.' },
 ];
 export interface MiTipoCuenta {
   tipoCuenta: TipoCuentaSolicitable | null;
   puedeSolicitar: boolean;
-  solicitud: { id: string; tipo: TipoCuentaSolicitable; etiquetaTipo: string; estado: string; creadaEn: string; comentarioDelEquipo?: string; plan: { id: string; nombre: string; precioTexto: string; gratis: boolean } } | null;
+  solicitud: { id: string; tipo: TipoCuentaSolicitable; etiquetaTipo: string; estado: string; creadaEn: string; comentarioDelEquipo?: string } | null;
 }
 export function obtenerMiTipoCuenta(): Promise<MiTipoCuenta> { return apiRequest<MiTipoCuenta>('/cuentas/solicitud-tipo-cuenta'); }
 export interface SolicitarTipoCuentaInput { tipo: TipoCuentaSolicitable; nombreOrganizacion?: string; descripcion: string; identificacion?: string; sitioWeb?: string; }

@@ -15,16 +15,16 @@ export interface Solicitante { id: string; rol: string; }
 
 // ---------- Acceso al contacto (regla de negocio del cap. 3 del modelo) ----------
 // El contacto de un productor lo ve: el propio productor, un administrador, quien tenga un plan de pago
-// VIGENTE (Negocio o Empresarial: contactos ilimitados) o quien tenga un desbloqueo VIGENTE de ESE productor.
+// VIGENTE (Negocio o Institucional: contactos ilimitados) o quien tenga un desbloqueo VIGENTE de ESE productor.
 // Un plan pagado NO se salta nada más: no altera la validación M-09 ni las ubicaciones exactas (RN-07).
 export class AccesoContactoService {
   constructor(private readonly pagos: PagoContactoRepositoryPort) {}
 
-  async planActivo(usuarioId: string, ahora = new Date()): Promise<{ plan: 'Explorador' | 'Negocio' | 'Empresarial'; vigenteHasta?: Date }> {
-    const propios = (await this.pagos.listarPorUsuario(usuarioId)).filter((p) => p.props.concepto === 'Plan' && (p.props.plan === 'Negocio' || p.props.plan === 'Empresarial') && p.estaVigente(ahora));
-    const empresarial = propios.filter((p) => p.props.plan === 'Empresarial').sort((a, b) => b.props.vigenteHasta!.getTime() - a.props.vigenteHasta!.getTime())[0];
-    const elegido = empresarial ?? propios.sort((a, b) => b.props.vigenteHasta!.getTime() - a.props.vigenteHasta!.getTime())[0];
-    return elegido ? { plan: elegido.props.plan as 'Negocio' | 'Empresarial', vigenteHasta: elegido.props.vigenteHasta } : { plan: 'Explorador' };
+  async planActivo(usuarioId: string, ahora = new Date()): Promise<{ plan: 'Explorador' | 'Negocio' | 'Institucional'; vigenteHasta?: Date }> {
+    const propios = (await this.pagos.listarPorUsuario(usuarioId)).filter((p) => p.props.concepto === 'Plan' && (p.props.plan === 'Negocio' || p.props.plan === 'Institucional') && p.estaVigente(ahora));
+    const institucional = propios.filter((p) => p.props.plan === 'Institucional').sort((a, b) => b.props.vigenteHasta!.getTime() - a.props.vigenteHasta!.getTime())[0];
+    const elegido = institucional ?? propios.sort((a, b) => b.props.vigenteHasta!.getTime() - a.props.vigenteHasta!.getTime())[0];
+    return elegido ? { plan: elegido.props.plan as 'Negocio' | 'Institucional', vigenteHasta: elegido.props.vigenteHasta } : { plan: 'Explorador' };
   }
 
   async destacadoVigente(productorId: string, ahora = new Date()): Promise<boolean> {
@@ -52,7 +52,7 @@ export interface CatalogoPublico {
 export class ListarPlanesUseCase {
   constructor(private readonly pagos: PagoContactoRepositoryPort, private readonly cobro: DatosDeCobro) {}
   async ejecutar(): Promise<CatalogoPublico> {
-    // Solo un CONTADOR VISIBLE: X % de lo confirmado en Negocio/Empresarial/Destacado. No mueve dinero.
+    // Solo un CONTADOR VISIBLE: X % de lo confirmado en Negocio/Institucional/Destacado. No mueve dinero.
     const confirmados = (await this.pagos.listar('Confirmado')).filter((p) => p.props.concepto === 'Plan');
     const total = confirmados.reduce((s, p) => s + p.props.monto, 0);
     return {
@@ -162,7 +162,7 @@ export class SolicitarPagoUseCase {
     const previos = await this.pagos.listarPorUsuario(input.usuarioId);
     let plan: PlanDePago | undefined; let productorId: string | undefined; let monto: number;
     if (input.concepto === 'Plan') {
-      if (!input.plan || !esPlanDePago(input.plan)) throw new ValidationError('Elige un plan de pago: Negocio, Empresarial o Destacado');
+      if (!input.plan || !esPlanDePago(input.plan)) throw new ValidationError('Elige un plan de pago: Negocio, Institucional o Destacado');
       if (input.plan === 'Destacado' && input.rol !== 'Productor') throw new UnauthorizedError('El plan Destacado es solo para cuentas de Productor');
       plan = input.plan; monto = precioDe(plan);
       if (previos.some((p) => p.props.concepto === 'Plan' && p.props.plan === plan && p.props.estado === 'Pendiente')) throw new ValidationError('Ya tienes un pago de este plan esperando confirmación');
@@ -210,7 +210,7 @@ class Presentador {
 
 // Mi plan: plan activo, vencimiento y estado de pago del usuario, más sus desbloqueos y su historial.
 export interface MiPlan {
-  plan: 'Explorador' | 'Negocio' | 'Empresarial';
+  plan: 'Explorador' | 'Negocio' | 'Institucional';
   vencimiento?: Date;
   // Estado de pago de la suscripción más reciente (Pendiente / Confirmado / Vencido / Rechazado); null si nunca pagó un plan.
   estadoPago: EstadoPagoEfectivo | null;
@@ -223,7 +223,7 @@ export class MiPlanUseCase extends Presentador {
   async ejecutar(usuarioId: string): Promise<MiPlan> {
     const activo = await this.acceso.planActivo(usuarioId);
     const propios = (await this.pagos.listarPorUsuario(usuarioId)).sort((a, b) => b.props.creadoEn.getTime() - a.props.creadoEn.getTime());
-    const suscripciones = propios.filter((p) => p.props.concepto === 'Plan' && (p.props.plan === 'Negocio' || p.props.plan === 'Empresarial'));
+    const suscripciones = propios.filter((p) => p.props.concepto === 'Plan' && (p.props.plan === 'Negocio' || p.props.plan === 'Institucional'));
     const destacada = propios.find((p) => p.props.concepto === 'Plan' && p.props.plan === 'Destacado');
     const pagos = await Promise.all(propios.map((p) => this.aVista(p)));
     const desbloqueos = await Promise.all(propios.filter((p) => p.props.concepto === 'Desbloqueo' && p.estaVigente()).map(async (p) => ({

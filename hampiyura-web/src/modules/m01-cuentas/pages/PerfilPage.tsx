@@ -86,7 +86,6 @@ const ESTADO_SOLICITUD: Record<string, { etiqueta: string; variant: BadgeVariant
 // Pedir el cambio a Productor / Empresario / Institución de investigación. No se aplica solo: queda pendiente y lo decide
 // un administrador. El plan que le corresponde sale del catálogo de planes (M-15); aprobar el tipo no regala el plan.
 function TarjetaTipoCuenta({ onCambio }: { onCambio: () => void }) {
-  const navigate = useNavigate();
   const [estado, setEstado] = useState<MiTipoCuenta | null>(null);
   const [abierto, setAbierto] = useState(false);
   const [tipo, setTipo] = useState<TipoCuentaSolicitable>('Productor');
@@ -133,16 +132,11 @@ function TarjetaTipoCuenta({ onCambio }: { onCambio: () => void }) {
               <span className="perfil-correo">Solicitud: {s.etiquetaTipo} · {new Date(s.creadaEn).toLocaleDateString('es-PE')}</span>
             </div>
             {s.comentarioDelEquipo && <p className="comentario-meta">Comentario del equipo: {s.comentarioDelEquipo}</p>}
-            <p className="perfil-correo">
-              Plan que le corresponde a este tipo: <strong>{s.plan.nombre}</strong> ({s.plan.precioTexto}).{' '}
-              {s.plan.gratis ? 'No tiene costo.' : 'Es un plan de pago: se contrata aparte, aprobar el tipo de cuenta no lo activa.'}
-            </p>
-            {(s.estado === 'Validado' && !s.plan.gratis) && <Button variant="secondary" onClick={() => navigate('/m15-planes')}>Ver planes</Button>}
           </div>
         )}
         {estado.puedeSolicitar && !abierto && (
           <>
-            {!s && <p className="perfil-correo">Tu cuenta es de usuario normal (gratis). Si produces, tienes un negocio o representas a una institución, puedes pedir el cambio: un administrador lo revisa.</p>}
+            {!s && <p className="perfil-correo">Tu cuenta es de usuario normal (gratis). Si produces, tienes un negocio o representas a una institución, puedes pedir el cambio: un administrador lo revisa. Es gratis y no depende de ningún plan de pago.</p>}
             <Button variant="secondary" onClick={() => setAbierto(true)}>{s ? 'Enviar una nueva solicitud' : 'Solicitar cambio de tipo de cuenta'}</Button>
           </>
         )}

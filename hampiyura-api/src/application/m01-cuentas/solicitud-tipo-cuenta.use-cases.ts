@@ -6,8 +6,7 @@ import { ValidacionContenidoRepositoryPort } from '../../domain/ports/out/valida
 import { UsuarioRepositoryPort } from '../../domain/ports/out/usuario.repository.port';
 import { EntidadValidableRepositoryPort } from '../../domain/ports/out/entidad-validable.repository.port';
 import { EstadoValidacion } from '../../domain/value-objects/estado-validacion.vo';
-import { TipoCuenta, esTipoCuenta, ETIQUETA_TIPO_CUENTA, PLAN_POR_TIPO_CUENTA, ROLES_QUE_PUEDEN_SOLICITAR } from '../../domain/value-objects/tipo-cuenta.vo';
-import { CATALOGO_PLANES } from '../../domain/value-objects/plan.vo';
+import { TipoCuenta, esTipoCuenta, ETIQUETA_TIPO_CUENTA, ROLES_QUE_PUEDEN_SOLICITAR } from '../../domain/value-objects/tipo-cuenta.vo';
 import { NotFoundError, ValidationError } from '../../domain/errors/domain.errors';
 
 export interface SolicitarTipoCuentaInput { usuarioId: string; tipo: string; nombreOrganizacion?: string; descripcion: string; identificacion?: string; sitioWeb?: string; }
@@ -39,15 +38,10 @@ export class SolicitarTipoCuentaUseCase {
 export interface MiSolicitudTipoCuenta {
   id: string; tipo: TipoCuenta; etiquetaTipo: string; estado: EstadoValidacion; creadaEn: Date;
   comentarioDelEquipo?: string;
-  plan: { id: string; nombre: string; precioTexto: string; gratis: boolean };
 }
 export interface MiTipoCuenta { tipoCuenta: TipoCuenta | null; puedeSolicitar: boolean; solicitud: MiSolicitudTipoCuenta | null; }
-function planDe(tipo: TipoCuenta) {
-  const d = CATALOGO_PLANES.find((p) => p.id === PLAN_POR_TIPO_CUENTA[tipo])!;
-  return { id: d.id, nombre: d.nombre, precioTexto: d.precioTexto, gratis: d.precio === 0 };
-}
 // Lo que ve la persona en su perfil: su tipo actual, si puede pedir el cambio y el estado de su última solicitud
-// (con lo que le comentó el equipo si la observó o rechazó).
+// (con lo que le comentó el equipo si la observó o rechazó). No tiene relación con los planes de pago.
 export class ObtenerMiTipoCuentaUseCase {
   constructor(private readonly solicitudes: SolicitudCuentaRepositoryPort, private readonly validaciones: ValidacionContenidoRepositoryPort, private readonly usuarios: UsuarioRepositoryPort) {}
   async ejecutar(usuarioId: string): Promise<MiTipoCuenta> {
@@ -60,7 +54,7 @@ export class ObtenerMiTipoCuentaUseCase {
     const puedeSolicitar = usuario.props.estado === 'Activo' && !tipoCuenta && (ROLES_QUE_PUEDEN_SOLICITAR as readonly string[]).includes(usuario.props.rol) && !(ultima?.estaEnCurso());
     return {
       tipoCuenta, puedeSolicitar,
-      solicitud: ultima ? { id: ultima.props.id, tipo: ultima.props.tipoSolicitado, etiquetaTipo: ETIQUETA_TIPO_CUENTA[ultima.props.tipoSolicitado], estado: ultima.props.estadoValidacion, creadaEn: ultima.props.creadaEn, comentarioDelEquipo: comentario, plan: planDe(ultima.props.tipoSolicitado) } : null,
+      solicitud: ultima ? { id: ultima.props.id, tipo: ultima.props.tipoSolicitado, etiquetaTipo: ETIQUETA_TIPO_CUENTA[ultima.props.tipoSolicitado], estado: ultima.props.estadoValidacion, creadaEn: ultima.props.creadaEn, comentarioDelEquipo: comentario } : null,
     };
   }
 }

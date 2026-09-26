@@ -95,6 +95,9 @@ export function listarProductos(filtros: FiltrosProductos = {}): Promise<Product
   return apiRequest<ProductoVisible[]>(`/productos${query ? `?${query}` : ''}`);
 }
 
+// Zonas generales (provincia y departamento) que acepta el servidor para "localidad": lista fija, la misma que valida al publicar.
+export function listarZonasGenerales(): Promise<string[]> { return apiRequest<string[]>('/productos/zonas'); }
+
 export function obtenerProducto(id: string): Promise<ProductoVisible> { return apiRequest<ProductoVisible>(`/productos/${id}`); }
 
 export function marcarValidadoDocumentalmente(id: string): Promise<Producto> {

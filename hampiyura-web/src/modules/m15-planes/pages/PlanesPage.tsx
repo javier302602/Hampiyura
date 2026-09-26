@@ -50,13 +50,17 @@ function PlanesPage() {
         : <Button variant="secondary" onClick={() => navigate(RUTAS_M15.productores)}>Elegir un productor</Button>;
     }
     if (p.id === 'Destacado' && sesion && !(sesion.rol === 'Productor')) return <Badge variant="neutral">Solo cuentas de Productor</Badge>;
-    if ((p.id === 'Negocio' || p.id === 'Empresarial') && planActual === p.id) return <Badge variant="success" icon={<Check size={14} aria-hidden="true" />}>Tu plan actual</Badge>;
+    if ((p.id === 'Negocio' || p.id === 'Institucional') && planActual === p.id) return <Badge variant="success" icon={<Check size={14} aria-hidden="true" />}>Tu plan actual</Badge>;
     return <Button variant={p.id === 'Negocio' ? 'primary' : 'secondary'} onClick={() => irAPagar(p.id)}>{sesion ? `Elegir ${p.nombre}` : 'Iniciar sesión para elegir'}</Button>;
   }
 
   return (
     <section>
       <SectionHeader eyebrow="Contacto y planes" title="Información gratis, contacto de pago" description="Aprender sobre las plantas es siempre gratis. Pagas solo cuando necesitas el contacto directo de quien las cultiva." />
+
+      <p className="aviso-legal" role="note">
+        <strong>Los planes son solo para ver el contacto de los productores.</strong> Sirven a cualquier persona que quiera comprar o contactar, sea Productor, Empresario, Institución de investigación o usuario normal. No hacen falta para publicar ni para cambiar tu tipo de cuenta, que es gratis; publicar productos solo tiene la comisión del 5% sobre ventas.
+      </p>
 
       <p className="aviso-legal" role="note">
         <strong>Precios de referencia.</strong> Son una primera hipótesis de trabajo del modelo de negocio, todavía por validar con productores reales y un especialista en negocios. Pueden cambiar.
@@ -67,7 +71,7 @@ function PlanesPage() {
           <Lock size={18} aria-hidden="true" />
           <div>
             <strong>{productor ? `Para contactar a ${nombreDe(productor)} necesitas un plan o un desbloqueo.` : 'Para ver este contacto necesitas un plan o un desbloqueo.'}</strong>
-            <p>El desbloqueo puntual abre solo el contacto de este productor durante 30 días; un plan (Negocio o Empresarial) abre los contactos de todos.</p>
+            <p>El desbloqueo puntual abre solo el contacto de este productor durante 30 días; un plan (Negocio o Institucional) abre los contactos de todos.</p>
           </div>
         </div>
       )}

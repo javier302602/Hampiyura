@@ -756,7 +756,7 @@ describe('M-07 · Comunidad y Experiencias', () => {
 });
 
 describe('M-05 · Preparaciones', () => {
-  const preparacionInput:any={parteUsoId:'pu1',autorId:'u1',ingredientes:'dato de prueba',pasos:'dato de prueba',herramientas:'dato de prueba',tiempoPreparacion:'dato de prueba',formaTradicionalElaboracion:'dato de prueba',formaConservacion:'dato de prueba',advertencias:'dato de prueba',fuente:new Fuente('fuente de prueba'),localidad:'dato de prueba'};
+  const preparacionInput:any={parteUsoId:'pu1',autorId:'u1',ingredientes:'dato de prueba',pasos:'dato de prueba',herramientas:'dato de prueba',tiempoPreparacion:'dato de prueba',formaTradicionalElaboracion:'dato de prueba',formaConservacion:'dato de prueba',advertencias:'dato de prueba',fuente:new Fuente('fuente de prueba'),localidad:'Leoncio Prado, Huánuco'};
   function preparacion(overrides:Partial<Preparacion['props']> = {}) { return new Preparacion({id:'prep1',...preparacionInput,fecha:new Date(),estadoValidacion:'Pendiente',...overrides}); }
 
   test('el aviso cultural/tradicional es permanente e incondicional, sin importar el estado', () => {
@@ -799,7 +799,7 @@ describe('M-05 · Preparaciones', () => {
 });
 
 describe('M-11 · Productos y Emprendimientos', () => {
-  const productoInput:any={productorId:'prod1',nombre:'[DATO DE PRUEBA] Jabón de manzanilla',plantasIds:['p1'],fotografias:[],localidad:'dato de prueba',informacionProceso:'dato de prueba',contactoVendedor:'dato de prueba',tipoProductor:'Campesino'};
+  const productoInput:any={productorId:'prod1',nombre:'[DATO DE PRUEBA] Jabón de manzanilla',plantasIds:['p1'],fotografias:[],localidad:'Leoncio Prado, Huánuco',informacionProceso:'dato de prueba',contactoVendedor:'dato de prueba',tipoProductor:'Campesino'};
   const usosCatalogo:any={listar:jest.fn().mockResolvedValue([{props:{nombre:'Cosmético'}},{props:{nombre:'Digestivo'}}])};
   function producto(overrides:Partial<Producto['props']> = {}) { return new Producto({id:'prod-1',...productoInput,estadoValidacion:'Pendiente',requiereRevisionReforzada:false,etiquetaValidadoDocumental:false,etiquetaCertificado:false,...overrides}); }
   // Productor que YA aceptó la comisión (aceptoComisionEn no-null) -- así la mayoría de los tests
@@ -936,6 +936,24 @@ describe('M-11 · Productos y Emprendimientos', () => {
     expect(certificado.props.etiquetaCertificado).toBe(true);
     expect(certificado.props.documentacionCertificacion).toBe('[DATO DE PRUEBA] certificado.pdf');
   });
+  describe('Ronda 20: la localidad es una zona general de una lista fija', () => {
+    const armar=()=>{const repo:any={guardar:jest.fn()};const plantas:any={buscarPorId:jest.fn().mockResolvedValue({})};const validaciones:any={guardar:jest.fn()};const usuarios:any={buscarPorId:jest.fn().mockResolvedValue({props:{aceptoComisionEn:new Date()}}),actualizar:jest.fn()};return new PublicarProductoUseCase(repo,plantas,validaciones,usuarios,usosCatalogo);};
+    test('rechaza texto libre, una dirección o coordenadas; acepta solo una zona de la lista', async () => {
+      const uc=armar();
+      for(const mala of ['Av. Alameda Perú 123, Tingo María','Tingo María','-9.2933, -75.9975','No especificado','']) await expect(uc.ejecutar({...productoInput,localidad:mala})).rejects.toThrow(/zona general/);
+      const ok=await uc.ejecutar({...productoInput,localidad:'Maynas, Loreto'});
+      expect(ok.props.localidad).toBe('Maynas, Loreto');
+    });
+    test('la lista solo tiene provincia y departamento (sin direcciones ni coordenadas) y trae "Otra zona"', () => {
+      const { ZONAS_GENERALES, OTRA_ZONA, esZonaGeneral } = require('../../src/domain/value-objects/zona-general.vo');
+      expect(ZONAS_GENERALES).toContain('Leoncio Prado, Huánuco');
+      expect(ZONAS_GENERALES).toContain(OTRA_ZONA);
+      expect(ZONAS_GENERALES.every((z:string)=>z===OTRA_ZONA||/^[^,0-9]+, [^,0-9]+$/.test(z))).toBe(true);
+      expect(new Set(ZONAS_GENERALES).size).toBe(ZONAS_GENERALES.length);
+      expect(esZonaGeneral('Iquitos')).toBe(false);
+    });
+  });
+
   describe('Ronda 18: tipo de productor y uso del producto', () => {
     test('exige el tipo de productor (campesino, empresario o comunidad)', async () => {
       const repo:any={guardar:jest.fn()};const plantas:any={buscarPorId:jest.fn().mockResolvedValue({})};const validaciones:any={guardar:jest.fn()};

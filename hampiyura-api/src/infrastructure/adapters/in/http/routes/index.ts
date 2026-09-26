@@ -10,7 +10,7 @@ import { aprobar, observar, rechazar, listarPendientes, detalleValidacion, repor
 import { obtenerPanel, listarUsuarios, suspenderUsuario, reactivarUsuario, cambiarRolUsuario, eliminarPlanta, obtenerAuditoria } from '../controllers/m13-analitica-estadisticas/administracion.controller';
 import { listarNotificaciones, marcarTodasLeidas, marcarLeida, eliminarNotificacion } from '../controllers/m14-seguridad-notificaciones/notificaciones.controller';
 import { documentarPreparacion, obtenerPreparacion, listarPreparaciones } from '../controllers/m05-preparaciones/preparaciones.controller';
-import { publicarProducto, obtenerProducto, listarProductos, marcarValidadoDocumentalmente, marcarCertificado, verificarAfirmaciones } from '../controllers/m11-productos-emprendimientos/productos.controller';
+import { publicarProducto, obtenerProducto, listarProductos, listarZonasGenerales, marcarValidadoDocumentalmente, marcarCertificado, verificarAfirmaciones } from '../controllers/m11-productos-emprendimientos/productos.controller';
 import { registrarEstadoConservacion, obtenerEstadoConservacion, registrarAccionConservacion, listarAccionesConservacion } from '../controllers/m10-conservacion/conservacion.controller';
 import { buscarPlantas } from '../controllers/m12-busqueda-recomendaciones/busqueda.controller';
 import { crearConsulta, listarBandejaConsultas, listarMisConsultas, obtenerConsulta, agregarMensajeConsulta, cambiarEstadoConsulta, asignarConsulta } from '../controllers/m08-consultas/consultas.controller';
@@ -45,7 +45,7 @@ router.delete('/admin/plantas/:id',requireAdmin,eliminarPlanta);
 router.get('/admin/auditoria',requireAdmin,obtenerAuditoria);
 router.get('/notificaciones',requireAuth,listarNotificaciones); router.patch('/notificaciones/marcar-leidas',requireAuth,marcarTodasLeidas); router.patch('/notificaciones/:id/marcar-leida',requireAuth,marcarLeida); router.delete('/notificaciones/:id',requireAuth,eliminarNotificacion);
 router.post('/preparaciones',requireAuth,documentarPreparacion); router.get('/preparaciones/:id',obtenerPreparacion); router.get('/partes-uso/:parteUsoId/preparaciones',listarPreparaciones);
-router.post('/productos/verificar-afirmaciones',verificarAfirmaciones);
+router.post('/productos/verificar-afirmaciones',verificarAfirmaciones); router.get('/productos/zonas',listarZonasGenerales);
 router.post('/productos',requireProductor,publicarProducto); router.get('/productos',attachUserIfPresent,listarProductos); router.get('/productos/:id',attachUserIfPresent,obtenerProducto);
 router.patch('/productos/:id/validar-documental',requireValidator,marcarValidadoDocumentalmente); router.patch('/productos/:id/certificar',requireValidator,marcarCertificado);
 router.post('/plantas/:plantaId/conservacion',requireValidator,registrarEstadoConservacion); router.get('/plantas/:plantaId/conservacion',obtenerEstadoConservacion);

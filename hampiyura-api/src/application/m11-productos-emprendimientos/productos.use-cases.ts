@@ -12,6 +12,7 @@ import { PlantaRepositoryPort } from '../../domain/ports/out/planta.repository.p
 import { UsuarioRepositoryPort } from '../../domain/ports/out/usuario.repository.port';
 import { ValidacionContenidoRepositoryPort } from '../../domain/ports/out/validacion-contenido.repository.port';
 import { UsoRepositoryPort } from '../../domain/ports/out/uso.repository.port';
+import { esZonaGeneral } from '../../domain/value-objects/zona-general.vo';
 import { esTipoProductor } from '../../domain/value-objects/tipo-productor.vo';
 import { contieneAfirmacionEnganosa } from '../../domain/value-objects/afirmaciones-enganosas.vo';
 import { NotFoundError, ValidationError } from '../../domain/errors/domain.errors';
@@ -37,7 +38,8 @@ export class PublicarProductoUseCase implements PublicarProductoPort {
   async ejecutar(input:PublicarProductoInput & { aceptaComision?: boolean }):Promise<Producto> {
     if (!input.nombre?.trim()) throw new ValidationError('El nombre del producto es obligatorio');
     if (!input.plantasIds?.length) throw new ValidationError('Debes indicar al menos una planta utilizada');
-    if (!input.localidad?.trim()) throw new ValidationError('La localidad es obligatoria');
+    // Ronda 20: la localidad es una ZONA GENERAL de una lista fija (provincia y departamento), nunca texto libre ni dirección.
+    if (!esZonaGeneral(input.localidad)) throw new ValidationError('Elige la zona general de la lista (provincia y departamento)');
     if (!input.contactoVendedor?.trim()) throw new ValidationError('La forma de contacto es obligatoria');
     if (!input.informacionProceso?.trim()) throw new ValidationError('La descripción del proceso es obligatoria');
     if (!input.tipoProductor || !esTipoProductor(input.tipoProductor)) throw new ValidationError('Indica el tipo de productor: campesino, empresario o comunidad');

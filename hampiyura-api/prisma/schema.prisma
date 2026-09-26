@@ -249,7 +249,7 @@ model Valoracion {
   @@unique([publicacionId, autorId])
 }
 // M-15 · Contacto pagado y planes. Un registro = un pago con comprobante (Yape/Plin) que un administrador
-// confirma o rechaza. concepto='Plan' (Negocio/Empresarial/Destacado, con vencimiento) o 'Desbloqueo'
+// confirma o rechaza. concepto='Plan' (Negocio/Institucional/Destacado, con vencimiento) o 'Desbloqueo'
 // (contacto puntual de UN productor). El "plan activo" y el estado Vencido se DERIVAN de estos registros
 // (Confirmado + vigenteHasta), no se guardan aparte: nada queda "activo" por olvido de un cron.
 model PagoContacto {

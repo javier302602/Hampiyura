@@ -4,11 +4,15 @@
 // productores reales. Por eso el catálogo lo marca `referencial: true` y la interfaz lo dice explícitamente.
 //
 // El monto que se cobra SIEMPRE sale de aquí (servidor): el cliente nunca manda el monto.
+//
+// Ronda 20: los planes son SOLO sobre el acceso al contacto de los productores, como comprador. Son independientes del tipo de
+// cuenta (Productor, Empresario, Institución de investigación): cambiar de tipo es gratis y no activa ni exige ningún plan, y
+// cualquier usuario puede contratar cualquier plan. Publicar productos solo tiene la comisión del 5% (CG-004).
 
-export const PLANES = ['Explorador', 'Negocio', 'Empresarial', 'Productor', 'Destacado'] as const;
+export const PLANES = ['Explorador', 'Negocio', 'Institucional', 'Productor', 'Destacado'] as const;
 export type Plan = typeof PLANES[number];
 // Planes que se pagan (y por eso tienen vencimiento). Explorador y Productor son gratuitos.
-export const PLANES_DE_PAGO = ['Negocio', 'Empresarial', 'Destacado'] as const;
+export const PLANES_DE_PAGO = ['Negocio', 'Institucional', 'Destacado'] as const;
 export type PlanDePago = typeof PLANES_DE_PAGO[number];
 export function esPlanDePago(v: string): v is PlanDePago { return (PLANES_DE_PAGO as readonly string[]).includes(v); }
 
@@ -21,7 +25,7 @@ export type ConceptoPago = typeof CONCEPTOS_PAGO[number];
 
 // Suscripciones mensuales y desbloqueo puntual: misma vigencia (30 días desde la confirmación).
 export const DIAS_VIGENCIA = 30;
-// Hipótesis: el documento habla de "un porcentaje" de los ingresos de Negocio/Empresarial/Destacado para un
+// Hipótesis: el documento habla de "un porcentaje" de los ingresos de Negocio/Institucional/Destacado para un
 // fondo de conservación, sin cifra. Solo se usa para un CONTADOR VISIBLE; no mueve dinero real (FASE posterior).
 export const PORCENTAJE_FONDO_CONSERVACION = 10;
 
@@ -50,16 +54,16 @@ export const CATALOGO_PLANES: DefinicionPlan[] = [
     proximamente: [], precio: 4, precioTexto: 'S/ 4 por contacto', periodicidad: 'unica-vez', referencial: true,
   },
   {
-    id: 'Negocio', nombre: 'Negocio', paraQuien: 'Pequeños negocios: cosmética natural, gastronomía, herbolarios, artesanía',
+    id: 'Negocio', nombre: 'Negocio', paraQuien: 'Quien necesita contactar a varios productores para comprarles: negocios, emprendedores, herbolarios. No hace falta para vender ni para ser Empresario',
     incluye: ['Todo lo del plan Explorador', 'Contactos ilimitados de productores'],
     proximamente: ['Mensajería directa en la plataforma', 'Alertas de disponibilidad y temporada', 'Filtros avanzados (cantidad, certificación, cercanía)'],
     precio: 29, precioTexto: 'S/ 29 al mes', periodicidad: 'mensual', referencial: true,
   },
   {
-    id: 'Empresarial', nombre: 'Empresarial / Institucional', paraQuien: 'Empresas medianas, universidades, ONG, gobiernos locales',
+    id: 'Institucional', nombre: 'Institucional', paraQuien: 'Institutos, universidades, ONG y entidades públicas: lo paga un solo administrador en nombre de la institución',
     incluye: ['Todo lo del plan Negocio'],
-    proximamente: ['Soporte prioritario', 'Varios usuarios por cuenta', 'Reportes y datos agregados de la bioeconomía regional (sin datos personales de productores)'],
-    precio: 99, precioTexto: 'S/ 99 al mes (o tarifa a medida)', periodicidad: 'mensual', referencial: true,
+    proximamente: ['Soporte prioritario', 'Reportes y datos agregados de la bioeconomía regional (sin datos personales de productores)'],
+    precio: 120, precioTexto: 'S/ 120 al mes', periodicidad: 'mensual', referencial: true,
   },
   {
     id: 'Productor', nombre: 'Productor', paraQuien: 'Agricultores, comunidades, portadores de conocimiento',

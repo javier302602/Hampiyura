@@ -84,7 +84,7 @@ export function ProductorPage() {
           ) : (
             <div className="contacto-bloqueado" role="region" aria-label="Contacto bloqueado">
               <h3><Lock size={18} aria-hidden="true" /> El contacto está bloqueado</h3>
-              <p>Necesitas un plan activo (Negocio o Empresarial) o desbloquear el contacto de este productor.</p>
+              <p>Necesitas un plan activo (Negocio o Institucional) o desbloquear el contacto de este productor.</p>
               <Button variant="primary" onClick={() => navigate(`${RUTAS_M15.planes}?productor=${encodeURIComponent(ficha.id)}`)}>Contactar</Button>
             </div>
           )}

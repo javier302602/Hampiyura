@@ -11,8 +11,6 @@ import { UsuarioRepositoryPort } from '../../domain/ports/out/usuario.repository
 import { UsoRepositoryPort } from '../../domain/ports/out/uso.repository.port';
 import { SolicitudCuentaRepositoryPort } from '../../domain/ports/out/solicitud-cuenta.repository.port';
 import { ETIQUETA_TIPO_CUENTA } from '../../domain/value-objects/tipo-cuenta.vo';
-import { CATALOGO_PLANES } from '../../domain/value-objects/plan.vo';
-import { PLAN_POR_TIPO_CUENTA } from '../../domain/value-objects/tipo-cuenta.vo';
 import { NotFoundError } from '../../domain/errors/domain.errors';
 import { ParteUso } from '../../domain/entities/parte-uso.entity';
 
@@ -103,8 +101,7 @@ export class ObtenerDetalleValidacionUseCase implements ObtenerDetalleValidacion
     if (v.props.tipoEntidad === 'SolicitudCuenta' && this.solicitudesCuenta) {
       const s = await this.solicitudesCuenta.buscarPorId(e);
       if (!s) return this.noDisponible(base);
-      const plan = CATALOGO_PLANES.find((p) => p.id === PLAN_POR_TIPO_CUENTA[s.props.tipoSolicitado]);
-      return { ...base, etiqueta: `Solicitud de cuenta ${ETIQUETA_TIPO_CUENTA[s.props.tipoSolicitado]}`, campos: limpiar([campo('Tipo de cuenta solicitado', ETIQUETA_TIPO_CUENTA[s.props.tipoSolicitado]), campo('Nombre del negocio / empresa / institución', s.props.nombreOrganizacion), campo('A qué se dedica', s.props.descripcion), campo('RUC u otro documento', s.props.identificacion), campo('Sitio web', s.props.sitioWeb), campo('Plan que le corresponde', plan ? `${plan.nombre} (${plan.precioTexto})` : undefined)]) };
+      return { ...base, etiqueta: `Solicitud de cuenta ${ETIQUETA_TIPO_CUENTA[s.props.tipoSolicitado]}`, campos: limpiar([campo('Tipo de cuenta solicitado', ETIQUETA_TIPO_CUENTA[s.props.tipoSolicitado]), campo('Nombre del negocio / empresa / institución', s.props.nombreOrganizacion), campo('A qué se dedica', s.props.descripcion), campo('RUC u otro documento', s.props.identificacion), campo('Sitio web', s.props.sitioWeb)]) };
     }
     if (v.props.tipoEntidad === 'Cultivo') {
       const c = await this.cultivos.buscarPorId(e);

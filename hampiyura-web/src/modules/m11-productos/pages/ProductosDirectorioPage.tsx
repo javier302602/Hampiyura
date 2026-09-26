@@ -1,3 +1,4 @@
+import { listarZonasGenerales } from '../api/productos.api';
 import { useEffect, useState } from 'react';
 import { Search } from 'lucide-react';
 import { listarProductos, type ProductoVisible } from '../api/productos.api';
@@ -15,6 +16,8 @@ function ProductosDirectorioPage({ onSeleccionar }: { onSeleccionar: (productoId
   const [productos, setProductos] = useState<ProductoVisible[] | null>(null);
   const [plantas, setPlantas] = useState<Planta[]>([]);
   const [localidad, setLocalidad] = useState('');
+  const [zonas, setZonas] = useState<string[]>([]);
+  useEffect(() => { listarZonasGenerales().then(setZonas).catch(() => {}); }, []);
   const [plantaId, setPlantaId] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -38,8 +41,11 @@ function ProductosDirectorioPage({ onSeleccionar }: { onSeleccionar: (productoId
       />
 
       <div className="filtro-bar">
-        <label className="sr-only" htmlFor="filtro-localidad">Filtrar por localidad</label>
-        <input id="filtro-localidad" type="text" placeholder="Filtrar por localidad" value={localidad} onChange={(e) => setLocalidad(e.target.value)} />
+        <label className="sr-only" htmlFor="filtro-localidad">Filtrar por zona</label>
+        <select id="filtro-localidad" value={localidad} onChange={(e) => setLocalidad(e.target.value)}>
+          <option value="">Todas las zonas</option>
+          {zonas.map((z) => <option key={z} value={z}>{z}</option>)}
+        </select>
         <label className="sr-only" htmlFor="filtro-planta">Filtrar por planta</label>
         <select id="filtro-planta" value={plantaId} onChange={(e) => setPlantaId(e.target.value)}>
           <option value="">Todas las plantas</option>
@@ -51,7 +57,7 @@ function ProductosDirectorioPage({ onSeleccionar }: { onSeleccionar: (productoId
       {productos === null && !error && <LoadingState cards={6} label="Cargando directorio de productos" />}
       {error && <ErrorState description={error} />}
       {productos && productos.length === 0 && (
-        <EmptyState title="No hay productos que coincidan" description="Prueba con otra localidad o planta, o quita los filtros para ver todo el directorio." />
+        <EmptyState title="No hay productos que coincidan" description="Prueba con otra zona o planta, o quita los filtros para ver todo el directorio." />
       )}
       {productos && productos.length > 0 && (
         <div className="card-grid">

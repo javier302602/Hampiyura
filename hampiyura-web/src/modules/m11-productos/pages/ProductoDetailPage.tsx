@@ -81,7 +81,7 @@ function ProductoDetailPage({ productoId, onVolver, onContactar }: { productoId:
     <section>
       <Button variant="ghost" size="sm" onClick={onVolver}>← Volver al directorio</Button>
       <h2>{producto.nombre}</h2>
-      <p>Por {producto.productorNombre} · {producto.localidad}</p>
+      <p>Por {producto.productorNombre} · Zona: {producto.localidad}</p>
       <p><strong>Tipo de productor:</strong> {producto.tipoProductor ? ETIQUETAS_TIPO_PRODUCTOR[producto.tipoProductor] : 'No especificado'}</p>
 
       <IndicadoresProducto revisadoPorEquipo={producto.revisadoPorEquipo} validadoDocumental={producto.etiquetaValidadoDocumental} certificado={producto.etiquetaCertificado} />
@@ -101,7 +101,7 @@ function ProductoDetailPage({ productoId, onVolver, onContactar }: { productoId:
         </p>
       ) : (
         <p className="comentario-meta" style={{ marginTop: '1rem' }}>
-          Este producto no tiene un punto exacto guardado en el mapa (se publicó con la localidad escrita a mano, sin usar el selector de mapa).
+          Este producto no tiene un punto exacto guardado en el mapa (quien lo publica no marcó el punto en el mapa).
         </p>
       )}
 

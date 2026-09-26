@@ -1,6 +1,7 @@
 import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
 import { CheckCircle2, Plus, Sprout, X } from 'lucide-react';
 import { listarPlantas, type Planta } from '../../m02-catalogo-plantas/api/plantas.api';
+import { listarZonasGenerales } from '../api/productos.api';
 import { listarUsos, type Uso } from '../../m04-usos-partes/api/partes-uso.api';
 import { publicarProducto, verificarAfirmaciones, TIPOS_PRODUCTOR, ETIQUETAS_TIPO_PRODUCTOR, type TipoProductor, subirMedia, leerArchivoComoBase64, type Producto, type PlantaUtilizada } from '../api/productos.api';
 import { obtenerPerfil } from '../../m01-cuentas/api/cuentas.api';
@@ -31,6 +32,7 @@ function PublicarProductoForm({ onPublicado }: { onPublicado: (creado: Producto)
   const [entradaTexto, setEntradaTexto] = useState('');
 
   const [localidad, setLocalidad] = useState('');
+  const [zonas, setZonas] = useState<string[]>([]);
   const [coordenadas, setCoordenadas] = useState<{ lat: number; lon: number } | null>(null);
   const [resolviendoDireccion, setResolviendoDireccion] = useState(false);
   const [informacionProceso, setInformacionProceso] = useState('');
@@ -50,6 +52,7 @@ function PublicarProductoForm({ onPublicado }: { onPublicado: (creado: Producto)
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => { listarPlantas().then(setPlantasCatalogo).catch(() => {}); }, []);
+  useEffect(() => { listarZonasGenerales().then(setZonas).catch(() => {}); }, []);
   useEffect(() => { listarUsos().then((l) => setCatalogoUsos([...l].sort((a, b) => (a.nombre === 'Otro' ? 1 : b.nombre === 'Otro' ? -1 : a.nombre.localeCompare(b.nombre, 'es'))))).catch(() => {}); }, []);
   useEffect(() => { obtenerPerfil().then((p) => setYaAceptoComision(!!p.aceptoComisionEn)).catch(() => setYaAceptoComision(false)); }, []);
 
@@ -83,11 +86,9 @@ function PublicarProductoForm({ onPublicado }: { onPublicado: (creado: Producto)
   function manejarCambioUbicacion(lat: number, lon: number) {
     // Frente 6: antes lat/lon solo se usaban para geocodificar y se descartaban -- ahora también
     // se guardan en estado para enviarse junto con el resto del formulario (mini-mapa en la ficha).
+    // Ronda 20: el pin solo guarda el punto EXACTO (que se ve únicamente con plan o desbloqueo). La zona general se elige de la
+    // lista: ya NO se autocompleta con la dirección del mapa, para no exponer una dirección precisa en la ficha pública.
     setCoordenadas({ lat, lon });
-    setResolviendoDireccion(true);
-    direccionInversa(lat, lon)
-      .then((direccion) => { if (direccion) setLocalidad(direccion); })
-      .finally(() => setResolviendoDireccion(false));
   }
 
   async function manejarSeleccionArchivo(e: ChangeEvent<HTMLInputElement>) {
@@ -264,10 +265,13 @@ function PublicarProductoForm({ onPublicado }: { onPublicado: (creado: Producto)
       <div className="form-section">
         <h3 className="form-section-title">Ubicación y contacto</h3>
         <label>
-          Localidad
-          <input type="text" value={localidad} onChange={(e) => setLocalidad(e.target.value)} placeholder="Marca el punto en el mapa para autocompletar" required />
+          Zona general
+          <select value={localidad} onChange={(e) => setLocalidad(e.target.value)} required>
+            <option value="">Elige la provincia…</option>
+            {zonas.map((z) => <option key={z} value={z}>{z}</option>)}
+          </select>
         </label>
-        {resolviendoDireccion && <p className="comentario-meta">Resolviendo dirección…</p>}
+        <p className="comentario-meta">Es la zona que verá cualquier persona en la ficha del producto (provincia y departamento, nunca una dirección). Si además marcas el punto exacto en el mapa, solo lo verán quienes tengan un plan activo o desbloqueen tu contacto.</p>
         <SelectorUbicacionMapa onCambiarUbicacion={manejarCambioUbicacion} />
 
         <label>

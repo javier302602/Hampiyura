@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { z } from 'zod';
 import { container } from '../../../../../config/container';
+import { ZONAS_GENERALES } from '../../../../../../domain/value-objects/zona-general.vo';
 import { TIPOS_PRODUCTOR } from '../../../../../../domain/value-objects/tipo-productor.vo';
 import { AuthenticatedRequest } from '../../middlewares/role.middleware';
 
@@ -27,7 +28,7 @@ const publicarSchema=z.object({
   cantidad:z.string().optional(),
   precioReferencial:z.string().optional(),
   fotografias:z.array(z.string()).default([]),
-  localidad:z.string().min(1),
+  localidad:z.string().min(1,'Elige la zona general de la lista'),
   // Frente 6: coordenadas reales del pin del mapa (antes se descartaban) -- opcionales porque
   // localidad sigue siendo editable a mano sin pasar por el mapa.
   latitud:z.number().optional(),
@@ -51,6 +52,8 @@ export async function publicarProducto(req:Request,res:Response){
   const producto=await container.publicarProducto.ejecutar({...resto, plantasIds, plantasUtilizadas, productorId, fechaElaboracion:fechaElaboracion?new Date(fechaElaboracion):undefined});
   res.status(201).json(producto.props);
 }
+// Lista fija de zonas generales (la misma que valida el servidor al publicar): el formulario y el filtro la leen de aquí.
+export async function listarZonasGenerales(_req:Request,res:Response){res.json(ZONAS_GENERALES);}
 // M-15: el contacto del vendedor solo lo ve quien tenga plan activo o un desbloqueo vigente de ese productor.
 export async function obtenerProducto(req:Request,res:Response){const producto=await container.obtenerProducto.ejecutar(String(req.params.id)); const [protegido]=await container.protegerContactoProductos.aplicar([producto],auth(req)); res.json(protegido);}
 export async function listarProductos(req:Request,res:Response){
