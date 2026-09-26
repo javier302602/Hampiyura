@@ -60,9 +60,9 @@ docker compose up -d --build    # aplicar cambios del código tras un git pull
 
 **Contenido de ejemplo (publicaciones y productos).** Para que "Publicaciones" y "Productos" no se vean vacías en una demostración, el arranque
 publica **9 publicaciones y 9 productos de EJEMPLO** desde una cuenta dedicada (`ejemplo@hampiyura.local`, "Cuenta de ejemplo — HampiYura",
-rol Productor; nadie inicia sesión con ella). Todos llevan el prefijo **`[Ejemplo]`** y una nota visible de que son de demostración y no una
-oferta ni un testimonio reales; los productos no tienen contacto real. Es idempotente. Para **no cargarlo**: `CARGAR_CONTENIDO_EJEMPLO=false` en
-`.env`. Para **borrarlo después** (solo toca lo de esa cuenta con prefijo `[Ejemplo]`, nunca contenido real):
+rol Productor; nadie inicia sesión con ella). Cada texto lleva una nota visible de que es de demostración (no una oferta ni un testimonio reales), la autoría
+dice "Cuenta de ejemplo — HampiYura" y los productos no tienen contacto real. Cada uno usa la foto de su planta, con crédito (Wikimedia Commons). Es idempotente. Para **no cargarlo**: `CARGAR_CONTENIDO_EJEMPLO=false` en
+`.env`. Para **borrarlo después** (solo toca lo de esa cuenta, nunca contenido real):
 
 ```bash
 docker compose exec api npx tsx scripts/borrar-contenido-ejemplo.ts             # simulación: cuenta qué borraría
@@ -223,7 +223,7 @@ npx tsx scripts/cargar-plantas-documentos.ts --aplicar       # 27 plantas y sus 
 npx tsx scripts/cargar-fichas-plantas.ts --aplicar           # foto (con crédito), hábitat, preparaciones y distribución natural
 npx tsx scripts/registrar-validacion-cientifica.ts --aplicar # sello "verificado" en 22 usos Científicos
 npx tsx scripts/cargar-conservacion.ts --aplicar             # estado de conservación (IUCN + D.S. 043-2006-AG)
-npx tsx scripts/cargar-contenido-ejemplo.ts --aplicar        # (opcional) 9 publicaciones y 9 productos de EJEMPLO, prefijo [Ejemplo]
+npx tsx scripts/cargar-contenido-ejemplo.ts --aplicar        # (opcional) 9 publicaciones y 9 productos de EJEMPLO, con foto
 ```
 
 **Sin administrador la app queda sin moderación**: el rol no se puede autoasignar desde la interfaz.
