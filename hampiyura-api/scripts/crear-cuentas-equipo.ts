@@ -1,26 +1,19 @@
-// Crea las 12 cuentas del equipo (correos en docs/usuarios-equipo.md) con contraseñas ALEATORIAS. Ejecutar una vez por base de datos:
-//   cd hampiyura-api && npx tsx scripts/crear-cuentas-equipo.ts   (escribe las claves SOLO en credenciales-equipo-<fecha>.txt, ignorado por git; no se imprimen)
+// Crea las 12 cuentas del equipo (correos en docs/usuarios-equipo.md) con contraseñas ALEATORIAS, generadas aquí, en esta instalación.
+//   cd hampiyura-api && npx tsx scripts/crear-cuentas-equipo.ts            -> SIMULACIÓN: muestra qué crearía, sin escribir nada
+//   cd hampiyura-api && npx tsx scripts/crear-cuentas-equipo.ts --aplicar  -> crea las que falten
+// IDEMPOTENTE y por cuenta: cada una se crea solo si SU correo exacto no existe todavía. No importa qué otras cuentas haya (el administrador del
+// seed de Docker, por ejemplo) y se puede correr las veces que quieras sin duplicar nada ni tocar las cuentas existentes.
+// Las contraseñas de las cuentas NUEVAS se escriben SOLO en credenciales-equipo-<fecha>.txt (raíz del proyecto, ignorado por git): no se
+// imprimen ni se suben nunca. Si ese archivo ya existe ese día, se AÑADEN al final (no se pierden las anteriores).
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { randomUUID, randomInt } from 'crypto';
-import { writeFileSync } from 'fs';
+import { appendFileSync, existsSync } from 'fs';
 import path from 'path';
+import { CUENTAS_EQUIPO, planificarCuentas } from './datos-cuentas-equipo';
 
+const APLICAR = process.argv.includes('--aplicar');
 const prisma = new PrismaClient();
-const CUENTAS: { nombre: string; correo: string; rol: string }[] = [
-  { nombre: 'Angel', correo: 'angel@hampiyura.local', rol: 'Administrador' },
-  { nombre: 'Junior', correo: 'junior@hampiyura.local', rol: 'Administrador' },
-  { nombre: 'Mariela', correo: 'mariela@hampiyura.local', rol: 'Administrador' },
-  { nombre: 'Norberto', correo: 'norberto@hampiyura.local', rol: 'Administrador' },
-  { nombre: 'Especialista Salud 1', correo: 'especialista.salud1@hampiyura.local', rol: 'EspecialistaSalud' },
-  { nombre: 'Especialista Salud 2', correo: 'especialista.salud2@hampiyura.local', rol: 'EspecialistaSalud' },
-  { nombre: 'Especialista Agronomía 1', correo: 'especialista.agronomia1@hampiyura.local', rol: 'EspecialistaAgronomo' },
-  { nombre: 'Especialista Agronomía 2', correo: 'especialista.agronomia2@hampiyura.local', rol: 'EspecialistaAgronomo' },
-  { nombre: 'Usuario 1', correo: 'usuario1@hampiyura.local', rol: 'UsuarioRegistrado' },
-  { nombre: 'Usuario 2', correo: 'usuario2@hampiyura.local', rol: 'UsuarioRegistrado' },
-  { nombre: 'Usuario 3', correo: 'usuario3@hampiyura.local', rol: 'UsuarioRegistrado' },
-  { nombre: 'Usuario 4', correo: 'usuario4@hampiyura.local', rol: 'UsuarioRegistrado' },
-];
 
 // 18 caracteres sin ambiguos (sin 0/O/1/l/I), con mayúscula, minúscula, número y símbolo garantizados.
 function contraseña(): string {
@@ -34,14 +27,24 @@ function contraseña(): string {
 }
 
 (async () => {
-  if ((await prisma.usuario.count()) > 0) throw new Error('Ya hay usuarios en la base: este script es solo para una base recién limpiada.');
-  const lineas: string[] = ['CREDENCIALES DEL EQUIPO HAMPIYURA -- pásalas por un canal privado y borra este archivo después.', ''];
-  for (const c of CUENTAS) {
-    const clave = contraseña();
-    await prisma.usuario.create({ data: { id: randomUUID(), nombre: c.nombre, correo: c.correo, contraseñaHash: await bcrypt.hash(clave, 10), rol: c.rol as any, estado: 'Activo', idioma: 'es', nivelConocimiento: 'Pendiente', region: 'Pendiente' } });
-    lineas.push(`${c.rol.padEnd(22)} ${c.nombre.padEnd(26)} ${c.correo.padEnd(42)} ${clave}`);
+  const existentes = await prisma.usuario.findMany({ select: { correo: true, rol: true } });
+  const { porCrear, yaExistian } = planificarCuentas(existentes);
+  console.log(`\n${APLICAR ? 'CREACIÓN DE CUENTAS' : 'SIMULACIÓN (no se escribió nada)'} — cuentas en la base ahora: ${existentes.length}\n`);
+  for (const c of yaExistian) console.log(`  = ya existía   ${c.correo.padEnd(42)} (rol actual: ${c.rolActual}; no se toca)`);
+  for (const c of porCrear) console.log(`  ${APLICAR ? '+ creada ' : '· crearía'}     ${c.correo.padEnd(42)} ${c.rol}`);
+
+  if (APLICAR && porCrear.length > 0) {
+    const nuevas = porCrear.map((c) => ({ c, clave: contraseña() }));
+    // Primero el archivo de credenciales (si no se puede escribir, se aborta ANTES de crear cuentas cuya clave se perdería).
+    // CREDENCIALES_ARCHIVO (opcional) cambia dónde se escriben; por defecto, la raíz del proyecto.
+    const archivo = process.env.CREDENCIALES_ARCHIVO ? path.resolve(process.env.CREDENCIALES_ARCHIVO) : path.resolve(__dirname, '..', '..', `credenciales-equipo-${new Date().toISOString().slice(0, 10)}.txt`);
+    const encabezado = existsSync(archivo) ? '' : 'CREDENCIALES DEL EQUIPO HAMPIYURA -- pásalas por un canal privado y borra este archivo después.\n\n';
+    appendFileSync(archivo, encabezado + nuevas.map(({ c, clave }) => `${c.rol.padEnd(22)} ${c.nombre.padEnd(26)} ${c.correo.padEnd(42)} ${clave}`).join('\n') + '\n', { mode: 0o600 });
+    for (const { c, clave } of nuevas) {
+      await prisma.usuario.create({ data: { id: randomUUID(), nombre: c.nombre, correo: c.correo, contraseñaHash: await bcrypt.hash(clave, 10), rol: c.rol as any, estado: 'Activo', idioma: 'es', nivelConocimiento: 'Pendiente', region: 'Pendiente' } });
+    }
+    console.log(`\nCredenciales de las ${nuevas.length} cuentas nuevas guardadas en: ${archivo} (no se imprimen; entrégalas por un canal privado y borra el archivo)`);
   }
-  const archivo = path.resolve(__dirname, '..', '..', `credenciales-equipo-${new Date().toISOString().slice(0, 10)}.txt`);
-  writeFileSync(archivo, lineas.join('\n') + '\n', { mode: 0o600 });
-  console.log(`Creadas ${CUENTAS.length} cuentas. Credenciales guardadas en: ${archivo}`);
+  console.log(`\nTotal del equipo: ${CUENTAS_EQUIPO.length} | ya existían: ${yaExistian.length} | ${APLICAR ? 'creadas' : 'por crear'}: ${porCrear.length}`);
+  if (!APLICAR && porCrear.length > 0) console.log('Para crearlas de verdad, agrega --aplicar.');
 })().catch((e) => { console.error(e.message); process.exit(1); }).finally(() => prisma.$disconnect());

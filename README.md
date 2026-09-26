@@ -72,14 +72,28 @@ curl http://localhost:3000/api/plantas      # debe devolver 27 plantas
 La carga de las plantas necesita la cuenta Administrador del `.env` (`SEED_ADMIN_CORREO` y `SEED_ADMIN_PASSWORD`) y se puede apagar con
 `CARGAR_DATOS_PLANTAS=false`.
 
-**Cuentas reales del equipo (paso manual, NO automático):** el repositorio es público, así que las 12 cuentas del equipo
-(`docs/usuarios-equipo.md`) no se crean solas. Con la base levantada, cada instalación las crea una vez con contraseñas propias y
-aleatorias, que se guardan solo en `credenciales-equipo-<fecha>.txt` (ignorado por git; entrégalas por un canal privado):
+**Cuentas reales del equipo (paso manual, NO automático).** El repositorio es público, así que las 12 cuentas del equipo
+(`docs/usuarios-equipo.md`: 4 Administrador, 2 Especialista en salud, 2 en agronomía y 4 Usuario) no se crean solas ni sus contraseñas
+están en git. Córrelo **una vez, DESPUÉS de que la API haya arrancado** (Docker o entorno local): el script crea cada cuenta solo si su correo
+exacto no existe todavía, así que funciona aunque ya esté el administrador del seed, y puedes repetirlo sin duplicar nada.
 
 ```bash
 cd hampiyura-api && npm ci
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/hampiyura" npx tsx scripts/crear-cuentas-equipo.ts   # ajusta el puerto si cambiaste POSTGRES_PORT
+npx tsx scripts/crear-cuentas-equipo.ts             # simulación: muestra qué crearía, sin escribir nada
+npx tsx scripts/crear-cuentas-equipo.ts --aplicar   # crea las que falten
 ```
+
+Con Docker, apunta el script a la base del contenedor (ajusta el puerto si cambiaste `POSTGRES_PORT`; en PowerShell usa
+`$env:DATABASE_URL="..."; npx tsx scripts/crear-cuentas-equipo.ts --aplicar`):
+
+```bash
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/hampiyura" npx tsx scripts/crear-cuentas-equipo.ts --aplicar
+```
+
+Las contraseñas se **generan al azar en tu máquina** (18 caracteres, distintas en cada cuenta) y se escriben **solo** en
+`credenciales-equipo-<fecha>.txt` en la raíz del proyecto (ignorado por git: nunca se commitea ni se imprime en la terminal). Entrégalas a cada
+persona por un canal privado y luego borra el archivo. Si corres el script otra vez el mismo día y falta alguna cuenta, sus claves se **añaden**
+al final del mismo archivo. Cada persona debe cambiar su clave desde *Mi perfil*.
 
 **Plan B (sin Docker para la API/frontend):** `docker compose up -d db` levanta solo PostgreSQL y el resto se corre a
 mano con `npm` (sección 2b). Si prefieres tu propio PostgreSQL, crea una base vacía `hampiyura`, apunta `DATABASE_URL`
