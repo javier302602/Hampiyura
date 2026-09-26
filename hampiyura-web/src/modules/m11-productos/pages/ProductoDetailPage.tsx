@@ -47,7 +47,7 @@ function PanelCertificacion({ producto, onActualizado }: { producto: ProductoVis
       ) : (
         <form onSubmit={manejarCertificar} className="formulario" style={{ marginTop: '1rem' }}>
           {!producto.etiquetaValidadoDocumental && (
-            <p className="nota-cientifico">Recomendado (no obligatorio): valida documentalmente antes de certificar. El backend permite certificar sin ese paso porque ambas etiquetas son independientes (RF-272).</p>
+            <p className="nota-cientifico">Recomendado (no obligatorio): valida documentalmente antes de certificar. Se puede certificar sin ese paso porque ambas etiquetas son independientes.</p>
           )}
           <label>
             Documentación / certificación adjunta

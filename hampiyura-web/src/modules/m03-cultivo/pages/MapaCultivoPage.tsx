@@ -197,7 +197,7 @@ function MapaCultivoPage({ onSeleccionarPlanta }: Props) {
               <div style={{ marginTop: conCoordenadas.length > 0 ? '1rem' : 0 }}>
                 <p className="nota-cientifico">
                   ℹ {sinCoordenadas.length === 1 ? 'Esta ubicación no muestra' : 'Estas ubicaciones no muestran'} coordenadas exactas
-                  en el mapa porque la planta está marcada como en riesgo de conservación (RN-07) -- solo se indica la zona amplia:
+                  en el mapa porque la planta está marcada como en riesgo de conservación -- solo se indica la zona amplia:
                 </p>
                 <ul>
                   {sinCoordenadas.map((u) => (

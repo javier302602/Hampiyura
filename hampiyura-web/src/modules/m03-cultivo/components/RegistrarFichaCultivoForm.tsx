@@ -124,7 +124,7 @@ function RegistrarFichaCultivoForm({ onRegistrada }: { onRegistrada: (ficha: Fic
             Fuente citable
             <input type="text" value={fuente} onChange={(e) => setFuente(e.target.value)} placeholder="Ej. Manual de cultivo de plantas medicinales, INIA 2019" required />
           </label>
-          <p className="form-section-desc">Ningún dato agronómico se publica sin fuente y sin pasar por la validación de un especialista (RF-251).</p>
+          <p className="form-section-desc">Ningún dato agronómico se publica sin fuente y sin pasar por la validación de un especialista.</p>
         </div>
 
         <div className="form-section">
@@ -161,7 +161,7 @@ function RegistrarFichaCultivoForm({ onRegistrada }: { onRegistrada: (ficha: Fic
 
         <div className="form-section">
           <h3 className="form-section-title">Dónde se cultiva</h3>
-          <p className="form-section-desc">Marca el punto en el mapa para que la ficha aparezca en el “Mapa de cultivo”. Si la planta está en riesgo de conservación, el sistema no publica las coordenadas exactas (RN-07).</p>
+          <p className="form-section-desc">Marca el punto en el mapa para que la ficha aparezca en el “Mapa de cultivo”. Si la planta está en riesgo de conservación, el sistema no publica las coordenadas exactas.</p>
           <label>
             Zona / localidad de cultivo
             <input type="text" value={zonaCultivo} onChange={(e) => setZonaCultivo(e.target.value)} placeholder="Marca el punto en el mapa para autocompletar" required />
