@@ -7,7 +7,7 @@ import { CultivoRepositoryPort } from '../../domain/ports/out/cultivo.repository
 import { PlantaRepositoryPort } from '../../domain/ports/out/planta.repository.port';
 import { ProductoRepositoryPort } from '../../domain/ports/out/producto.repository.port';
 import { NotificadorPort } from '../../domain/ports/out/notificador.port';
-import { CATALOGO_PLANES, DefinicionPlan, PORCENTAJE_FONDO_CONSERVACION, PlanActivo, NIVEL_PLAN, tieneFiltrosAvanzados, esMetodoPago, esPlanDePago, precioDe, PlanDePago, MetodoPago, ConceptoPago } from '../../domain/value-objects/plan.vo';
+import { incluyeProductoresDisponibles, CATALOGO_PLANES, DefinicionPlan, PORCENTAJE_FONDO_CONSERVACION, PlanActivo, NIVEL_PLAN, tieneFiltrosAvanzados, esMetodoPago, esPlanDePago, precioDe, PlanDePago, MetodoPago, ConceptoPago } from '../../domain/value-objects/plan.vo';
 import { ZONAS_GENERALES, ZONA_NO_ESPECIFICADA, OTRA_ZONA } from '../../domain/value-objects/zona-general.vo';
 import { NotFoundError, UnauthorizedError, ValidationError } from '../../domain/errors/domain.errors';
 
@@ -38,12 +38,15 @@ export class AccesoContactoService {
     return vigente ? { activo: true, vigenteHasta: vigente.props.vigenteHasta } : { activo: false };
   }
 
-  // Premium se SUMA encima de un plan base: para usarlo hace falta Premium vigente Y un plan Negocio/Empresarial/Institucional vigente (o ser administrador).
+  // Ronda 32: Empresarial e Institucional VIGENTES incluyen "Productores disponibles" (sin Premium). Con Negocio vigente hace falta ADEMÁS el
+  // complemento Premium vigente. Sin plan vigente (Explorador), no hay acceso. El administrador entra siempre.
   async puedeVerProductoresDisponibles(solicitante: Solicitante | undefined, ahora = new Date()): Promise<{ permitido: boolean; motivo?: string }> {
     if (!solicitante) return { permitido: false, motivo: 'Inicia sesión para ver esta sección.' };
     if (solicitante.rol === 'Administrador') return { permitido: true };
-    if ((await this.planActivo(solicitante.id, ahora)).plan === 'Explorador') return { permitido: false, motivo: 'Necesitas un plan Negocio, Empresarial o Institucional vigente y, encima, el complemento Premium.' };
-    if (!(await this.tienePremium(solicitante.id, ahora)).activo) return { permitido: false, motivo: 'Esta sección se activa con el complemento Premium (S/ 19 al mes adicionales, de referencia).' };
+    const plan = (await this.planActivo(solicitante.id, ahora)).plan;
+    if (incluyeProductoresDisponibles(plan)) return { permitido: true };
+    if (plan === 'Explorador') return { permitido: false, motivo: 'Necesitas un plan de pago vigente: viene incluido en Empresarial e Institucional, y con Negocio se activa con el complemento Premium.' };
+    if (!(await this.tienePremium(solicitante.id, ahora)).activo) return { permitido: false, motivo: 'Con el plan Negocio, esta sección se activa con el complemento Premium (S/ 19 al mes adicionales, de referencia). Empresarial e Institucional ya la incluyen.' };
     return { permitido: true };
   }
 
@@ -224,7 +227,11 @@ export class SolicitarPagoUseCase {
     if (input.concepto === 'Plan') {
       if (!input.plan || !esPlanDePago(input.plan)) throw new ValidationError('Elige un plan de pago: Negocio, Empresarial o Institucional (o el complemento Premium)');
       plan = input.plan; monto = precioDe(plan);
-      if (plan === 'Premium' && (await this.acceso.planActivo(input.usuarioId)).plan === 'Explorador') throw new ValidationError('Premium es un complemento: primero necesitas un plan Negocio, Empresarial o Institucional vigente');
+      if (plan === 'Premium') {
+        const base = (await this.acceso.planActivo(input.usuarioId)).plan;
+        if (incluyeProductoresDisponibles(base)) throw new ValidationError('Ya incluido en tu plan: Empresarial e Institucional traen "Productores disponibles" sin costo extra');
+        if (base === 'Explorador') throw new ValidationError('Premium es un complemento del plan Negocio: primero necesitas un plan Negocio vigente');
+      }
       if (previos.some((p) => p.props.concepto === 'Plan' && p.props.plan === plan && p.props.estado === 'Pendiente')) throw new ValidationError('Ya tienes un pago de este plan esperando confirmación');
     } else if (input.concepto === 'Desbloqueo') {
       if (!input.productorId) throw new ValidationError('Indica de qué productor es el contacto');
@@ -275,12 +282,18 @@ export interface MiPlan {
   // Estado de pago de la suscripción más reciente (Pendiente / Confirmado / Vencido / Rechazado); null si nunca pagó un plan.
   estadoPago: EstadoPagoEfectivo | null;
   desbloqueos: { productorId: string; productorNombre: string; vigenteHasta: Date }[];
-  // Ronda 30: complemento Premium (se suma encima del plan de pago).
-  premium: { activo: boolean; vigenteHasta?: Date };
+  // Ronda 30/32: "Productores disponibles". activo = incluido en el plan (Empresarial/Institucional) O complemento Premium pagado y vigente (Negocio).
+  premium: { activo: boolean; incluidoEnPlan: boolean; vigenteHasta?: Date };
   pagos: PagoVisible[];
 }
 export class MiPlanUseCase extends Presentador {
   constructor(private readonly pagos: PagoContactoRepositoryPort, usuarios: UsuarioRepositoryPort, private readonly acceso: AccesoContactoService) { super(usuarios); }
+  private async premiumDe(usuarioId: string, plan: PlanActivo) {
+    const incluidoEnPlan = incluyeProductoresDisponibles(plan);
+    const pagado = await this.acceso.tienePremium(usuarioId);
+    // Si el plan ya lo incluye, un Premium pagado antes no se vuelve a cobrar (las compras nuevas se rechazan) y no se muestra como "activo hasta".
+    return { activo: incluidoEnPlan || pagado.activo, incluidoEnPlan, vigenteHasta: incluidoEnPlan ? undefined : pagado.vigenteHasta };
+  }
   async ejecutar(usuarioId: string): Promise<MiPlan> {
     const activo = await this.acceso.planActivo(usuarioId);
     const propios = (await this.pagos.listarPorUsuario(usuarioId)).sort((a, b) => b.props.creadoEn.getTime() - a.props.creadoEn.getTime());
@@ -292,7 +305,7 @@ export class MiPlanUseCase extends Presentador {
     return {
       plan: activo.plan, vencimiento: activo.vigenteHasta,
       estadoPago: activo.plan !== 'Explorador' ? 'Confirmado' : (suscripciones[0]?.estadoEfectivo() ?? null),
-      desbloqueos, pagos, premium: await this.acceso.tienePremium(usuarioId),
+      desbloqueos, pagos, premium: await this.premiumDe(usuarioId, activo.plan),
     };
   }
 }
@@ -318,10 +331,12 @@ export class ListarPagosAdminUseCase extends Presentador {
   }
 }
 export class ResolverPagoUseCase {
-  constructor(private readonly pagos: PagoContactoRepositoryPort, private readonly notificador: NotificadorPort) {}
+  constructor(private readonly pagos: PagoContactoRepositoryPort, private readonly notificador: NotificadorPort, private readonly acceso?: AccesoContactoService) {}
   async confirmar(id: string, adminId: string): Promise<void> {
     const p = await this.pagos.buscarPorId(id);
     if (!p) throw new NotFoundError(`Pago no encontrado: ${id}`);
+    // Ronda 32: un Premium pendiente de alguien que ya subió a Empresarial/Institucional NO se confirma (no se cobra de más): se rechaza con motivo.
+    if (p.props.concepto === 'Plan' && p.props.plan === 'Premium' && this.acceso && incluyeProductoresDisponibles((await this.acceso.planActivo(p.props.usuarioId)).plan)) throw new ValidationError('Este comprador ya tiene un plan que incluye "Productores disponibles": no confirmes el Premium (se cobraría de más). Recházalo indicando "Ya incluido en tu plan".');
     p.confirmar(adminId);
     await this.pagos.actualizar(p);
     await this.notificador.notificar(p.props.usuarioId, 'pago_confirmado', { entidadTipo: 'PagoContacto', entidadId: p.props.id });

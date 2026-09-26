@@ -46,7 +46,7 @@ export function ProductoresPage() {
     <section>
       <Button variant="ghost" onClick={() => navigate(RUTAS_M15.planes)}>← Ver planes</Button>
       <SectionHeader eyebrow="Directorio" title="Productores" description="Productores con una ficha de cultivo validada por un especialista. El contacto directo se abre con un plan o un desbloqueo puntual."
-        action={<Button variant="secondary" onClick={() => navigate(RUTAS_EXTRAS.disponibles)}>Productores disponibles (Premium)</Button>} />
+        action={<Button variant="secondary" onClick={() => navigate(RUTAS_EXTRAS.disponibles)}>Productores disponibles</Button>} />
       {conFiltros === true && (
         <form className="filtro-bar filtros-avanzados" aria-label="Filtros avanzados" onSubmit={(e) => { e.preventDefault(); aplicar(); }}>
           <label className="filtro-check"><input type="checkbox" checked={certificado} onChange={(e) => setCertificado(e.target.checked)} /> Solo con producto certificado</label>

@@ -4,7 +4,7 @@ import { UnauthorizedError, ValidationError } from '../../domain/errors/domain.e
 
 // Ronda 30 · complemento Premium (hipótesis de negocio SIN validar con especialistas ni productores reales, como todo M-15).
 // "Productores disponibles": directorio explorable de productores que se marcaron "disponibles para contacto ahora". Bloqueado por
-// defecto: solo con el complemento Premium (sobre un plan de pago vigente). Muestra lo MISMO que el directorio de siempre (nombre,
+// defecto. Ronda 32: incluido sin costo extra en Empresarial e Institucional; con Negocio, solo con el complemento Premium (S/ 19). Muestra lo MISMO que el directorio de siempre (nombre,
 // región, plantas, zona general, certificado): nunca ubicación exacta ni datos personales, y el CONTACTO sigue siendo del plan/desbloqueo.
 export const DIAS_DISPONIBILIDAD = 7; // la marca vence sola si el productor no la renueva
 const MS_DIA = 24 * 60 * 60 * 1000;

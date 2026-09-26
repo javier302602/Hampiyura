@@ -103,9 +103,13 @@ describe('Asistente · modo simulado y límite de uso', () => {
     expect(nav).toMatch(/^\[Modo simulado\]/); expect(nav).toMatch(/Proponer una planta/);
     expect(await m.generar('<<PLATAFORMA>>\nSolo esto.\n<<FIN_PLATAFORMA>>\n<<PLANTAS>>\n<<FIN_PLANTAS>>', [{ rol: 'user', contenido: 'algo totalmente distinto' }])).toBe('[SIN_DATOS]');
   });
-  test('el resumen de la plataforma solo describe funciones que existen (no promete mensajería directa ni alertas)', () => {
-    expect(RESUMEN_PLATAFORMA).not.toMatch(/mensajería directa|alertas de disponibilidad/i);
+  test('el resumen de la plataforma describe los planes tal como están hoy (Ronda 32): sin \"Próximamente\" y con Productores disponibles incluido en Empresarial e Institucional', () => {
+    expect(RESUMEN_PLATAFORMA).not.toMatch(/Próximamente/i);
     expect(RESUMEN_PLATAFORMA).toMatch(/Proponer una planta/);
+    expect(RESUMEN_PLATAFORMA).toMatch(/Empresarial[^.]*Productores disponibles/);
+    expect(RESUMEN_PLATAFORMA).toMatch(/Institucional[^.]*incluye Productores disponibles/);
+    expect(RESUMEN_PLATAFORMA).toContain("plan Negocio puede sumar el complemento Premium (S/ 19 al mes adicionales)");
+    expect(RESUMEN_PLATAFORMA).toMatch(/Empresarial e Institucional ya la incluyen sin costo extra/);
   });
   test('límite por minuto y por día, por usuario, y se puede ajustar', () => {
     let t = 0; const l = new LimitadorAsistente(2, 3, () => t);

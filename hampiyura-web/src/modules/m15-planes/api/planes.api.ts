@@ -11,7 +11,7 @@ export interface DefinicionPlan {
   precioTexto: string;
   periodicidad: 'gratis' | 'unica-vez' | 'mensual';
   referencial: true;
-  // true = complemento que se suma encima de un plan de pago vigente (Premium).
+  // true = complemento exclusivo del plan Negocio (Premium).
   complemento?: boolean;
 }
 export interface DatosDeCobro { yape: { numero: string; titular: string } | null; plin: { numero: string; titular: string } | null; }
@@ -32,7 +32,8 @@ export interface MiPlan {
   vencimiento?: string;
   estadoPago: EstadoPago | null;
   desbloqueos: { productorId: string; productorNombre: string; vigenteHasta: string }[];
-  premium: { activo: boolean; vigenteHasta?: string };
+  // "Productores disponibles": activo = incluido en el plan (Empresarial/Institucional) o complemento Premium pagado (Negocio).
+  premium: { activo: boolean; incluidoEnPlan: boolean; vigenteHasta?: string };
   pagos: PagoVisible[];
 }
 export interface ProductorContactable {

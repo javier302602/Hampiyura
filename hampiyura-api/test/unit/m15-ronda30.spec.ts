@@ -55,12 +55,12 @@ describe('Ronda 30 · complemento Premium y "Productores disponibles"', () => {
     expect((await acceso.planActivo('c', AHORA)).plan).toBe('Explorador');
     expect(await acceso.puedeVerContacto({ id: 'c', rol: 'UsuarioRegistrado' }, 'prod1', AHORA)).toBe(false);
   });
-  test('no se puede pedir Premium sin un plan base vigente; con uno sí, y el monto sale del servidor', async () => {
+  test('no se puede pedir Premium sin un plan Negocio vigente; con uno sí, y el monto sale del servidor', async () => {
     const memoria: PagoContacto[] = []; const acceso = new AccesoContactoService(repoPagos(memoria));
     const uc = new SolicitarPagoUseCase(repoPagos(memoria), {} as any, acceso);
     const base = { usuarioId: 'c', rol: 'UsuarioRegistrado', concepto: 'Plan' as const, plan: 'Premium', metodo: 'Yape', comprobanteUrl: '/uploads/x.png' };
     await expect(uc.ejecutar(base)).rejects.toThrow(/complemento/i);
-    memoria.push(confirmado({ usuarioId: 'c', plan: 'Empresarial', monto: 99 }));
+    memoria.push(confirmado({ usuarioId: 'c', plan: 'Negocio' }));
     const p = await uc.ejecutar(base);
     expect(p.props.monto).toBe(19); expect(p.props.plan).toBe('Premium');
   });

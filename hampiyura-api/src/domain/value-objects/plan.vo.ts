@@ -11,7 +11,8 @@
 
 export const PLANES = ['Explorador', 'Negocio', 'Empresarial', 'Institucional', 'Productor', 'Premium'] as const;
 export type Plan = typeof PLANES[number];
-// Planes BASE (escalera de acceso al contacto). Premium NO es un nivel más: es un complemento que se suma encima de cualquiera de estos tres.
+// Planes BASE (escalera de acceso al contacto). Premium NO es un nivel más: es un complemento SOLO para el plan Negocio (Ronda 32:
+// Empresarial e Institucional ya incluyen "Productores disponibles" sin costo extra).
 export const PLANES_BASE = ['Negocio', 'Empresarial', 'Institucional'] as const;
 export type PlanBase = typeof PLANES_BASE[number];
 // Planes que se pagan (y por eso tienen vencimiento). Explorador y Productor son gratuitos.
@@ -24,6 +25,8 @@ export const tieneFiltrosAvanzados = (p: PlanActivo) => NIVEL_PLAN[p] >= NIVEL_P
 export const tieneSoportePrioritario = (p: PlanActivo) => p === 'Institucional';
 // Ronda 30: mensajería directa y alertas = desde el plan Negocio (lo incluyen Empresarial e Institucional); reportes agregados = Institucional.
 export const tieneMensajeriaYAlertas = (p: PlanActivo) => NIVEL_PLAN[p] >= NIVEL_PLAN.Negocio;
+// Ronda 32: "Productores disponibles" viene INCLUIDO en Empresarial e Institucional; con Negocio hace falta el complemento Premium.
+export const incluyeProductoresDisponibles = (p: PlanActivo) => NIVEL_PLAN[p] >= NIVEL_PLAN.Empresarial;
 export const tieneReportesAgregados = (p: PlanActivo) => p === 'Institucional';
 export type PlanDePago = typeof PLANES_DE_PAGO[number];
 export function esPlanDePago(v: string): v is PlanDePago { return (PLANES_DE_PAGO as readonly string[]).includes(v); }
@@ -75,20 +78,20 @@ export const CATALOGO_PLANES: DefinicionPlan[] = [
   },
   {
     id: 'Empresarial', nombre: 'Empresarial', paraQuien: 'Empresas y negocios que compran con frecuencia y necesitan filtrar la oferta de los productores',
-    incluye: ['Todo lo del plan Negocio', 'Filtros avanzados en el directorio de productores: cantidad ofrecida, certificación y cercanía por zona'],
+    incluye: ['Todo lo del plan Negocio', 'Filtros avanzados en el directorio de productores: cantidad ofrecida, certificación y cercanía por zona', 'Sección "Productores disponibles" incluida, sin costo extra'],
     proximamente: [],
     precio: 99, precioTexto: 'S/ 99 al mes', periodicidad: 'mensual', referencial: true,
   },
   {
     id: 'Institucional', nombre: 'Institucional', paraQuien: 'Institutos, universidades, ONG y entidades públicas: lo paga un solo administrador en nombre de la institución',
-    incluye: ['Todo lo del plan Empresarial', 'Soporte prioritario: tus consultas al equipo se marcan como "Prioritaria"', 'Reportes y datos agregados de la bioeconomía regional (por zona y categoría, sin datos personales de productores)'],
+    incluye: ['Todo lo del plan Empresarial', 'Soporte prioritario: tus consultas al equipo se marcan como "Prioritaria"', 'Reportes y datos agregados de la bioeconomía regional (por zona y categoría, sin datos personales de productores)', 'Sección "Productores disponibles" incluida, sin costo extra'],
     proximamente: [],
     precio: 120, precioTexto: 'S/ 120 al mes', periodicidad: 'mensual', referencial: true,
   },
   {
     id: 'Premium', nombre: 'Premium', complemento: true,
-    paraQuien: 'Complemento para quien ya tiene un plan Negocio, Empresarial o Institucional y quiere explorar productores disponibles sin buscar producto por producto',
-    incluye: ['Se suma encima de tu plan de pago (no lo reemplaza)', 'Sección "Productores disponibles": directorio de productores que marcaron que están disponibles para contacto ahora, con filtros por planta, zona y tipo de productor'],
+    paraQuien: 'Exclusivo para quien tiene el plan Negocio y quiere explorar productores disponibles sin buscar producto por producto',
+    incluye: ['Se suma encima de tu plan Negocio (no lo reemplaza)', 'Sección "Productores disponibles": directorio de productores que marcaron que están disponibles para contacto ahora, con filtros por planta, zona y tipo de productor', 'Los planes Empresarial e Institucional ya la incluyen sin costo extra'],
     proximamente: [], precio: 19, precioTexto: 'S/ 19 al mes adicionales', periodicidad: 'mensual', referencial: true,
   },
   {

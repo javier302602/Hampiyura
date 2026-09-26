@@ -51,9 +51,11 @@ function PlanesPage() {
         : <Button variant="secondary" onClick={() => navigate(RUTAS_M15.productores)}>Elegir un productor</Button>;
     }
     if (p.id === 'Premium') {
+      // Ronda 32: Empresarial e Institucional ya lo incluyen -> no se ofrece comprarlo.
+      if (planActual === 'Empresarial' || planActual === 'Institucional') return <><Badge variant="success" icon={<Check size={14} aria-hidden="true" />}>Ya incluido en tu plan</Badge><Button variant="secondary" onClick={() => navigate(RUTAS_EXTRAS.disponibles)}>Ir a Productores disponibles</Button></>;
       if (miPlan?.premium.activo) return <><Badge variant="success" icon={<Check size={14} aria-hidden="true" />}>Premium activo</Badge><Button variant="secondary" onClick={() => navigate(RUTAS_EXTRAS.disponibles)}>Ir a Productores disponibles</Button></>;
       if (!sesion) return <Button variant="secondary" onClick={() => navigate('/m01-cuentas/login')}>Iniciar sesión para elegir</Button>;
-      if (planActual === 'Explorador') return <Badge variant="neutral">Primero elige un plan Negocio, Empresarial o Institucional</Badge>;
+      if (planActual === 'Explorador') return <Badge variant="neutral">Primero elige el plan Negocio</Badge>;
       return <Button variant="secondary" onClick={() => irAPagar(p.id)}>Agregar Premium</Button>;
     }
     if ((p.id === 'Negocio' || p.id === 'Empresarial' || p.id === 'Institucional') && planActual === p.id) return <Badge variant="success" icon={<Check size={14} aria-hidden="true" />}>Tu plan actual</Badge>;

@@ -102,7 +102,7 @@ export const container={
   miPlan:new MiPlanUseCase(pagosContacto,usuarios,accesoContacto),
   solicitarPago:new SolicitarPagoUseCase(pagosContacto,directorioProductores,accesoContacto),
   listarPagosAdmin:new ListarPagosAdminUseCase(pagosContacto,usuarios),
-  resolverPago:new ResolverPagoUseCase(pagosContacto,notificador),
+  resolverPago:new ResolverPagoUseCase(pagosContacto,notificador,accesoContacto),
   directorioProductores,
   mensajeria, alertas, reporteBioeconomia, productoresDisponibles,
   protegerContactoProductos:new ProtegerContactoProductosUseCase(accesoContacto),

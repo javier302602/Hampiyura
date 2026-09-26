@@ -13,7 +13,7 @@ import EmptyState from '../../../shared/ui/EmptyState';
 
 const nombreVisible = (p: { nombre: string; nombreNegocio?: string }) => p.nombreNegocio ?? p.nombre;
 
-// Productores disponibles (complemento Premium, hipótesis de negocio sin validar): directorio de productores que se marcaron "disponibles
+// Productores disponibles (incluido en Empresarial e Institucional; complemento Premium para Negocio; hipótesis de negocio sin validar): directorio de productores que se marcaron "disponibles
 // para contacto ahora". Bloqueado por defecto. Muestra lo mismo que el directorio de siempre; el contacto sigue siendo del plan/desbloqueo.
 function ProductoresDisponiblesPage() {
   const navigate = useNavigate();
@@ -33,7 +33,7 @@ function ProductoresDisponiblesPage() {
   return (
     <section>
       <Button variant="ghost" onClick={() => navigate(RUTAS_M15.productores)}>← Directorio de productores</Button>
-      <SectionHeader eyebrow="Complemento Premium" title="Productores disponibles" description="Productores que marcaron que están disponibles para contacto ahora. Explóralos sin depender de encontrar primero un producto o una planta." />
+      <SectionHeader eyebrow="Incluido en Empresarial e Institucional · complemento Premium para Negocio" title="Productores disponibles" description="Productores que marcaron que están disponibles para contacto ahora. Explóralos sin depender de encontrar primero un producto o una planta." />
       <p className="aviso-legal" role="note">Hipótesis de negocio todavía sin validar con productores ni especialistas. Nunca se muestra la ubicación exacta ni datos personales: el contacto directo sigue siendo de tu plan o de un desbloqueo puntual.</p>
 
       {!acceso && <LoadingState label="Comprobando tu acceso" />}
@@ -45,9 +45,10 @@ function ProductoresDisponiblesPage() {
           <ul className="plan-lista">
             <li><Sparkles size={15} aria-hidden="true" /> Directorio de productores marcados como disponibles ahora</li>
             <li><Sparkles size={15} aria-hidden="true" /> Filtros por planta, zona y tipo de productor</li>
-            <li><Sparkles size={15} aria-hidden="true" /> Se suma encima de tu plan Negocio, Empresarial o Institucional</li>
+            <li><Sparkles size={15} aria-hidden="true" /> Incluido sin costo extra en Empresarial e Institucional</li>
+            <li><Sparkles size={15} aria-hidden="true" /> Con el plan Negocio, se activa con el complemento Premium (S/ 19 al mes adicionales)</li>
           </ul>
-          <Button variant="primary" onClick={() => navigate(sesion ? RUTAS_M15.planes : '/m01-cuentas/login')}>{sesion ? 'Ver planes y el complemento Premium' : 'Iniciar sesión'}</Button>
+          <Button variant="primary" onClick={() => navigate(sesion ? RUTAS_M15.planes : '/m01-cuentas/login')}>{sesion ? 'Ver planes' : 'Iniciar sesión'}</Button>
         </div>
       )}
 

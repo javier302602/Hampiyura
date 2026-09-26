@@ -26,7 +26,7 @@ function DisponibilidadProductor() {
   return (
     <div className="disponibilidad-productor">
       <h3 className="perfil-nombre">Disponible para contacto ahora</h3>
-      <p className="perfil-correo">Si marcas que estás disponible, apareces en “Productores disponibles” para quienes tienen el complemento Premium. Nunca se muestra tu ubicación exacta ni tu teléfono. La marca vence sola a los 7 días.</p>
+      <p className="perfil-correo">Si marcas que estás disponible, apareces en “Productores disponibles” para quienes tienen un plan Empresarial o Institucional, o el plan Negocio con el complemento Premium. Nunca se muestra tu ubicación exacta ni tu teléfono. La marca vence sola a los 7 días.</p>
       <p>{estado.disponible ? <Badge variant="success">Disponible hasta el {new Date(estado.disponibleHasta!).toLocaleDateString('es-PE')}</Badge> : <Badge variant="neutral">No estás marcado como disponible</Badge>}</p>
       {!estado.contactable && <p className="comentario-meta">Para aparecer necesitas una ficha de cultivo validada por un especialista (la misma condición del directorio de productores).</p>}
       <label>Nota breve (opcional)

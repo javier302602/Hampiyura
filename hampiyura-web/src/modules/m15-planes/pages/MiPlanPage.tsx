@@ -31,7 +31,7 @@ function MiPlanPage() {
             <div className="mi-plan-resumen">
               <div><span className="mi-plan-etiqueta">Plan activo</span><strong>{plan.plan}</strong></div>
               <div><span className="mi-plan-etiqueta">Vencimiento</span><strong>{plan.plan === 'Explorador' ? 'No vence' : fecha(plan.vencimiento)}</strong></div>
-              <div><span className="mi-plan-etiqueta">Complemento Premium</span><strong>{plan.premium.activo ? <Badge variant="success">Activo hasta {fecha(plan.premium.vigenteHasta)}</Badge> : 'No activo'}</strong></div>
+              <div><span className="mi-plan-etiqueta">Productores disponibles</span><strong>{plan.premium.incluidoEnPlan ? <Badge variant="success">Incluido en tu plan</Badge> : plan.premium.activo ? <Badge variant="success">Premium activo hasta {fecha(plan.premium.vigenteHasta)}</Badge> : plan.plan === 'Negocio' ? 'Con el complemento Premium' : 'No incluido'}</strong></div>
               <div><span className="mi-plan-etiqueta">Estado de pago</span><strong>{plan.estadoPago ? <Badge variant={VARIANTE_ESTADO_PAGO[plan.estadoPago]}>{plan.estadoPago}</Badge> : 'Sin suscripción'}</strong></div>
             </div>
 
@@ -42,7 +42,7 @@ function MiPlanPage() {
               {plan.plan === 'Institucional' && <Button variant="secondary" onClick={() => navigate(RUTAS_EXTRAS.reportes)}>Reportes de bioeconomía regional</Button>}
               {plan.premium.activo && <Button variant="secondary" onClick={() => navigate(RUTAS_EXTRAS.disponibles)}>Productores disponibles</Button>}
             </div>
-            {plan.plan === 'Explorador' && <p className="comentario-meta">Mensajes y alertas son del plan Negocio o superior; los reportes, del Institucional; “Productores disponibles”, del complemento Premium.</p>}
+            {plan.plan === 'Explorador' && <p className="comentario-meta">Mensajes y alertas son del plan Negocio o superior; los reportes, del Institucional; “Productores disponibles” viene incluido en Empresarial e Institucional (con Negocio, se suma con el complemento Premium).</p>}
 
             <h3>Contactos desbloqueados</h3>
             {plan.desbloqueos.length === 0 ? <p className="comentario-meta">No tienes desbloqueos vigentes.</p> : (
