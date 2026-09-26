@@ -24,6 +24,11 @@ import { SolicitarTipoCuentaUseCase, ObtenerMiTipoCuentaUseCase, SolicitudCuenta
 import { ActualizarGuiaCultivoUseCase } from '../../application/m03-cultivo/guia-cultivo.use-case';
 import { tieneSoportePrioritario } from '../../domain/value-objects/plan.vo';
 import { ObtenerDetalleValidacionUseCase } from '../../application/m09-validacion-moderacion/detalle-validacion.use-case';
+import { MensajeriaUseCase } from '../../application/m15-planes/mensajeria.use-cases';
+import { AlertasUseCase } from '../../application/m15-planes/alertas.use-cases';
+import { ReporteBioeconomiaUseCase } from '../../application/m15-planes/reportes.use-cases';
+import { ProductoresDisponiblesUseCase } from '../../application/m15-planes/productores-disponibles.use-cases';
+import { PrismaMensajeriaRepository, PrismaAlertasRepository, PrismaDisponibilidadRepository, PrismaBusquedasRepository } from '../adapters/out/persistence/prisma/repositories/prisma.repositories-r30';
 import { AccesoContactoService, ListarPlanesUseCase, MiPlanUseCase, SolicitarPagoUseCase, ListarPagosAdminUseCase, ResolverPagoUseCase, DirectorioProductoresUseCase, ProtegerContactoProductosUseCase } from '../../application/m15-planes/planes.use-cases';
 import { PrismaPagoContactoRepository, PrismaSolicitudCuentaRepository } from '../adapters/out/persistence/prisma/repositories/prisma.repositories';
 import { env as envM15 } from './env';
@@ -49,6 +54,12 @@ const registrarParteUsoUC=new RegistrarParteUsoUseCase(partesUso,usos,validacion
 const pagosContacto=new PrismaPagoContactoRepository(prisma); const accesoContacto=new AccesoContactoService(pagosContacto);
 const directorioProductores=new DirectorioProductoresUseCase(usuarios,mapaCultivo,cultivos,plantas,productos,accesoContacto);
 const solicitudesCuenta=new PrismaSolicitudCuentaRepository(prisma);
+// Ronda 30 (M-15): mensajería, alertas, reportes agregados y "Productores disponibles".
+const busquedasRepo=new PrismaBusquedasRepository(prisma);
+const mensajeria=new MensajeriaUseCase(new PrismaMensajeriaRepository(prisma),usuarios,accesoContacto,directorioProductores,notificador);
+const alertas=new AlertasUseCase(new PrismaAlertasRepository(prisma),plantas,cultivos,productos,notificador,accesoContacto,usuarios);
+const reporteBioeconomia=new ReporteBioeconomiaUseCase(usuarios,plantas,cultivos,productos,directorioProductores,busquedasRepo,accesoContacto);
+const productoresDisponibles=new ProductoresDisponiblesUseCase(new PrismaDisponibilidadRepository(prisma),directorioProductores,accesoContacto);
 const entidadesValidables:RegistroEntidadesValidables={ SolicitudCuenta:new SolicitudCuentaValidable(solicitudesCuenta,usuarios), Cultivo:cultivos, ParteUso:partesUso, Publicacion:publicaciones, Preparacion:preparaciones, Producto:productos, EstadoConservacion:estadosConservacion, Planta:plantas };
 export const container={
   registrarUsuario:new RegistrarUsuarioUseCase(usuarios,tokensAccion,email),
@@ -93,6 +104,7 @@ export const container={
   listarPagosAdmin:new ListarPagosAdminUseCase(pagosContacto,usuarios),
   resolverPago:new ResolverPagoUseCase(pagosContacto,notificador),
   directorioProductores,
+  mensajeria, alertas, reporteBioeconomia, productoresDisponibles,
   protegerContactoProductos:new ProtegerContactoProductosUseCase(accesoContacto),
   actualizarPerfil:new ActualizarPerfilUseCase(usuarios),
   listarPendientes:new ListarPendientesUseCase(validaciones,publicaciones,usuarios,preparaciones,partesUso,productos,estadosConservacion,plantas,cultivos,solicitudesCuenta),
@@ -133,7 +145,7 @@ export const container={
   obtenerEstadoConservacion:new ObtenerEstadoConservacionUseCase(estadosConservacion),
   registrarAccionConservacion:new RegistrarAccionConservacionUseCase(accionesConservacion,plantas),
   listarAccionesConservacion:new ListarAccionesConservacionUseCase(accionesConservacion),
-  buscarPlantas:new BuscarPlantasUseCase(plantas,publicaciones,partesUso,usos),
+  buscarPlantas:new BuscarPlantasUseCase(plantas,publicaciones,partesUso,usos,busquedasRepo),
   crearConsulta:new CrearConsultaUseCase(consultas,async (usuarioId)=>tieneSoportePrioritario((await accesoContacto.planActivo(usuarioId)).plan)),
   listarBandejaConsultas:new ListarBandejaConsultasUseCase(consultas),
   listarMisConsultas:new ListarMisConsultasUseCase(consultas,usuarios),

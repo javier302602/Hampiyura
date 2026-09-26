@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Check, Clock, Leaf, Lock, Users } from 'lucide-react';
+import { RUTAS_EXTRAS } from '../api/extras.api';
 import { obtenerCatalogoPlanes, obtenerProductor, obtenerMiPlan, RUTAS_M15, type CatalogoPlanes, type DefinicionPlan, type FichaProductor, type MiPlan } from '../api/planes.api';
 import { getSession } from '../../../shared/auth/session';
 import Button from '../../../shared/ui/Button';
@@ -49,6 +50,12 @@ function PlanesPage() {
         ? <Button variant="primary" onClick={() => irAPagar(p.id)}>Desbloquear este contacto</Button>
         : <Button variant="secondary" onClick={() => navigate(RUTAS_M15.productores)}>Elegir un productor</Button>;
     }
+    if (p.id === 'Premium') {
+      if (miPlan?.premium.activo) return <><Badge variant="success" icon={<Check size={14} aria-hidden="true" />}>Premium activo</Badge><Button variant="secondary" onClick={() => navigate(RUTAS_EXTRAS.disponibles)}>Ir a Productores disponibles</Button></>;
+      if (!sesion) return <Button variant="secondary" onClick={() => navigate('/m01-cuentas/login')}>Iniciar sesión para elegir</Button>;
+      if (planActual === 'Explorador') return <Badge variant="neutral">Primero elige un plan Negocio, Empresarial o Institucional</Badge>;
+      return <Button variant="secondary" onClick={() => irAPagar(p.id)}>Agregar Premium</Button>;
+    }
     if ((p.id === 'Negocio' || p.id === 'Empresarial' || p.id === 'Institucional') && planActual === p.id) return <Badge variant="success" icon={<Check size={14} aria-hidden="true" />}>Tu plan actual</Badge>;
     return <Button variant={p.id === 'Negocio' ? 'primary' : 'secondary'} onClick={() => irAPagar(p.id)}>{sesion ? `Elegir ${p.nombre}` : 'Iniciar sesión para elegir'}</Button>;
   }
@@ -84,9 +91,9 @@ function PlanesPage() {
 
       <div className="planes-grid">
         {catalogo.planes.map((p) => (
-          <article key={p.id} className={`plan-card${p.id === 'Negocio' ? ' plan-card-destacada' : ''}${p.id === 'DesbloqueoPuntual' && productorId ? ' plan-card-destacada' : ''}`} aria-labelledby={`plan-${p.id}`}>
+          <article key={p.id} className={`plan-card${p.complemento ? ' plan-card-complemento' : ''}${p.id === 'Negocio' ? ' plan-card-destacada' : ''}${p.id === 'DesbloqueoPuntual' && productorId ? ' plan-card-destacada' : ''}`} aria-labelledby={`plan-${p.id}`}>
             <header>
-              <h3 id={`plan-${p.id}`}>{p.nombre}</h3>
+              <h3 id={`plan-${p.id}`}>{p.nombre}{p.complemento && <> <Badge variant="accent">Complemento</Badge></>}</h3>
               <p className="plan-precio">{p.precioTexto}</p>
               <p className="plan-referencial">Precio de referencia</p>
             </header>

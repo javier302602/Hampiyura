@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Lock, MapPin, Phone, Sprout, Unlock } from 'lucide-react';
+import { RUTAS_EXTRAS, escribirAProductor, MAX_CARACTERES_MENSAJE } from '../api/extras.api';
 import { listarProductores, obtenerProductor, obtenerMiPlan, RUTAS_M15, type FiltrosDirectorio, type FichaProductor, type ProductorContactable } from '../api/planes.api';
 import { listarZonasGenerales } from '../../m11-productos/api/productos.api';
 import { getSession, esAdministrador } from '../../../shared/auth/session';
@@ -44,7 +45,8 @@ export function ProductoresPage() {
   return (
     <section>
       <Button variant="ghost" onClick={() => navigate(RUTAS_M15.planes)}>← Ver planes</Button>
-      <SectionHeader eyebrow="Directorio" title="Productores" description="Productores con una ficha de cultivo validada por un especialista. El contacto directo se abre con un plan o un desbloqueo puntual." />
+      <SectionHeader eyebrow="Directorio" title="Productores" description="Productores con una ficha de cultivo validada por un especialista. El contacto directo se abre con un plan o un desbloqueo puntual."
+        action={<Button variant="secondary" onClick={() => navigate(RUTAS_EXTRAS.disponibles)}>Productores disponibles (Premium)</Button>} />
       {conFiltros === true && (
         <form className="filtro-bar filtros-avanzados" aria-label="Filtros avanzados" onSubmit={(e) => { e.preventDefault(); aplicar(); }}>
           <label className="filtro-check"><input type="checkbox" checked={certificado} onChange={(e) => setCertificado(e.target.checked)} /> Solo con producto certificado</label>
@@ -99,6 +101,18 @@ export function ProductorPage() {
   const { productorId = '' } = useParams();
   const [ficha, setFicha] = useState<FichaProductor | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const sesion = getSession();
+  const [plan, setPlan] = useState<string | null>(null);
+  const [mensaje, setMensaje] = useState('');
+  const [enviando, setEnviando] = useState(false);
+  const [errorMensaje, setErrorMensaje] = useState<string | null>(null);
+  useEffect(() => { if (sesion) obtenerMiPlan().then((p) => setPlan(p.plan)).catch(() => setPlan(null)); }, [sesion?.token]);
+  async function enviarMensaje(e: FormEvent) {
+    e.preventDefault(); setEnviando(true); setErrorMensaje(null);
+    try { const r = await escribirAProductor(productorId, mensaje); navigate(`${RUTAS_EXTRAS.mensajes}?c=${encodeURIComponent(r.conversacionId)}`); }
+    catch (err) { setErrorMensaje(err instanceof Error ? err.message : 'No se pudo enviar el mensaje.'); }
+    finally { setEnviando(false); }
+  }
   useEffect(() => { obtenerProductor(productorId).then(setFicha).catch((e) => setError(e instanceof Error ? e.message : 'No se pudo cargar el productor.')); }, [productorId]);
 
   return (
@@ -118,6 +132,22 @@ export function ProductorPage() {
             <div><dt>Cultiva</dt><dd>{ficha.plantas.join(', ')}</dd></div>
             <div><dt>Zonas registradas</dt><dd>{ficha.zonas.join(' · ')}</dd></div>
           </dl>
+
+          {sesion && sesion.rol !== 'Productor' && (
+            <div className="mensaje-directo" role="region" aria-label="Mensaje directo">
+              <h3>Mensaje directo</h3>
+              {plan && plan !== 'Explorador' ? (
+                <form onSubmit={enviarMensaje}>
+                  <label className="sr-only" htmlFor="mensaje-directo-texto">Tu mensaje</label>
+                  <textarea id="mensaje-directo-texto" rows={3} maxLength={MAX_CARACTERES_MENSAJE} value={mensaje} onChange={(e) => setMensaje(e.target.value)} placeholder="Escribe tu mensaje al productor…" />
+                  <Button type="submit" variant="primary" disabled={enviando || !mensaje.trim()}>Enviar mensaje</Button>
+                  {errorMensaje && <p className="error-formulario" role="alert">{errorMensaje}</p>}
+                </form>
+              ) : (
+                <p className="comentario-meta">La mensajería directa dentro de la plataforma es del plan Negocio o superior. <button type="button" className="enlace-plan" onClick={() => navigate(RUTAS_M15.planes)}>Ver planes</button></p>
+              )}
+            </div>
+          )}
 
           {ficha.contactoDisponible && ficha.contacto ? (
             <div className="contacto-abierto" role="region" aria-label="Contacto del productor">

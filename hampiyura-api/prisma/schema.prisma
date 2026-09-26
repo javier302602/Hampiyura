@@ -81,6 +81,9 @@ model Usuario {
   nombreNegocio String?
   // Ronda 18: tipo de cuenta aprobado por un administrador (Productor / Empresario / Institucion). Null = cuenta normal.
   tipoCuenta String?
+  // Ronda 30: el productor se marca "disponible para contacto ahora" hasta esta fecha (vence solo a los 7 días si no lo renueva).
+  disponibleHasta DateTime?
+  disponibleNota String?
   solicitudesCuenta SolicitudCuenta[]
   cultivos Cultivo[]
   validaciones ValidacionContenido[]
@@ -440,4 +443,42 @@ model Notificacion {
   entidadTipo String?
   entidadId String?
   usuario Usuario @relation(fields: [usuarioId], references: [id])
+}
+
+// Ronda 30 (plan Negocio): mensajería directa comprador (con plan) <-> productor contactable. Una conversación por par.
+model Conversacion {
+  id String @id @default(uuid())
+  compradorId String
+  productorId String
+  creadaEn DateTime @default(now())
+  actualizadaEn DateTime @default(now())
+  mensajes MensajeDirecto[]
+  @@unique([compradorId, productorId])
+}
+model MensajeDirecto {
+  id String @id @default(uuid())
+  conversacionId String
+  autorId String
+  texto String
+  creadoEn DateTime @default(now())
+  leidoEn DateTime?
+  conversacion Conversacion @relation(fields: [conversacionId], references: [id])
+}
+// Ronda 30 (plan Negocio): alertas de disponibilidad (hay productos aprobados con la planta) y de temporada (mes de cosecha de una ficha validada).
+model AlertaSeguimiento {
+  id String @id @default(uuid())
+  usuarioId String
+  plantaId String
+  disponibilidad Boolean @default(true)
+  temporada Boolean @default(true)
+  productosNotificados String[] @default([])
+  ultimaTemporada String?
+  creadoEn DateTime @default(now())
+  @@unique([usuarioId, plantaId])
+}
+// Ronda 30 (plan Institucional): registro ANÓNIMO de búsquedas por nombre (solo la planta y la fecha; sin usuario ni texto) para el reporte de plantas más buscadas.
+model BusquedaPlanta {
+  id String @id @default(uuid())
+  plantaId String
+  fecha DateTime @default(now())
 }

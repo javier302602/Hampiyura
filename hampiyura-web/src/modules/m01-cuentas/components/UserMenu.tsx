@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { ChevronDown, LogOut, MessageSquare, UserRound } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Bell, ChevronDown, LogOut, Mail, MessageSquare, UserRound, WalletCards } from 'lucide-react';
 import { obtenerPerfil, type Perfil } from '../api/cuentas.api';
 import { getSession, clearSession, suscribirseACambiosDeSesion } from '../../../shared/auth/session';
 import useDropdown from '../../../shared/hooks/useDropdown';
@@ -18,6 +19,7 @@ interface Props {
 // a mano. Logueado, ahora es un menú desplegable (avatar + nombre) en vez de 3 botones sueltos en
 // la fila de navegación -- mismo estado/lógica de sesión de antes, solo cambia cómo se presenta.
 function UserMenu({ onIrALogin, onIrARegistro, onIrAPerfil, onIrAMisConsultas }: Props) {
+  const navigate = useNavigate();
   const [sesion, setSesion] = useState(getSession());
   const [perfil, setPerfil] = useState<Perfil | null>(null);
   const { ref, abierto, setAbierto, alternar } = useDropdown<HTMLDivElement>();
@@ -56,6 +58,15 @@ function UserMenu({ onIrALogin, onIrARegistro, onIrAPerfil, onIrAMisConsultas }:
           </button>
           <button role="menuitem" onClick={() => { setAbierto(false); onIrAMisConsultas(); }}>
             <MessageSquare size={16} aria-hidden="true" /> Mis consultas
+          </button>
+          <button role="menuitem" onClick={() => { setAbierto(false); navigate('/m15-planes/mensajes'); }}>
+            <Mail size={16} aria-hidden="true" /> Mensajes
+          </button>
+          <button role="menuitem" onClick={() => { setAbierto(false); navigate('/m15-planes/alertas'); }}>
+            <Bell size={16} aria-hidden="true" /> Mis alertas
+          </button>
+          <button role="menuitem" onClick={() => { setAbierto(false); navigate('/m15-planes/mi-plan'); }}>
+            <WalletCards size={16} aria-hidden="true" /> Mi plan
           </button>
           <div className="dropdown-panel-divider" />
           <button role="menuitem" onClick={() => { setAbierto(false); clearSession(); }}>

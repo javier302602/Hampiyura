@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Button from '../../../shared/ui/Button';
 import { listarNotificaciones, marcarTodasLeidas, marcarLeida, eliminarNotificacion, type Notificacion } from '../api/notificaciones.api';
 
@@ -6,8 +7,9 @@ import { listarNotificaciones, marcarTodasLeidas, marcarLeida, eliminarNotificac
 // M-09) siguen sin `entidadTipo`/`entidadId` -- no se retroalimentaron con la referencia que
 // agregó M-08, así que para esos no hay a dónde navegar (limitación real, no un descuido). Los
 // únicos con navegación real hoy son los 2 tipos nuevos de M-08, que sí traen `entidadTipo:'Consulta'`.
-function resolverNavegacion(n: Notificacion): { entidadTipo: 'Consulta'; entidadId: string } | null {
-  if (n.entidadTipo === 'Consulta' && n.entidadId) return { entidadTipo: 'Consulta', entidadId: n.entidadId };
+function resolverNavegacion(n: Notificacion): { entidadTipo: 'Consulta' | 'Conversacion' | 'Planta'; entidadId: string } | null {
+  // Ronda 30: mensajes directos y alertas de seguimiento también traen referencia.
+  if ((n.entidadTipo === 'Consulta' || n.entidadTipo === 'Conversacion' || n.entidadTipo === 'Planta') && n.entidadId) return { entidadTipo: n.entidadTipo, entidadId: n.entidadId };
   return null;
 }
 
@@ -17,6 +19,7 @@ interface Props {
 }
 
 function NotificacionesPage({ onVolver, onAbrirConsulta }: Props) {
+  const navigate = useNavigate();
   const [notificaciones, setNotificaciones] = useState<Notificacion[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +39,9 @@ function NotificacionesPage({ onVolver, onAbrirConsulta }: Props) {
     const navegacion = resolverNavegacion(n);
     if (!navegacion) return;
     if (!n.leida) await manejarMarcarUna(n.id);
-    onAbrirConsulta(navegacion.entidadId);
+    if (navegacion.entidadTipo === 'Conversacion') navigate(`/m15-planes/mensajes?c=${encodeURIComponent(navegacion.entidadId)}`);
+    else if (navegacion.entidadTipo === 'Planta') navigate(`/m02-catalogo-plantas/${encodeURIComponent(navegacion.entidadId)}`);
+    else onAbrirConsulta(navegacion.entidadId);
   }
 
   const hayNoLeidas = notificaciones.some((n) => !n.leida);

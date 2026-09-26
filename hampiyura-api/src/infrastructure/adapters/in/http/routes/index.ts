@@ -16,12 +16,18 @@ import { registrarEstadoConservacion, obtenerEstadoConservacion, registrarAccion
 import { buscarPlantas } from '../controllers/m12-busqueda-recomendaciones/busqueda.controller';
 import { crearConsulta, listarBandejaConsultas, listarMisConsultas, obtenerConsulta, agregarMensajeConsulta, cambiarEstadoConsulta, asignarConsulta } from '../controllers/m08-consultas/consultas.controller';
 import { listarPlanes, miPlan, solicitarPago, listarPagos, detallePago, confirmarPago, rechazarPago, listarProductores, obtenerProductor } from '../controllers/m15-planes/planes.controller';
+import { listarConversaciones, mensajesSinLeer, obtenerConversacion, escribirAProductor, responderConversacion, listarAlertas, seguirPlanta, dejarDeSeguir, procesarAlertas, reporteBioeconomia, accesoDisponibles, listarDisponibles, miDisponibilidad, marcarDisponibilidad } from '../controllers/m15-planes/extras.controller';
 import { requireAuth, requireValidator, requireAdmin, requireProductor, attachUserIfPresent } from '../middlewares/role.middleware';
 export const router=Router();
 // M-15 · Contacto pagado y planes
 router.get('/planes',listarPlanes); router.get('/planes/mi-plan',requireAuth,miPlan); router.post('/planes/pagos',requireAuth,solicitarPago);
 router.get('/planes/pagos',requireAdmin,listarPagos); router.get('/planes/pagos/:id',requireAdmin,detallePago); router.post('/planes/pagos/:id/confirmar',requireAdmin,confirmarPago); router.post('/planes/pagos/:id/rechazar',requireAdmin,rechazarPago);
 router.get('/asistente/estado',estadoAsistente); router.post('/asistente/consulta',attachUserIfPresent,consultarAsistente);
+// Ronda 30: mensajería (plan Negocio), alertas (plan Negocio), reportes (plan Institucional) y productores disponibles (complemento Premium)
+router.get('/mensajes/conversaciones',requireAuth,listarConversaciones); router.get('/mensajes/sin-leer',requireAuth,mensajesSinLeer); router.get('/mensajes/conversaciones/:id',requireAuth,obtenerConversacion); router.post('/mensajes',requireAuth,escribirAProductor); router.post('/mensajes/conversaciones/:id',requireAuth,responderConversacion);
+router.get('/alertas',requireAuth,listarAlertas); router.post('/alertas',requireAuth,seguirPlanta); router.delete('/alertas/:plantaId',requireAuth,dejarDeSeguir); router.post('/alertas/procesar',requireAdmin,procesarAlertas);
+router.get('/reportes/bioeconomia',requireAuth,reporteBioeconomia);
+router.get('/productores-disponibles/acceso',attachUserIfPresent,accesoDisponibles); router.get('/productores-disponibles',requireAuth,listarDisponibles); router.get('/productores-disponibles/mi-estado',requireAuth,miDisponibilidad); router.put('/productores-disponibles/mi-estado',requireAuth,marcarDisponibilidad);
 router.get('/productores',attachUserIfPresent,listarProductores); router.get('/productores/:id',attachUserIfPresent,obtenerProductor);
 router.post('/cuentas/solicitud-tipo-cuenta',requireAuth,solicitarTipoCuenta); router.get('/cuentas/solicitud-tipo-cuenta',requireAuth,obtenerMiTipoCuenta);
 router.post('/cuentas/registro',registrar); router.post('/cuentas/login',login); router.post('/cuentas/activar',activarCuenta); router.post('/cuentas/recuperar-contrasena',solicitarRecuperacion); router.post('/cuentas/restablecer-contrasena',restablecerContraseña); router.post('/cuentas/cambiar-contrasena',requireAuth,cambiarContraseña); router.get('/cuentas/perfil',requireAuth,obtenerPerfil); router.patch('/cuentas/perfil',requireAuth,actualizarPerfil);

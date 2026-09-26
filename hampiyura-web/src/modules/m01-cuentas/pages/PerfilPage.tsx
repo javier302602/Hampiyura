@@ -1,3 +1,4 @@
+import DisponibilidadProductor from "../../m15-planes/components/DisponibilidadProductor";
 import { FormEvent, useEffect, useState } from 'react';
 import { ArrowLeft, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -290,6 +291,12 @@ function PerfilPage({ onVolver }: { onVolver: () => void }) {
               <FormularioEditarPerfil perfil={perfil} onGuardado={setPerfil} />
             </div>
           </Card>
+
+          {perfil.rol === 'Productor' && (
+            <Card>
+              <div className="card-ui-body"><DisponibilidadProductor /></div>
+            </Card>
+          )}
 
           <TarjetaTipoCuenta onCambio={() => obtenerPerfil().then(setPerfil).catch(() => {})} />
 

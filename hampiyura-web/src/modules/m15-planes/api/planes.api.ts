@@ -2,7 +2,7 @@ import { apiRequest } from '../../../shared/api/client';
 
 // M-15 · Contacto pagado y planes. Mismos contratos que el backend (planes.use-cases.ts).
 export interface DefinicionPlan {
-  id: 'Explorador' | 'DesbloqueoPuntual' | 'Negocio' | 'Empresarial' | 'Institucional' | 'Productor';
+  id: 'Explorador' | 'DesbloqueoPuntual' | 'Negocio' | 'Empresarial' | 'Institucional' | 'Productor' | 'Premium';
   nombre: string;
   paraQuien: string;
   incluye: string[];
@@ -11,6 +11,8 @@ export interface DefinicionPlan {
   precioTexto: string;
   periodicidad: 'gratis' | 'unica-vez' | 'mensual';
   referencial: true;
+  // true = complemento que se suma encima de un plan de pago vigente (Premium).
+  complemento?: boolean;
 }
 export interface DatosDeCobro { yape: { numero: string; titular: string } | null; plin: { numero: string; titular: string } | null; }
 export interface CatalogoPlanes {
@@ -30,10 +32,11 @@ export interface MiPlan {
   vencimiento?: string;
   estadoPago: EstadoPago | null;
   desbloqueos: { productorId: string; productorNombre: string; vigenteHasta: string }[];
+  premium: { activo: boolean; vigenteHasta?: string };
   pagos: PagoVisible[];
 }
 export interface ProductorContactable {
-  id: string; nombre: string; nombreNegocio?: string; region: string; biografia?: string; plantas: string[]; zonas: string[]; certificado: boolean; zonasProducto: string[]; cantidadMaxima?: number; cercania?: 'zona' | 'departamento';
+  id: string; nombre: string; nombreNegocio?: string; region: string; biografia?: string; plantas: string[]; zonas: string[]; certificado: boolean; zonasProducto: string[]; cantidadMaxima?: number; tiposProductor?: string[]; cercania?: 'zona' | 'departamento';
 }
 export interface FichaProductor extends ProductorContactable {
   contactoDisponible: boolean;

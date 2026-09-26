@@ -12,6 +12,10 @@ import PagarPage from './modules/m15-planes/pages/PagarPage';
 import MiPlanPage from './modules/m15-planes/pages/MiPlanPage';
 import PagosAdminPage from './modules/m15-planes/pages/PagosAdminPage';
 import { ProductoresPage, ProductorPage } from './modules/m15-planes/pages/ProductoresPage';
+import MensajesPage from './modules/m15-planes/pages/MensajesPage';
+import AlertasPage from './modules/m15-planes/pages/AlertasPage';
+import ReportesPage from './modules/m15-planes/pages/ReportesPage';
+import ProductoresDisponiblesPage from './modules/m15-planes/pages/ProductoresDisponiblesPage';
 import ProductoDetailPage from './modules/m11-productos/pages/ProductoDetailPage';
 import PublicarProductoPage from './modules/m11-productos/pages/PublicarProductoPage';
 import ResultadosBusquedaPage from './modules/m12-busqueda-recomendaciones/pages/ResultadosBusquedaPage';
@@ -148,6 +152,10 @@ function App() {
         <Route path={`${RUTAS.planes}/pagar`} element={<PagarPage />} />
         <Route path={`${RUTAS.planes}/mi-plan`} element={<MiPlanPage />} />
         <Route path={`${RUTAS.planes}/pagos`} element={<RequireRole permitido={esAdministrador}><PagosAdminPage /></RequireRole>} />
+        <Route path={`${RUTAS.planes}/mensajes`} element={<MensajesPage />} />
+        <Route path={`${RUTAS.planes}/alertas`} element={<AlertasPage />} />
+        <Route path={`${RUTAS.planes}/reportes`} element={<ReportesPage />} />
+        <Route path={`${RUTAS.planes}/productores-disponibles`} element={<ProductoresDisponiblesPage />} />
         <Route path={`${RUTAS.planes}/productores`} element={<ProductoresPage />} />
         <Route path={`${RUTAS.planes}/productores/:productorId`} element={<ProductorPage />} />
         <Route path={RUTAS.admin} element={<RequireRole permitido={esValidador}><PanelAdminPage /></RequireRole>} />

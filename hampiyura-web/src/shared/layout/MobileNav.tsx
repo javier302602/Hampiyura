@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Bell, Flag, Wallet, FlaskConical, Home, Inbox, LayoutDashboard, LogOut, MessageSquare, Package, Sprout, TreeDeciduous, UserRound, Users, X } from 'lucide-react';
 import type { Session } from '../auth/session';
 import { clearSession, esAdministrador, esValidador } from '../auth/session';
@@ -16,6 +17,7 @@ interface Props extends NavCallbacks {
 // escritorio (misma prop NavCallbacks, mismo gateo por rol), en vez de que la nav dependa
 // únicamente de flex-wrap como antes (ver auditoría, hallazgo #10).
 function MobileNav({ sesion, puedeGestionar, onCerrar, ...nav }: Props) {
+  const navigate = useNavigate();
   function ir(callback: () => void) {
     onCerrar();
     callback();
@@ -83,6 +85,9 @@ function MobileNav({ sesion, puedeGestionar, onCerrar, ...nav }: Props) {
             <button onClick={() => ir(nav.onIrAPerfil)}><UserRound size={17} aria-hidden="true" /> Mi perfil</button>
             <button onClick={() => ir(nav.onIrAMisConsultas)}><MessageSquare size={17} aria-hidden="true" /> Mis consultas</button>
             <button onClick={() => ir(nav.onAbrirNotificaciones)}><Bell size={17} aria-hidden="true" /> Notificaciones</button>
+            <button onClick={() => ir(() => navigate('/m15-planes/mensajes'))}><MessageSquare size={17} aria-hidden="true" /> Mensajes</button>
+            <button onClick={() => ir(() => navigate('/m15-planes/alertas'))}><Bell size={17} aria-hidden="true" /> Mis alertas</button>
+            <button onClick={() => ir(() => navigate('/m15-planes/mi-plan'))}><UserRound size={17} aria-hidden="true" /> Mi plan</button>
             <button onClick={() => { onCerrar(); clearSession(); }}><LogOut size={17} aria-hidden="true" /> Cerrar sesión</button>
           </>
         ) : (

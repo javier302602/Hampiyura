@@ -4,6 +4,7 @@ import { PublicacionRepositoryPort } from '../../domain/ports/out/publicacion.re
 import { ParteUsoRepositoryPort } from '../../domain/ports/out/parte-uso.repository.port';
 import { UsoRepositoryPort } from '../../domain/ports/out/uso.repository.port';
 import { Planta } from '../../domain/entities/planta.entity';
+import { BusquedasRepositoryPort } from '../../domain/ports/out/mensajeria-alertas.ports';
 import { Publicacion } from '../../domain/entities/publicacion.entity';
 
 const LARGO_DESCRIPCION_BREVE = 160;
@@ -26,6 +27,8 @@ export class BuscarPlantasUseCase implements BuscarPlantasPort {
     private readonly publicaciones: PublicacionRepositoryPort,
     private readonly partesUso: ParteUsoRepositoryPort,
     private readonly usos: UsoRepositoryPort,
+    // Ronda 30: registro ANÓNIMO (solo planta y fecha) de las plantas devueltas por una búsqueda por nombre; alimenta el reporte institucional.
+    private readonly busquedas?: BusquedasRepositoryPort,
   ) {}
 
   async ejecutar(filtros: FiltrosBusquedaPlantas): Promise<ResultadoBusquedaPlanta[]> {
@@ -58,6 +61,8 @@ export class BuscarPlantasUseCase implements BuscarPlantasPort {
         candidatas = candidatas.filter((p) => plantaIdsConCategoria.has(p.props.id));
       }
     }
+
+    if (filtros.q?.trim() && this.busquedas) await this.busquedas.registrar(candidatas.map((p) => p.props.id), new Date()).catch(() => undefined);
 
     return candidatas.map((p) => ({
       id: p.props.id,

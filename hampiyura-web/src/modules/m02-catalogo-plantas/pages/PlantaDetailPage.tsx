@@ -9,6 +9,7 @@ import AlertaConservacion from '../../m10-conservacion/components/AlertaConserva
 import ConservacionSection from '../../m10-conservacion/components/ConservacionSection';
 import FichasCultivoSection from '../../m03-cultivo/components/FichasCultivoSection';
 import RequireRole from '../../../shared/auth/RequireRole';
+import SeguirPlanta from "../../m15-planes/components/SeguirPlanta";
 import { obtenerImagenPlanta } from '../components/imagen-planta';
 
 interface Props {
@@ -56,6 +57,7 @@ function PlantaDetailPage({ plantaId, onVolver }: Props) {
       {planta.imagenPrincipal && planta.imagenAutor && (
         <p className="fuente-cita">Foto: {planta.imagenAutor} · {planta.imagenLicencia}{planta.imagenFuenteUrl && <> · <a href={planta.imagenFuenteUrl} target="_blank" rel="noopener noreferrer">Ver origen</a></>}</p>
       )}
+      <SeguirPlanta plantaId={planta.id} />
       <AlertaConservacion conservacion={planta.conservacion} />
 
       <h3>Partes utilizadas y usos</h3>

@@ -32,6 +32,21 @@ export class AccesoContactoService {
     return (await this.pagos.listarPorUsuario(usuarioId)).find((p) => p.props.concepto === 'Desbloqueo' && p.props.productorId === productorId && p.estaVigente(ahora));
   }
 
+  // Ronda 30: el complemento Premium (sección "Productores disponibles") vale solo mientras haya un pago Premium vigente.
+  async tienePremium(usuarioId: string, ahora = new Date()): Promise<{ activo: boolean; vigenteHasta?: Date }> {
+    const vigente = (await this.pagos.listarPorUsuario(usuarioId)).filter((p) => p.props.concepto === 'Plan' && p.props.plan === 'Premium' && p.estaVigente(ahora)).sort((a, b) => b.props.vigenteHasta!.getTime() - a.props.vigenteHasta!.getTime())[0];
+    return vigente ? { activo: true, vigenteHasta: vigente.props.vigenteHasta } : { activo: false };
+  }
+
+  // Premium se SUMA encima de un plan base: para usarlo hace falta Premium vigente Y un plan Negocio/Empresarial/Institucional vigente (o ser administrador).
+  async puedeVerProductoresDisponibles(solicitante: Solicitante | undefined, ahora = new Date()): Promise<{ permitido: boolean; motivo?: string }> {
+    if (!solicitante) return { permitido: false, motivo: 'Inicia sesión para ver esta sección.' };
+    if (solicitante.rol === 'Administrador') return { permitido: true };
+    if ((await this.planActivo(solicitante.id, ahora)).plan === 'Explorador') return { permitido: false, motivo: 'Necesitas un plan Negocio, Empresarial o Institucional vigente y, encima, el complemento Premium.' };
+    if (!(await this.tienePremium(solicitante.id, ahora)).activo) return { permitido: false, motivo: 'Esta sección se activa con el complemento Premium (S/ 19 al mes adicionales, de referencia).' };
+    return { permitido: true };
+  }
+
   async puedeVerContacto(solicitante: Solicitante | undefined, productorId: string, ahora = new Date()): Promise<boolean> {
     if (!solicitante) return false;
     if (solicitante.id === productorId || solicitante.rol === 'Administrador') return true;
@@ -72,6 +87,8 @@ export interface ProductorContactable {
   certificado: boolean;
   zonasProducto: string[];
   cantidadMaxima?: number;
+  // Ronda 30: tipos de productor declarados en sus productos aprobados (Campesino / Empresario / Comunidad).
+  tiposProductor: string[];
   // Solo cuando se filtra por cercanía: 'zona' = misma provincia, 'departamento' = mismo departamento.
   cercania?: 'zona' | 'departamento';
 }
@@ -122,10 +139,14 @@ export class DirectorioProductoresUseCase {
     return resultado.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
   }
 
-  private datosDeProductos(productos: { props: { localidad: string; cantidad?: string; etiquetaCertificado: boolean } }[]) {
+  // Ronda 30: lista completa de contactables (la reutiliza "Productores disponibles" y el reporte institucional).
+  async todos(): Promise<ProductorContactable[]> { return this.contactables(); }
+
+  private datosDeProductos(productos: { props: { localidad: string; cantidad?: string; etiquetaCertificado: boolean; tipoProductor?: string } }[]) {
     const cantidades = productos.map((p) => primerNumero(p.props.cantidad)).filter((n): n is number => n !== undefined);
     return {
       certificado: productos.some((p) => p.props.etiquetaCertificado),
+      tiposProductor: [...new Set(productos.map((p) => p.props.tipoProductor).filter((t): t is string => !!t))],
       zonasProducto: [...new Set(productos.map((p) => p.props.localidad).filter((z) => z && z !== ZONA_NO_ESPECIFICADA))],
       cantidadMaxima: cantidades.length ? Math.max(...cantidades) : undefined,
     };
@@ -201,8 +222,9 @@ export class SolicitarPagoUseCase {
     const previos = await this.pagos.listarPorUsuario(input.usuarioId);
     let plan: PlanDePago | undefined; let productorId: string | undefined; let monto: number;
     if (input.concepto === 'Plan') {
-      if (!input.plan || !esPlanDePago(input.plan)) throw new ValidationError('Elige un plan de pago: Negocio, Empresarial o Institucional');
+      if (!input.plan || !esPlanDePago(input.plan)) throw new ValidationError('Elige un plan de pago: Negocio, Empresarial o Institucional (o el complemento Premium)');
       plan = input.plan; monto = precioDe(plan);
+      if (plan === 'Premium' && (await this.acceso.planActivo(input.usuarioId)).plan === 'Explorador') throw new ValidationError('Premium es un complemento: primero necesitas un plan Negocio, Empresarial o Institucional vigente');
       if (previos.some((p) => p.props.concepto === 'Plan' && p.props.plan === plan && p.props.estado === 'Pendiente')) throw new ValidationError('Ya tienes un pago de este plan esperando confirmación');
     } else if (input.concepto === 'Desbloqueo') {
       if (!input.productorId) throw new ValidationError('Indica de qué productor es el contacto');
@@ -253,6 +275,8 @@ export interface MiPlan {
   // Estado de pago de la suscripción más reciente (Pendiente / Confirmado / Vencido / Rechazado); null si nunca pagó un plan.
   estadoPago: EstadoPagoEfectivo | null;
   desbloqueos: { productorId: string; productorNombre: string; vigenteHasta: Date }[];
+  // Ronda 30: complemento Premium (se suma encima del plan de pago).
+  premium: { activo: boolean; vigenteHasta?: Date };
   pagos: PagoVisible[];
 }
 export class MiPlanUseCase extends Presentador {
@@ -260,7 +284,7 @@ export class MiPlanUseCase extends Presentador {
   async ejecutar(usuarioId: string): Promise<MiPlan> {
     const activo = await this.acceso.planActivo(usuarioId);
     const propios = (await this.pagos.listarPorUsuario(usuarioId)).sort((a, b) => b.props.creadoEn.getTime() - a.props.creadoEn.getTime());
-    const suscripciones = propios.filter((p) => p.props.concepto === 'Plan' && (p.props.plan as string) in NIVEL_PLAN);
+    const suscripciones = propios.filter((p) => p.props.concepto === 'Plan' && (p.props.plan as string) in NIVEL_PLAN); // Premium no cuenta como suscripción base
     const pagos = await Promise.all(propios.map((p) => this.aVista(p)));
     const desbloqueos = await Promise.all(propios.filter((p) => p.props.concepto === 'Desbloqueo' && p.estaVigente()).map(async (p) => ({
       productorId: p.props.productorId!, productorNombre: (await this.usuarios.buscarPorId(p.props.productorId!))?.props.nombre ?? p.props.productorId!, vigenteHasta: p.props.vigenteHasta!,
@@ -268,7 +292,7 @@ export class MiPlanUseCase extends Presentador {
     return {
       plan: activo.plan, vencimiento: activo.vigenteHasta,
       estadoPago: activo.plan !== 'Explorador' ? 'Confirmado' : (suscripciones[0]?.estadoEfectivo() ?? null),
-      desbloqueos, pagos,
+      desbloqueos, pagos, premium: await this.acceso.tienePremium(usuarioId),
     };
   }
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { RUTAS_EXTRAS } from '../api/extras.api';
 import { obtenerMiPlan, RUTAS_M15, type EstadoPago, type MiPlan } from '../api/planes.api';
 import RequireRole from '../../../shared/auth/RequireRole';
 import Button from '../../../shared/ui/Button';
@@ -30,8 +31,18 @@ function MiPlanPage() {
             <div className="mi-plan-resumen">
               <div><span className="mi-plan-etiqueta">Plan activo</span><strong>{plan.plan}</strong></div>
               <div><span className="mi-plan-etiqueta">Vencimiento</span><strong>{plan.plan === 'Explorador' ? 'No vence' : fecha(plan.vencimiento)}</strong></div>
+              <div><span className="mi-plan-etiqueta">Complemento Premium</span><strong>{plan.premium.activo ? <Badge variant="success">Activo hasta {fecha(plan.premium.vigenteHasta)}</Badge> : 'No activo'}</strong></div>
               <div><span className="mi-plan-etiqueta">Estado de pago</span><strong>{plan.estadoPago ? <Badge variant={VARIANTE_ESTADO_PAGO[plan.estadoPago]}>{plan.estadoPago}</Badge> : 'Sin suscripción'}</strong></div>
             </div>
+
+            <h3>Lo que incluye tu plan</h3>
+            <div className="mi-plan-accesos">
+              <Button variant="secondary" onClick={() => navigate(RUTAS_EXTRAS.mensajes)}>Mensajes</Button>
+              <Button variant="secondary" onClick={() => navigate(RUTAS_EXTRAS.alertas)}>Mis alertas</Button>
+              {plan.plan === 'Institucional' && <Button variant="secondary" onClick={() => navigate(RUTAS_EXTRAS.reportes)}>Reportes de bioeconomía regional</Button>}
+              {plan.premium.activo && <Button variant="secondary" onClick={() => navigate(RUTAS_EXTRAS.disponibles)}>Productores disponibles</Button>}
+            </div>
+            {plan.plan === 'Explorador' && <p className="comentario-meta">Mensajes y alertas son del plan Negocio o superior; los reportes, del Institucional; “Productores disponibles”, del complemento Premium.</p>}
 
             <h3>Contactos desbloqueados</h3>
             {plan.desbloqueos.length === 0 ? <p className="comentario-meta">No tienes desbloqueos vigentes.</p> : (
