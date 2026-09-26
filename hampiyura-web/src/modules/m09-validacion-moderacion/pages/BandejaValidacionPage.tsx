@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Eye, FlaskConical } from 'lucide-react';
 import { listarPendientes, aprobar, observar, rechazar, type ValidacionPendiente } from '../api/validaciones.api';
 import { listarSeguimiento, type ItemSeguimiento } from '../../m04-usos-partes/api/partes-uso.api';
@@ -15,6 +16,9 @@ type Pestana = 'pendientes' | 'seguimiento';
 // registrada -- el camino a "verificado" es el mismo para los tres.
 function BandejaValidacionPage() {
   const [pestana, setPestana] = useState<Pestana>('pendientes');
+  // El panel de trabajo llega aquí con ?area=mia: solo las pendientes que le corresponden al rol (el servidor filtra).
+  const [params] = useSearchParams();
+  const [soloMiArea, setSoloMiArea] = useState(params.get('area') === 'mia');
   const [pendientes, setPendientes] = useState<ValidacionPendiente[]>([]);
   const [seguimiento, setSeguimiento] = useState<ItemSeguimiento[] | null>(null);
   const [errorSeguimiento, setErrorSeguimiento] = useState<string | null>(null);
@@ -25,7 +29,7 @@ function BandejaValidacionPage() {
 
   function cargar() {
     setCargando(true);
-    listarPendientes()
+    listarPendientes(soloMiArea)
       .then(setPendientes)
       .catch(() => setError('No se pudo cargar la bandeja de pendientes.'))
       .finally(() => setCargando(false));
@@ -34,7 +38,7 @@ function BandejaValidacionPage() {
     setErrorSeguimiento(null);
     listarSeguimiento().then(setSeguimiento).catch((e) => { setSeguimiento([]); setErrorSeguimiento(e instanceof Error ? e.message : 'No se pudo cargar el seguimiento.'); });
   }
-  useEffect(cargar, []);
+  useEffect(cargar, [soloMiArea]);
   useEffect(() => { if (pestana === 'seguimiento') cargarSeguimiento(); }, [pestana]);
 
   async function manejarAprobar(id: string) { await aprobar(id); cargar(); }
@@ -51,6 +55,13 @@ function BandejaValidacionPage() {
         <Button role="tab" aria-selected={pestana === 'pendientes'} size="sm" variant={pestana === 'pendientes' ? 'primary' : 'secondary'} onClick={() => setPestana('pendientes')}>Pendientes de revisión ({pendientes.length})</Button>
         <Button role="tab" aria-selected={pestana === 'seguimiento'} size="sm" variant={pestana === 'seguimiento' ? 'primary' : 'secondary'} iconLeft={<FlaskConical size={15} aria-hidden="true" />} onClick={() => setPestana('seguimiento')}>Pendientes de validación científica</Button>
       </div>
+
+      {pestana === 'pendientes' && (
+        <p className="comentario-meta" role="status" style={{ display: 'flex', gap: '.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          {soloMiArea ? 'Mostrando solo las pendientes de tu área de especialidad.' : 'Mostrando todas las pendientes.'}
+          <Button size="sm" variant="secondary" onClick={() => setSoloMiArea((v) => !v)}>{soloMiArea ? 'Ver todas' : 'Ver solo las de mi área'}</Button>
+        </p>
+      )}
 
       {pestana === 'pendientes' && (pendientes.length === 0 ? (
         <p>No hay contenido pendiente de revisión.</p>

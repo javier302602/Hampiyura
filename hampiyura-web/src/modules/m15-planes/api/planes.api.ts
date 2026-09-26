@@ -57,7 +57,8 @@ export function solicitarPago(input: SolicitarPagoInput): Promise<PagoVisible> {
   return apiRequest<PagoVisible>('/planes/pagos', { method: 'POST', body: JSON.stringify(input) });
 }
 
-export function listarPagos(estado?: 'Pendiente' | 'Confirmado' | 'Rechazado'): Promise<PagoVisible[]> {
+export type FiltroPagos = 'Pendiente' | 'Confirmado' | 'Rechazado' | 'PlanesVigentes' | 'DesbloqueosVigentes';
+export function listarPagos(estado?: FiltroPagos): Promise<PagoVisible[]> {
   return apiRequest<PagoVisible[]>(estado ? `/planes/pagos?estado=${estado}` : '/planes/pagos');
 }
 export function obtenerDetallePago(id: string): Promise<PagoVisible> { return apiRequest<PagoVisible>(`/planes/pagos/${encodeURIComponent(id)}`); }

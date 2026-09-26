@@ -4,4 +4,6 @@ import { ValidacionContenido } from '../../../entities/validacion-contenido.enti
 // "tipoEntidad · entidadId", igual que antes -- no es un mecanismo nuevo, solo enriquece la misma
 // lista para los tipos que ya se pueden resolver con los repositorios existentes.
 export type ValidacionPendienteVisible = ValidacionContenido['props'] & { etiqueta: string };
-export interface ListarPendientesPort { ejecutar(): Promise<ValidacionPendienteVisible[]>; }
+// Con `rol`, solo las pendientes que ESE rol puede decidir (un especialista, las de su área; el administrador, todas). Es el mismo
+// criterio (rolPuedeValidarTipo) con el que el panel cuenta "Validaciones pendientes".
+export interface ListarPendientesPort { ejecutar(rol?: string): Promise<ValidacionPendienteVisible[]>; }

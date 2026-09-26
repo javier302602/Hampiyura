@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { cambiarRolUsuario, listarUsuarios, reactivarUsuario, suspenderUsuario, ROLES_USUARIO, type UsuarioAdmin } from '../api/admin.api';
 import LoadingState from '../../../shared/ui/LoadingState';
 import ErrorState from '../../../shared/ui/ErrorState';
@@ -16,6 +17,10 @@ const ETIQUETA_ESTADO: Record<UsuarioAdmin['estado'], { texto: string; variante:
 // resto de esta sesión). requireAdmin ya protege las 4 rutas en el servidor; esta página también
 // está gateada a Administrador en App.tsx (RequireRole), doble candado intencional.
 function UsuariosAdminPage() {
+  // La tarjeta "Usuarios activos" del panel llega aquí con ?estado=Activo (mismo criterio que la cifra: cuenta en estado Activo).
+  const [params] = useSearchParams();
+  const estadoInicial = params.get('estado');
+  const [filtroEstado, setFiltroEstado] = useState<'Todos' | UsuarioAdmin['estado']>(estadoInicial === 'Activo' || estadoInicial === 'Suspendido' || estadoInicial === 'PendienteActivacion' ? estadoInicial : 'Todos');
   const [usuarios, setUsuarios] = useState<UsuarioAdmin[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [accionError, setAccionError] = useState<string | null>(null);
@@ -69,8 +74,20 @@ function UsuariosAdminPage() {
       {error && <ErrorState description={error} />}
 
       {usuarios && (
+        <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', fontWeight: 700, marginTop: 'var(--space-4)' }}>
+          Mostrar
+          <select value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value as 'Todos' | UsuarioAdmin['estado'])}>
+            <option value="Todos">Todos los usuarios ({usuarios.length})</option>
+            <option value="Activo">Solo activos ({usuarios.filter((u) => u.estado === 'Activo').length})</option>
+            <option value="PendienteActivacion">Pendientes de activación ({usuarios.filter((u) => u.estado === 'PendienteActivacion').length})</option>
+            <option value="Suspendido">Suspendidos ({usuarios.filter((u) => u.estado === 'Suspendido').length})</option>
+          </select>
+        </label>
+      )}
+
+      {usuarios && (
         <div style={{ display: 'grid', gap: 'var(--space-3)', marginTop: 'var(--space-4)' }}>
-          {usuarios.map((u) => {
+          {usuarios.filter((u) => filtroEstado === 'Todos' || u.estado === filtroEstado).map((u) => {
             const estado = ETIQUETA_ESTADO[u.estado];
             return (
               <div key={u.id} className="card-ui card-ui-body" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 'var(--space-4)', flexWrap: 'wrap' }}>

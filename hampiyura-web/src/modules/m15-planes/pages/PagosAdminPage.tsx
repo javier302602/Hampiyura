@@ -7,10 +7,11 @@ import Modal from '../../../shared/ui/Modal';
 import Button from '../../../shared/ui/Button';
 import Badge from '../../../shared/ui/Badge';
 
-type Filtro = 'Pendiente' | 'Confirmado' | 'Rechazado' | 'Todos';
+type Filtro = 'Pendiente' | 'Confirmado' | 'Rechazado' | 'PlanesVigentes' | 'DesbloqueosVigentes' | 'Todos';
 const FILTROS: { valor: Filtro; etiqueta: string }[] = [
   { valor: 'Pendiente', etiqueta: 'Pendientes' }, { valor: 'Confirmado', etiqueta: 'Confirmados' },
-  { valor: 'Rechazado', etiqueta: 'Rechazados' }, { valor: 'Todos', etiqueta: 'Todos' },
+  { valor: 'Rechazado', etiqueta: 'Rechazados' }, { valor: 'PlanesVigentes', etiqueta: 'Planes vigentes' },
+  { valor: 'DesbloqueosVigentes', etiqueta: 'Desbloqueos vigentes' }, { valor: 'Todos', etiqueta: 'Todos' },
 ];
 const fechaHora = (s?: string) => (s ? new Date(s).toLocaleString('es-PE') : '—');
 
@@ -84,7 +85,7 @@ function DetallePago({ id, onCerrar, onResuelto }: { id: string; onCerrar: () =>
 }
 
 function PagosAdminPage() {
-  // Las tarjetas del panel llegan aquí con ?estado=Pendiente|Confirmado|Rechazado ya aplicado.
+  // Las tarjetas del panel llegan aquí con ?estado=Pendiente|Confirmado|Rechazado|PlanesVigentes|DesbloqueosVigentes ya aplicado.
   const [params] = useSearchParams();
   const inicial = params.get('estado');
   const [filtro, setFiltro] = useState<Filtro>(FILTROS.some((f) => f.valor === inicial) ? (inicial as Filtro) : 'Pendiente');

@@ -28,7 +28,8 @@ export interface DetalleValidacion {
 }
 export function obtenerDetalle(id: string): Promise<DetalleValidacion> { return apiRequest<DetalleValidacion>(`/validaciones/${encodeURIComponent(id)}/detalle`); }
 
-export function listarPendientes(): Promise<ValidacionPendiente[]> { return apiRequest<ValidacionPendiente[]>('/validaciones/pendientes'); }
+// soloMiArea: el servidor devuelve solo lo que el rol de quien pregunta puede decidir (un especialista, las de su área).
+export function listarPendientes(soloMiArea = false): Promise<ValidacionPendiente[]> { return apiRequest<ValidacionPendiente[]>(soloMiArea ? '/validaciones/pendientes?area=mia' : '/validaciones/pendientes'); }
 export function aprobar(id: string): Promise<void> { return apiRequest<void>(`/validaciones/${id}/aprobar`, { method: 'POST' }); }
 export function observar(id: string, comentario: string): Promise<void> { return apiRequest<void>(`/validaciones/${id}/observar`, { method: 'POST', body: JSON.stringify({ comentario }) }); }
 export function rechazar(id: string, comentario: string): Promise<void> { return apiRequest<void>(`/validaciones/${id}/rechazar`, { method: 'POST', body: JSON.stringify({ comentario }) }); }

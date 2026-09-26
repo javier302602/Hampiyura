@@ -33,11 +33,11 @@ function PanelAdminPage() {
 
       <h3>{completo ? 'Plataforma' : 'Pendientes de tu área'}</h3>
       <div className="cards panel-stats">
-        <Tarjeta valor={panel.validacionesPendientes} etiqueta="Validaciones pendientes" to="/m09-validacion-moderacion/bandeja" />
+        <Tarjeta valor={panel.validacionesPendientes} etiqueta="Validaciones pendientes" to={completo ? '/m09-validacion-moderacion/bandeja' : '/m09-validacion-moderacion/bandeja?area=mia'} />
         {completo && (
           <>
             <Tarjeta valor={panel.usuariosRegistrados} etiqueta="Usuarios registrados" to="/m13-analitica-estadisticas/usuarios" />
-            <Tarjeta valor={panel.usuariosActivos} etiqueta="Usuarios activos" to="/m13-analitica-estadisticas/usuarios" />
+            <Tarjeta valor={panel.usuariosActivos} etiqueta="Usuarios activos" to="/m13-analitica-estadisticas/usuarios?estado=Activo" />
             <Tarjeta valor={panel.plantasPublicadas} etiqueta="Plantas publicadas" to="/m02-catalogo-plantas" />
             <Tarjeta valor={panel.publicacionesRealizadas} etiqueta="Publicaciones realizadas" to="/m06-publicaciones" />
           </>
@@ -69,8 +69,8 @@ function PanelAdminPage() {
 
           <h3 style={{ marginTop: '1.5rem' }}>Planes y desbloqueos vigentes</h3>
           <div className="cards panel-stats">
-            <Tarjeta valor={panel.accesos.planesActivos} etiqueta="Planes activos" to="/m15-planes/pagos?estado=Confirmado" />
-            <Tarjeta valor={panel.accesos.desbloqueosVigentes} etiqueta="Desbloqueos vigentes" to="/m15-planes/pagos?estado=Confirmado" />
+            <Tarjeta valor={panel.accesos.planesActivos} etiqueta="Planes activos" to="/m15-planes/pagos?estado=PlanesVigentes" />
+            <Tarjeta valor={panel.accesos.desbloqueosVigentes} etiqueta="Desbloqueos vigentes" to="/m15-planes/pagos?estado=DesbloqueosVigentes" />
           </div>
 
           <h3 style={{ marginTop: '1.5rem' }}>Publicar producto y comisión</h3>

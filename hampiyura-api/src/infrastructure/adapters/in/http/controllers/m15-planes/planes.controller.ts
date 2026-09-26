@@ -29,7 +29,7 @@ export async function solicitarPago(req: Request, res: Response) {
 
 // --- administración de pagos (solo Administrador) ---
 export async function listarPagos(req: Request, res: Response) {
-  const estado = req.query.estado === undefined ? undefined : z.enum(['Pendiente', 'Confirmado', 'Rechazado']).parse(req.query.estado);
+  const estado = req.query.estado === undefined ? undefined : z.enum(['Pendiente', 'Confirmado', 'Rechazado', 'PlanesVigentes', 'DesbloqueosVigentes']).parse(req.query.estado);
   res.json(await container.listarPagosAdmin.ejecutar(estado));
 }
 export async function detallePago(req: Request, res: Response) { res.json(await container.listarPagosAdmin.detalle(String(req.params.id))); }

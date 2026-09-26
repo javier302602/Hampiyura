@@ -276,7 +276,17 @@ export class MiPlanUseCase extends Presentador {
 // ---------- Administración de pagos (bandeja) ----------
 export class ListarPagosAdminUseCase extends Presentador {
   constructor(private readonly pagos: PagoContactoRepositoryPort, usuarios: UsuarioRepositoryPort) { super(usuarios); }
-  async ejecutar(estado?: 'Pendiente' | 'Confirmado' | 'Rechazado'): Promise<PagoVisible[]> { return Promise.all((await this.pagos.listar(estado)).map((p) => this.aVista(p))); }
+  // Además de los estados, dos vistas que anuncian las tarjetas del panel: planes VIGENTES y desbloqueos puntuales VIGENTES
+  // (confirmados y no vencidos), separados entre sí.
+  async ejecutar(filtro?: 'Pendiente' | 'Confirmado' | 'Rechazado' | 'PlanesVigentes' | 'DesbloqueosVigentes'): Promise<PagoVisible[]> {
+    if (filtro === 'PlanesVigentes' || filtro === 'DesbloqueosVigentes') {
+      const concepto = filtro === 'PlanesVigentes' ? 'Plan' : 'Desbloqueo';
+      const ahora = new Date();
+      const vigentes = (await this.pagos.listar('Confirmado')).filter((p) => p.props.concepto === concepto && p.estaVigente(ahora));
+      return Promise.all(vigentes.map((p) => this.aVista(p)));
+    }
+    return Promise.all((await this.pagos.listar(filtro)).map((p) => this.aVista(p)));
+  }
   async detalle(id: string): Promise<PagoVisible> {
     const p = await this.pagos.buscarPorId(id);
     if (!p) throw new NotFoundError(`Pago no encontrado: ${id}`);

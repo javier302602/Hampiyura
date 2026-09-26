@@ -15,6 +15,7 @@ import { NotificadorPort } from '../../domain/ports/out/notificador.port';
 import { RegistroEntidadesValidables } from '../../domain/ports/out/entidad-validable.repository.port';
 import { SolicitudCuentaRepositoryPort } from '../../domain/ports/out/solicitud-cuenta.repository.port';
 import { ETIQUETA_TIPO_CUENTA } from '../../domain/value-objects/tipo-cuenta.vo';
+import { rolPuedeValidarTipo } from '../../domain/entities/validacion-contenido.entity';
 import { NotFoundError } from '../../domain/errors/domain.errors';
 async function cargar(repo:ValidacionContenidoRepositoryPort,id:string) { const item=await repo.buscarPorId(id); if(!item) throw new NotFoundError(`Validación no encontrada: ${id}`); return item; }
 // Sincroniza el estado hacia la entidad de origen (Cultivo, ParteUso, ...) según su tipoEntidad,
@@ -40,8 +41,9 @@ export class ListarPendientesUseCase implements ListarPendientesPort {
     private readonly cultivos?:CultivoRepositoryPort,
     private readonly solicitudesCuenta?:SolicitudCuentaRepositoryPort,
   ) {}
-  async ejecutar():Promise<ValidacionPendienteVisible[]> {
-    const pendientes = await this.repo.listarPendientes();
+  async ejecutar(rol?:string):Promise<ValidacionPendienteVisible[]> {
+    const todas = await this.repo.listarPendientes();
+    const pendientes = rol ? todas.filter((v) => rolPuedeValidarTipo(rol, v.props.tipoEntidad)) : todas;
     return Promise.all(pendientes.map(async (v) => ({ ...v.props, etiqueta: await this.etiquetar(v.props) })));
   }
   private async etiquetar(props:Omit<ValidacionPendienteVisible,'etiqueta'>):Promise<string> {
