@@ -1,4 +1,5 @@
 import { ChangeEvent, FormEvent, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { ImagePlus, MapPin, X } from 'lucide-react';
 import { subirMedia, leerArchivoComoBase64 } from '../../m06-publicaciones/api/publicaciones.api';
 import SelectorUbicacionMapa from '../../m03-cultivo/components/SelectorUbicacionMapa';
@@ -15,7 +16,9 @@ interface Props {
 // (attachUserIfPresent adjunta autorId solo si hay sesión).
 function EnviarConsultaPage({ onVerMisConsultas, onVolver }: Props) {
   const [tipo, setTipo] = useState<TipoConsulta>('PreguntaGeneral');
-  const [descripcion, setDescripcion] = useState('');
+  // El asistente de ayuda manda aquí la pregunta ya escrita (?texto=): no hay que teclearla otra vez.
+  const [params] = useSearchParams();
+  const [descripcion, setDescripcion] = useState((params.get('texto') ?? '').slice(0, 2000));
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [enviada, setEnviada] = useState<Consulta | null>(null);

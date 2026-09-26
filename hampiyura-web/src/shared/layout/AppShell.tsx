@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import Header, { type NavCallbacks } from './Header';
+import AsistenteChat from '../../modules/asistente/components/AsistenteChat';
 import Footer from './Footer';
 
 interface Props extends NavCallbacks {
@@ -18,6 +19,7 @@ function AppShell({ children, ...nav }: Props) {
     <>
       <Header {...nav} />
       <main>{children}</main>
+      <AsistenteChat />
       <Footer
         onIrAHome={nav.onIrAHome}
         onIrACatalogo={nav.onIrACatalogo}

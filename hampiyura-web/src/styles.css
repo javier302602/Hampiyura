@@ -11,6 +11,7 @@
 @import "./styles/components/planes.css";
 @import "./styles/components/perfil.css";
 @import "./styles/components/auth.css";
+@import "./styles/components/asistente.css";
 
 *{box-sizing:border-box}
 body{margin:0;background:var(--color-bg);font-family:Inter,system-ui,sans-serif;color:var(--color-text)}

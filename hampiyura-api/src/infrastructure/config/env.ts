@@ -26,4 +26,15 @@ function cobro(nombre: 'YAPE' | 'PLIN') {
   const numero = process.env[`PAGO_${nombre}_NUMERO`]?.trim();
   return numero ? { numero, titular: process.env[`PAGO_${nombre}_TITULAR`]?.trim() || 'HampiYura' } : null;
 }
-export const env = { port: Number(process.env.PORT ?? 3000), jwtSecret: leerJwtSecret(), cobro: { yape: cobro('YAPE'), plin: cobro('PLIN') } };
+// Asistente de IA (Ronda 27). ASISTENTE_ACTIVO=false lo apaga por completo (el endpoint responde "no disponible") sin tocar código.
+// Sin ASISTENTE_API_KEY funciona en MODO SIMULADO (respuestas armadas solo con lo validado, marcadas "[Modo simulado]"): no llama a
+// ningún proveedor ni cuesta nada. La clave real va SOLO en el entorno, nunca en el repositorio.
+function entero(nombre: string, porDefecto: number) { const n = Number(process.env[nombre]); return Number.isFinite(n) && n > 0 ? Math.floor(n) : porDefecto; }
+const asistente = {
+  activo: (process.env.ASISTENTE_ACTIVO ?? 'true').trim().toLowerCase() !== 'false',
+  apiKey: process.env.ASISTENTE_API_KEY?.trim() || null,
+  modelo: process.env.ASISTENTE_MODELO?.trim() || 'claude-haiku-4-5-20251001',
+  limitePorMinuto: entero('ASISTENTE_LIMITE_POR_MINUTO', 6),
+  limitePorDia: entero('ASISTENTE_LIMITE_POR_DIA', 60),
+};
+export const env = { port: Number(process.env.PORT ?? 3000), jwtSecret: leerJwtSecret(), cobro: { yape: cobro('YAPE'), plin: cobro('PLIN') }, asistente };

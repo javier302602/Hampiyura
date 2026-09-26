@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { estadoAsistente, consultarAsistente } from '../controllers/m12-busqueda-recomendaciones/asistente.controller';
 import { registrar, login, activarCuenta, solicitarRecuperacion, restablecerContraseña, cambiarContraseña, obtenerPerfil, actualizarPerfil, solicitarTipoCuenta, obtenerMiTipoCuenta } from '../controllers/m01-cuentas.controller';
 import { registrarPlanta, proponerPlanta, listarPlantas, obtenerPlanta } from '../controllers/m02-catalogo-plantas/plantas.controller';
 import { registrarFicha, obtenerFicha, listarFichasPorPlanta, registrarUbicacionCultivo, obtenerUbicacionCultivo, listarMapaCultivo, actualizarGuiaCultivo } from '../controllers/m03-cultivo.controller';
@@ -20,6 +21,7 @@ export const router=Router();
 // M-15 · Contacto pagado y planes
 router.get('/planes',listarPlanes); router.get('/planes/mi-plan',requireAuth,miPlan); router.post('/planes/pagos',requireAuth,solicitarPago);
 router.get('/planes/pagos',requireAdmin,listarPagos); router.get('/planes/pagos/:id',requireAdmin,detallePago); router.post('/planes/pagos/:id/confirmar',requireAdmin,confirmarPago); router.post('/planes/pagos/:id/rechazar',requireAdmin,rechazarPago);
+router.get('/asistente/estado',estadoAsistente); router.post('/asistente/consulta',attachUserIfPresent,consultarAsistente);
 router.get('/productores',attachUserIfPresent,listarProductores); router.get('/productores/:id',attachUserIfPresent,obtenerProductor);
 router.post('/cuentas/solicitud-tipo-cuenta',requireAuth,solicitarTipoCuenta); router.get('/cuentas/solicitud-tipo-cuenta',requireAuth,obtenerMiTipoCuenta);
 router.post('/cuentas/registro',registrar); router.post('/cuentas/login',login); router.post('/cuentas/activar',activarCuenta); router.post('/cuentas/recuperar-contrasena',solicitarRecuperacion); router.post('/cuentas/restablecer-contrasena',restablecerContraseña); router.post('/cuentas/cambiar-contrasena',requireAuth,cambiarContraseña); router.get('/cuentas/perfil',requireAuth,obtenerPerfil); router.patch('/cuentas/perfil',requireAuth,actualizarPerfil);

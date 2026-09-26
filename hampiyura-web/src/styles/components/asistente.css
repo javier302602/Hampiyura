@@ -1,0 +1,34 @@
+/* Asistente de ayuda (chat flotante). Colores del tema; el texto usa --color-text sobre superficies del tema (>=7:1, medido).
+   El botón principal usa el verde de marca con texto claro (no el terracota AA) para mantener AAA. */
+.asistente{position:fixed;right:var(--space-5);bottom:var(--space-5);z-index:60}
+.asistente-boton{display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.1rem;border-radius:999px;border:2px solid var(--color-accent);background:var(--brand-900);color:var(--brand-on-brand);font:inherit;font-weight:800;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.asistente-boton:hover{background:var(--brand-800,var(--brand-900));border-color:var(--color-accent-hover,var(--color-accent))}
+.asistente-boton:focus-visible,.asistente-cerrar:focus-visible,.asistente-enviar:focus-visible,.asistente-escalar:focus-visible,.asistente-sugerencias button:focus-visible,.asistente-enlace:focus-visible{outline:3px solid var(--color-accent-text);outline-offset:2px}
+.asistente-panel{display:flex;flex-direction:column;width:min(400px,calc(100vw - 2*var(--space-4)));height:min(640px,calc(100vh - 2*var(--space-5)));background:var(--color-surface);color:var(--color-text);border:1px solid var(--color-border);border-radius:var(--radius-lg);box-shadow:0 18px 48px rgba(0,0,0,.4);overflow:hidden}
+.asistente-cabecera{display:flex;justify-content:space-between;align-items:center;padding:.7rem 1rem;background:var(--brand-900);color:var(--brand-on-brand)}
+.asistente-titulo{display:inline-flex;align-items:center;gap:.5rem;font-weight:800}
+.asistente-cerrar{background:none;border:0;color:inherit;cursor:pointer;padding:.25rem;border-radius:var(--radius-sm);display:inline-flex}
+.asistente-aviso{padding:.7rem 1rem;background:var(--color-accent-soft);color:var(--color-text);border-bottom:1px solid var(--color-border);font-size:.92rem;line-height:1.45}
+.asistente-simulado{display:block;margin-top:.3rem;font-weight:700}
+.asistente-mensajes{flex:1;overflow-y:auto;padding:.9rem 1rem;display:grid;align-content:start;gap:.7rem}
+.asistente-inicio p,.asistente-msg p{margin:0;font-size:.98rem;line-height:1.5;max-width:none;color:var(--color-text);white-space:pre-wrap}
+.asistente-sugerencias{display:grid;gap:.4rem;margin-top:.6rem}
+.asistente-sugerencias button,.asistente-enlace{font:inherit;text-align:left;padding:.5rem .75rem;border-radius:var(--radius-md);border:1px solid var(--color-border);background:var(--color-bg);color:var(--color-text);cursor:pointer}
+.asistente-sugerencias button:hover,.asistente-enlace:hover{border-color:var(--color-accent-deep)}
+.asistente-msg{padding:.6rem .8rem;border-radius:var(--radius-md);border:1px solid var(--color-border);display:grid;gap:.4rem}
+.asistente-msg-yo{background:var(--color-accent-soft);justify-self:end;max-width:92%}
+.asistente-msg-bot{background:var(--color-bg);justify-self:start;max-width:96%}
+.asistente-msg-error{border-style:dashed}
+.asistente-quien{font-size:.78rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--color-accent-text)}
+.asistente-fuentes{font-size:.85rem !important;color:var(--color-text-muted) !important}
+.asistente-escalar{display:inline-flex;align-items:center;gap:.4rem;justify-self:start;font:inherit;font-weight:700;padding:.5rem .8rem;border-radius:999px;border:2px solid var(--color-accent-deep);background:var(--color-surface);color:var(--color-accent-text);cursor:pointer}
+.asistente-enlace{margin:0 1rem .5rem;font-size:.9rem;font-weight:600}
+.asistente-form{display:flex;gap:.5rem;padding:.7rem 1rem;border-top:1px solid var(--color-border);background:var(--color-surface)}
+.asistente-form input{flex:1;min-width:0;font:inherit;padding:.6rem .8rem;border-radius:var(--radius-md);border:1px solid var(--color-border);background:var(--color-bg);color:var(--color-text)}
+.asistente-enviar{display:inline-flex;align-items:center;justify-content:center;width:44px;border-radius:var(--radius-md);border:2px solid var(--color-accent-deep);background:var(--brand-900);color:var(--brand-on-brand);cursor:pointer}
+.asistente-enviar:disabled{opacity:.55;cursor:not-allowed}
+@media (max-width:520px){
+  .asistente{right:var(--space-3);bottom:var(--space-3)}
+  .asistente-panel{position:fixed;right:var(--space-2);left:var(--space-2);bottom:var(--space-2);width:auto;height:min(78vh,620px)}
+}
+@media print{.asistente{display:none}}

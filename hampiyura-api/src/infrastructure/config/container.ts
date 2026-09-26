@@ -1,5 +1,9 @@
 import { PrismaClient } from '@prisma/client';
 import { env } from './env';
+import { ConsultarAsistenteUseCase } from '../../application/m12-busqueda-recomendaciones/asistente.use-cases';
+import { AnthropicModeloAdapter } from '../adapters/out/ia/anthropic-modelo.adapter';
+import { SimuladoModeloAdapter } from '../adapters/out/ia/simulado-modelo.adapter';
+import { LimitadorAsistente } from '../adapters/out/ia/limitador-asistente';
 import { PrismaUsuarioRepository, PrismaCultivoRepository, PrismaValidacionRepository, PrismaTokenAccionRepository, PrismaPlantaRepository, PrismaParteUsoRepository, PrismaUsoRepository, PrismaReporteRepository, PrismaPublicacionRepository, PrismaComentarioRepository, PrismaValoracionRepository, PrismaPreparacionRepository, PrismaProductoRepository, PrismaEstadoConservacionRepository, PrismaAccionConservacionRepository, PrismaNotificacionRepository, PrismaConsultaRepository, PrismaMensajeConsultaRepository, PrismaMapaCultivoRepository } from '../adapters/out/persistence/prisma/repositories/prisma.repositories';
 import { PersistenteNotificadorAdapter } from '../adapters/out/notifications/persistente-notificador.adapter';
 import { ConsoleEmailAdapter } from '../adapters/out/email/console-email.adapter';
@@ -53,6 +57,9 @@ export const container={
   solicitarRecuperacion:new SolicitarRecuperacionContraseñaUseCase(usuarios,tokensAccion,email),
   restablecerContraseña:new RestablecerContraseñaUseCase(tokensAccion,usuarios),
   cambiarContraseña:new CambiarContraseñaUseCase(usuarios),
+  // Asistente de IA: con ASISTENTE_API_KEY usa el proveedor real; sin ella, modo simulado (sin red ni costo).
+  consultarAsistente:new ConsultarAsistenteUseCase(plantas,partesUso,usos,cultivos,env.asistente.apiKey?new AnthropicModeloAdapter(env.asistente.apiKey,env.asistente.modelo):new SimuladoModeloAdapter()),
+  limitadorAsistente:new LimitadorAsistente(env.asistente.limitePorMinuto,env.asistente.limitePorDia),
   obtenerPerfil:new ObtenerPerfilUseCase(usuarios),
   solicitarTipoCuenta:new SolicitarTipoCuentaUseCase(solicitudesCuenta,validaciones,usuarios),
   obtenerMiTipoCuenta:new ObtenerMiTipoCuentaUseCase(solicitudesCuenta,validaciones,usuarios),
