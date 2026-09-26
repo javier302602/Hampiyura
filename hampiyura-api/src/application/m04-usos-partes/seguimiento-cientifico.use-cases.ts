@@ -6,7 +6,7 @@ import { UsuarioRepositoryPort } from '../../domain/ports/out/usuario.repository
 import { NotificadorPort } from '../../domain/ports/out/notificador.port';
 import { NotFoundError } from '../../domain/errors/domain.errors';
 
-// Seguimiento científico de usos TRADICIONALES ya aprobados (M-04/M-09). Todo esto es interno: solo Especialista en
+// Seguimiento científico de usos ya aprobados (Tradicional, Documentado o Científico; M-04/M-09). Todo esto es interno: solo Especialista en
 // salud o Administrador (ver ParteUso.exigirRolDeSeguimiento); el público solo ve el sello de "verificado" cuando
 // existe evidencia registrada (ParteUso.puedeMostrarseComoVerificado).
 
@@ -46,10 +46,10 @@ class Base {
 }
 
 export class ListarSeguimientoUseCase extends Base {
-  // Aprobados y de conocimiento Tradicional (por validar científicamente) + los que ya la tienen registrada.
+  // Aprobados de tipo Tradicional, Documentado o Científico SIN evidencia registrada (por validar) + los que ya la tienen.
   async ejecutar(rol: string): Promise<ItemSeguimiento[]> {
     ParteUso.exigirRolDeSeguimiento(rol);
-    const todos = (await this.partes.listar()).filter((p) => p.props.estadoValidacion === 'Validado' && (p.props.tipoConocimiento === 'Tradicional' || p.tieneEvidenciaCientifica()));
+    const todos = (await this.partes.listar()).filter((p) => p.props.estadoValidacion === 'Validado' && (p.puedeRegistrarValidacionCientifica() || p.tieneEvidenciaCientifica()));
     return Promise.all(todos.map(async (p) => ({
       id: p.props.id, etiqueta: await this.etiqueta(p), autorNombre: (await this.usuarios.buscarPorId(p.props.autorId))?.props.nombre ?? p.props.autorId,
       tipoConocimiento: p.props.tipoConocimiento, tieneContactoSeguimiento: !!p.props.contactoSeguimiento, validadaCientificamente: p.tieneEvidenciaCientifica(),

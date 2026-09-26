@@ -11,7 +11,8 @@ type Pestana = 'pendientes' | 'seguimiento';
 
 // Cada tarjeta abre una vista de detalle con TODO lo que envió quien propuso el contenido; las tres
 // decisiones (aprobar / observar / rechazar) viven ahí, para decidir habiendo visto el contenido completo.
-// Segunda pestaña: usos TRADICIONALES ya aprobados que pueden pasar por validación científica (seguimiento).
+// Segunda pestaña: usos ya aprobados (Tradicional, Documentado o Científico) que todavía no tienen validación científica
+// registrada -- el camino a "verificado" es el mismo para los tres.
 function BandejaValidacionPage() {
   const [pestana, setPestana] = useState<Pestana>('pendientes');
   const [pendientes, setPendientes] = useState<ValidacionPendiente[]>([]);
@@ -48,7 +49,7 @@ function BandejaValidacionPage() {
       <h2>Bandeja de validación (M-09)</h2>
       <div role="tablist" aria-label="Secciones de la bandeja" style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
         <Button role="tab" aria-selected={pestana === 'pendientes'} size="sm" variant={pestana === 'pendientes' ? 'primary' : 'secondary'} onClick={() => setPestana('pendientes')}>Pendientes de revisión ({pendientes.length})</Button>
-        <Button role="tab" aria-selected={pestana === 'seguimiento'} size="sm" variant={pestana === 'seguimiento' ? 'primary' : 'secondary'} iconLeft={<FlaskConical size={15} aria-hidden="true" />} onClick={() => setPestana('seguimiento')}>Usos tradicionales aprobados</Button>
+        <Button role="tab" aria-selected={pestana === 'seguimiento'} size="sm" variant={pestana === 'seguimiento' ? 'primary' : 'secondary'} iconLeft={<FlaskConical size={15} aria-hidden="true" />} onClick={() => setPestana('seguimiento')}>Pendientes de validación científica</Button>
       </div>
 
       {pestana === 'pendientes' && (pendientes.length === 0 ? (
@@ -71,15 +72,15 @@ function BandejaValidacionPage() {
 
       {pestana === 'seguimiento' && (
         <>
-          <p className="comentario-meta">Usos de conocimiento <strong>tradicional</strong> ya aprobados. Aprobarlos en moderación no los hace “verificados”: para eso hace falta una validación científica con evidencia real, que se registra aquí.</p>
+          <p className="comentario-meta">Usos ya aprobados en moderación, sea cual sea su tipo de conocimiento (<strong>Tradicional, Documentado o Científico</strong>). Aprobarlos no los hace “verificados”, ni siquiera si se declararon científicos: para eso hace falta una validación científica con evidencia real, que se registra aquí.</p>
           {errorSeguimiento && <p className="error-formulario" role="alert">{errorSeguimiento}</p>}
-          {seguimiento === null ? <p>Cargando…</p> : seguimiento.length === 0 && !errorSeguimiento ? <p>No hay usos tradicionales aprobados en seguimiento.</p> : (
+          {seguimiento === null ? <p>Cargando…</p> : seguimiento.length === 0 && !errorSeguimiento ? <p>No hay usos aprobados pendientes de validación científica.</p> : (
             <div className="cards">
               {seguimiento.map((s) => (
                 <article key={s.id} className="tarjeta-clicable" style={{ flex: '1 1 300px' }} tabIndex={0} role="button" aria-label={`Seguimiento: ${s.etiqueta}`}
                   onClick={() => setSeguimientoAbierto(s.id)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSeguimientoAbierto(s.id); } }}>
                   <div style={{ display: 'flex', gap: '.4rem', flexWrap: 'wrap' }}>
-                    {s.validadaCientificamente ? <Badge variant="success">Validado científicamente</Badge> : <Badge variant="warning">Tradicional · sin validar</Badge>}
+                    {s.validadaCientificamente ? <Badge variant="success">Validado científicamente</Badge> : <Badge variant="warning">{s.tipoConocimiento} · sin validar</Badge>}
                     {!s.validadaCientificamente && s.tieneContactoSeguimiento && <Badge variant="info">Con contacto de seguimiento</Badge>}
                   </div>
                   <strong>{s.etiqueta}</strong>

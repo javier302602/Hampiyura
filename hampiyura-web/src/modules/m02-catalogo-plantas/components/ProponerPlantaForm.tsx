@@ -31,12 +31,14 @@ const nuevoBloque = (clave: number): Bloque => ({ clave, parte: TIPOS_PARTE[0], 
 // Texto de advertencia por tipo de conocimiento. Dice exactamente lo que el sistema cumple: aprobar en moderación
 // (M-09) NO alcanza para mostrar un uso como verificado; hace falta la validación científica registrada por el equipo.
 export function AvisoVerificacion({ tipo }: { tipo: string }) {
-  if (tipo === 'Científico') {
-    return <p className="nota-cientifico">Con "Científico", este uso solo se mostrará como verificado cuando el equipo (especialista + evidencia registrada) confirme esa validación. Declararlo aquí, o que un especialista apruebe la propuesta, no alcanza.</p>;
+  // "Pendiente" no puede pasar por la validación científica (no se sabe de qué tipo de conocimiento se trata): se pide elegir.
+  if (tipo === 'Pendiente') {
+    return <p className="advertencia-no-verificado">⚠ Con "Pendiente", este uso no se muestra como verificado. Para que pueda pasar por la validación científica del equipo, elige si es conocimiento Tradicional, Documentado o Científico.</p>;
   }
+  // Tradicional, Documentado y Científico comparten el MISMO camino a "verificado": declarar "Científico" aquí no es un atajo.
   return (
     <p className="advertencia-no-verificado">
-      ⚠ Con "{tipo}", este uso no se muestra como verificado a menos que pase por el proceso de validación científica real del equipo (especialista + evidencia registrada). La aprobación normal de moderación no alcanza para eso.
+      ⚠ Con "{tipo}", este uso no se muestra como verificado a menos que pase por el proceso de validación científica real del equipo (especialista + evidencia registrada). La aprobación normal de moderación no alcanza para eso{tipo === 'Científico' ? ', ni tampoco declararlo "Científico" al proponerlo' : ''}.
     </p>
   );
 }

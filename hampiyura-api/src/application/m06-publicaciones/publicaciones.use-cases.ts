@@ -17,6 +17,7 @@ import { AlmacenamientoMediaPort } from '../../domain/ports/out/almacenamiento-m
 import { NotificadorPort } from '../../domain/ports/out/notificador.port';
 import { esTipoConocimiento } from '../../domain/value-objects/tipo-conocimiento.vo';
 import { NotFoundError, UnauthorizedError, ValidationError } from '../../domain/errors/domain.errors';
+import { validarAdjunto } from '../../domain/value-objects/archivo-adjunto.vo';
 
 async function calcularValoracion(valoraciones:ValoracionRepositoryPort, publicacionId:string):Promise<{promedioEstrellas:number|null; totalValoraciones:number}> {
   const items = await valoraciones.listarPorPublicacion(publicacionId);
@@ -99,6 +100,8 @@ export class SubirMediaUseCase implements SubirMediaPort {
   constructor(private readonly almacenamiento:AlmacenamientoMediaPort) {}
   async ejecutar(input:SubirMediaInput):Promise<{url:string}> {
     if (!input.nombreOriginal?.trim()) throw new ValidationError('El nombre del archivo es obligatorio');
+    // Tipo y contenido real del archivo (imagen o PDF): se valida aquí, en el servidor, no solo en la pantalla.
+    validarAdjunto(input.nombreOriginal, input.contenidoBase64);
     const url = await this.almacenamiento.guardar(input.nombreOriginal, input.contenidoBase64);
     return { url };
   }

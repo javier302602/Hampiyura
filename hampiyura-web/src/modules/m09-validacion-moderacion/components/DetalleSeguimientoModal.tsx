@@ -11,7 +11,8 @@ const MIN_PALABRAS = 6;
 const hoyISO = () => new Date().toISOString().slice(0, 10);
 const fecha = (s: string) => new Date(s).toLocaleDateString('es-PE');
 
-// Seguimiento de un uso TRADICIONAL ya aprobado: nota interna de contacto y el camino a la validación científica.
+// Seguimiento de un uso ya aprobado (Tradicional, Documentado o Científico): nota interna de contacto y el camino a la
+// validación científica.
 // Es una acción SEPARADA de Aprobar/Observar/Rechazar (esas ya se hicieron). Solo Especialista en salud / Administrador.
 function DetalleSeguimientoModal({ id, onCerrar, onCambio }: { id: string; onCerrar: () => void; onCambio: () => void }) {
   const [detalle, setDetalle] = useState<DetalleSeguimiento | null>(null);
@@ -121,7 +122,7 @@ function DetalleSeguimientoModal({ id, onCerrar, onCambio }: { id: string; onCer
 
       {detalle && formulario && (
         <form onSubmit={enviar} className="formulario" style={{ maxWidth: 'none', padding: 0, border: 'none', background: 'none', boxShadow: 'none', marginTop: 0 }}>
-          <p className="aviso-legal" role="note">Al guardar, este uso pasa de “Tradicional” a <strong>validado científicamente</strong> y podrá mostrarse al público como verificado. Solo registra esto si de verdad existe una prueba concreta.</p>
+          <p className="aviso-legal" role="note">Al guardar, este uso queda como <strong>validado científicamente</strong> (tipo “Científico” con la evidencia registrada) y podrá mostrarse al público como verificado. Solo registra esto si de verdad existe una prueba concreta.</p>
           <label>
             Especialista o institución que hizo la prueba
             <input type="text" value={especialista} onChange={(e) => setEspecialista(e.target.value)} maxLength={150} placeholder="Ej. Laboratorio de Fitoquímica, UNAS" required />

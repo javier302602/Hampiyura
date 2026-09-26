@@ -620,9 +620,10 @@ describe('M-06 · Publicaciones y Multimedia', () => {
 
   test('sube una imagen delegando en el AlmacenamientoMediaPort (RF-10)', async () => {
     const almacenamiento:any={guardar:jest.fn().mockResolvedValue('/uploads/abc.png')};
-    const resultado=await new SubirMediaUseCase(almacenamiento).ejecutar({nombreOriginal:'foto.png',contenidoBase64:'ZGF0byBkZSBwcnVlYmE='});
+    const PNG_1X1='iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+    const resultado=await new SubirMediaUseCase(almacenamiento).ejecutar({nombreOriginal:'foto.png',contenidoBase64:PNG_1X1});
     expect(resultado).toEqual({url:'/uploads/abc.png'});
-    expect(almacenamiento.guardar).toHaveBeenCalledWith('foto.png','ZGF0byBkZSBwcnVlYmE=');
+    expect(almacenamiento.guardar).toHaveBeenCalledWith('foto.png',PNG_1X1);
   });
 });
 

@@ -35,12 +35,25 @@ describe('Validación científica de un uso Tradicional (entidad)', () => {
     expect(() => parte().registrarValidacionCientifica({ ...base, enlace: 'javascript:alert(1)' })).toThrow(/enlace/i);
     expect(() => parte().registrarValidacionCientifica({ ...base, enlace: '/uploads/estudio.pdf' })).not.toThrow();
   });
-  test('solo aplica a Tradicional YA APROBADO y una sola vez', () => {
+  test('aplica a Tradicional, Documentado y Científico YA APROBADOS sin evidencia, y una sola vez', () => {
     const base = { especialista: 'Lab UNAS', fecha: hoy(), evidencia: EVIDENCIA_OK, registradaPorId: 'a' };
     expect(() => parte({ estadoValidacion: 'Pendiente' }).registrarValidacionCientifica(base)).toThrow(/aprobarse/);
-    expect(() => parte({ tipoConocimiento: 'Documentado' }).registrarValidacionCientifica(base)).toThrow(/Tradicional/);
-    const p = parte(); p.registrarValidacionCientifica(base);
-    expect(() => p.registrarValidacionCientifica(base)).toThrow(/ya tiene/);
+    expect(() => parte({ tipoConocimiento: 'Pendiente' }).registrarValidacionCientifica(base)).toThrow(/Pendiente/);
+    for (const tipo of ['Tradicional', 'Documentado', 'Científico'] as const) {
+      const p = parte({ tipoConocimiento: tipo });
+      expect(p.puedeRegistrarValidacionCientifica()).toBe(true);
+      p.registrarValidacionCientifica(base);
+      expect(p.props.tipoConocimiento).toBe('Científico');
+      expect(p.puedeMostrarseComoVerificado()).toBe(true);
+      expect(p.puedeRegistrarValidacionCientifica()).toBe(false);
+      expect(() => p.registrarValidacionCientifica(base)).toThrow(/ya tiene/);
+    }
+  });
+  test('sin atajo: declarar "Científico" al proponer NO da sello; solo lo da el registro con evidencia', () => {
+    const p = parte({ tipoConocimiento: 'Científico' });
+    expect(p.puedeMostrarseComoVerificado()).toBe(false);
+    expect(() => p.registrarValidacionCientifica({ especialista: 'Lab UNAS', fecha: hoy(), evidencia: 'se probó', registradaPorId: 'a' })).toThrow(/detalle concreto/);
+    expect(p.puedeMostrarseComoVerificado()).toBe(false);
   });
   test('RF-257: aprobar en moderación NO basta: "Científico" declarado sin evidencia no es verificado', () => {
     expect(parte({ tipoConocimiento: 'Científico' }).puedeMostrarseComoVerificado()).toBe(false);
@@ -52,6 +65,10 @@ describe('Validación científica de un uso Tradicional (entidad)', () => {
     expect(() => p.actualizarContactoSeguimiento('quien sabe')).toThrow(/teléfono o un correo/);
     p.actualizarContactoSeguimiento(''); expect(p.props.contactoSeguimiento).toBeUndefined();
     expect(() => parte({ estadoValidacion: 'Pendiente' }).actualizarContactoSeguimiento('999999999')).toThrow(/aprobarse/);
+  });
+  test('el contacto de seguimiento también aplica a Documentado y Científico sin evidencia', () => {
+    for (const tipo of ['Documentado', 'Científico'] as const) { const p = parte({ tipoConocimiento: tipo }); p.actualizarContactoSeguimiento('999999999'); expect(p.props.contactoSeguimiento).toBe('999999999'); }
+    expect(() => parte({ tipoConocimiento: 'Pendiente' }).actualizarContactoSeguimiento('999999999')).toThrow(/Pendiente/);
   });
   test('la vista PÚBLICA nunca trae el contacto interno ni el detalle de la evidencia', () => {
     const p = parte({ contactoSeguimiento: '999999999' });
@@ -78,7 +95,8 @@ describe('Casos de uso de seguimiento (roles y flujo)', () => {
       await expect(new ListarSeguimientoUseCase(a.partes, a.plantas, a.usos, a.usuarios).ejecutar(rol)).rejects.toThrow(/Especialista en salud/);
       await expect(new ActualizarContactoSeguimientoUseCase(a.partes, a.plantas, a.usos, a.usuarios).ejecutar('pu1', rol, '999999999')).rejects.toThrow();
     }
-    await expect(new ListarSeguimientoUseCase(a.partes, a.plantas, a.usos, a.usuarios).ejecutar('EspecialistaSalud')).resolves.toHaveLength(1);
+    // pu1 Tradicional + pu3 Documentado (aprobados, sin evidencia); pu2 está Pendiente y no aparece.
+    await expect(new ListarSeguimientoUseCase(a.partes, a.plantas, a.usos, a.usuarios).ejecutar('EspecialistaSalud')).resolves.toHaveLength(2);
   });
   test('registrar guarda, cambia el tipo y avisa a quien aportó el conocimiento', async () => {
     const a = armar();

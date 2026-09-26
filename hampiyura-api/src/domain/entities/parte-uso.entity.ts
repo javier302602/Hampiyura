@@ -80,15 +80,20 @@ export class ParteUso {
     return 'Este uso no está verificado científicamente: se basa en conocimiento tradicional o está pendiente de validación por un especialista. No debe interpretarse como un tratamiento médico verificado.';
   }
 
-  // El seguimiento (contacto interno y validación científica) solo aplica a un uso TRADICIONAL ya aprobado.
-  private exigirTradicionalAprobado() {
+  // El seguimiento (contacto interno y validación científica) aplica a un uso ya APROBADO cuyo tipo es Tradicional,
+  // Documentado o Científico y que todavía NO tiene evidencia registrada. Los tres comparten el mismo camino a
+  // verificado: declarar "Científico" al proponer no es un atajo, también necesita este registro. ("Pendiente" no
+  // aplica: primero hay que saber de qué tipo de conocimiento se trata.)
+  static readonly TIPOS_CON_SEGUIMIENTO: readonly string[] = ['Tradicional', 'Documentado', 'Científico'];
+  private exigirAprobadoSinEvidencia() {
     if (this.props.estadoValidacion !== 'Validado') throw new ValidationError('Primero debe aprobarse en la bandeja de validación');
     if (this.props.validacionCientifica) throw new ValidationError('Este uso ya tiene su validación científica registrada');
-    if (this.props.tipoConocimiento !== 'Tradicional') throw new ValidationError('Solo un uso de conocimiento "Tradicional" pasa por la validación científica');
+    if (!ParteUso.TIPOS_CON_SEGUIMIENTO.includes(this.props.tipoConocimiento)) throw new ValidationError('Este uso está marcado como "Pendiente": primero debe indicarse si es conocimiento Tradicional, Documentado o Científico');
   }
 
+  // ¿Está en el camino a la validación científica? (aprobado + tipo aplicable + sin evidencia).
   puedeRegistrarValidacionCientifica(): boolean {
-    return this.props.estadoValidacion === 'Validado' && this.props.tipoConocimiento === 'Tradicional' && !this.props.validacionCientifica;
+    return this.props.estadoValidacion === 'Validado' && ParteUso.TIPOS_CON_SEGUIMIENTO.includes(this.props.tipoConocimiento) && !this.props.validacionCientifica;
   }
 
   // Área de ParteUso en M-09: Especialista en salud o Administrador (mismo criterio que la aprobación).
@@ -97,7 +102,7 @@ export class ParteUso {
   }
 
   actualizarContactoSeguimiento(contacto: string | null | undefined) {
-    this.exigirTradicionalAprobado();
+    this.exigirAprobadoSinEvidencia();
     const c = contacto?.trim();
     if (!c) { this.props.contactoSeguimiento = undefined; return; }
     const esCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c);
@@ -106,10 +111,10 @@ export class ParteUso {
     this.props.contactoSeguimiento = c;
   }
 
-  // Camino real de "Tradicional" a verificado: exige quién, cuándo y qué evidencia concreta. Cambia el tipo a
-  // 'Científico' (que junto con la evidencia y la aprobación ya vigente habilita el sello de verificado).
+  // Camino real a verificado (desde Tradicional, Documentado o Científico): exige quién, cuándo y qué evidencia concreta.
+  // El tipo pasa a 'Científico' (si no lo era ya) y, junto con la evidencia y la aprobación vigente, habilita el sello.
   registrarValidacionCientifica(input: RegistrarValidacionCientificaInput, ahora = new Date()) {
-    this.exigirTradicionalAprobado();
+    this.exigirAprobadoSinEvidencia();
     const especialista = input.especialista?.trim();
     if (!especialista || especialista.length < 3) throw new ValidationError('Indica el nombre del especialista o de la institución que hizo la prueba');
     if (!(input.fecha instanceof Date) || Number.isNaN(input.fecha.getTime())) throw new ValidationError('Indica la fecha en que se hizo la prueba');
