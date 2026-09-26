@@ -15,6 +15,7 @@ import { ListarMapaCultivoUseCase } from '../../application/m03-cultivo/listar-m
 import { RegistrarUsoUseCase, ListarUsosUseCase } from '../../application/m04-usos-partes/catalogo-usos.use-cases';
 import { RegistrarParteUsoUseCase, ObtenerParteUsoUseCase, ListarPartesUsoUseCase } from '../../application/m04-usos-partes/partes-uso.use-cases';
 import { AprobarContenidoUseCase, ObservarContenidoUseCase, RechazarContenidoUseCase, ListarPendientesUseCase } from '../../application/m09-validacion-moderacion/validacion.use-cases';
+import { ObtenerDetalleValidacionUseCase } from '../../application/m09-validacion-moderacion/detalle-validacion.use-case';
 import { ReportarContenidoUseCase, ListarReportesPendientesUseCase, ListarReportesUseCase, ActualizarEstadoReporteUseCase } from '../../application/m09-validacion-moderacion/reportes.use-cases';
 import { ListarUsuariosUseCase, SuspenderUsuarioUseCase, ReactivarUsuarioUseCase, CambiarRolUsuarioUseCase, EliminarPlantaUseCase, ObtenerPanelAdminUseCase, ObtenerAuditoriaUseCase } from '../../application/m13-analitica-estadisticas/administracion.use-cases';
 import { ListarNotificacionesUseCase, MarcarTodasLeidasUseCase, MarcarLeidaUseCase, EliminarNotificacionUseCase } from '../../application/m14-seguridad-notificaciones/notificaciones.use-cases';
@@ -33,6 +34,7 @@ const usuarios=new PrismaUsuarioRepository(prisma); const cultivos=new PrismaCul
 const notificador=new PersistenteNotificadorAdapter(notificaciones); const email=new ConsoleEmailAdapter(); const almacenamientoMedia=new LocalAlmacenamientoMediaAdapter();
 // Registro de entidades que pasan por M-09: al aprobar/observar/rechazar una ValidacionContenido,
 // su tipoEntidad decide a qué repositorio reflejar el nuevo estado (ver entidad-validable.repository.port.ts).
+const registrarParteUsoUC=new RegistrarParteUsoUseCase(partesUso,usos,validaciones);
 const entidadesValidables:RegistroEntidadesValidables={ Cultivo:cultivos, ParteUso:partesUso, Publicacion:publicaciones, Preparacion:preparaciones, Producto:productos, EstadoConservacion:estadosConservacion, Planta:plantas };
 export const container={
   registrarUsuario:new RegistrarUsuarioUseCase(usuarios,tokensAccion,email),
@@ -43,7 +45,7 @@ export const container={
   cambiarContraseña:new CambiarContraseñaUseCase(usuarios),
   obtenerPerfil:new ObtenerPerfilUseCase(usuarios),
   registrarPlanta:new RegistrarPlantaUseCase(plantas),
-  proponerPlanta:new ProponerPlantaUseCase(plantas,validaciones),
+  proponerPlanta:new ProponerPlantaUseCase(plantas,validaciones,registrarParteUsoUC,usos),
   listarPlantas:new ListarPlantasUseCase(plantas),
   obtenerPlanta:new ObtenerPlantaUseCase(plantas,estadosConservacion),
   registrarCultivo:new RegistrarFichaCultivoUseCase(cultivos,validaciones),
@@ -54,13 +56,14 @@ export const container={
   listarMapaCultivo:new ListarMapaCultivoUseCase(mapaCultivo,plantas,cultivos,estadosConservacion,usuarios),
   registrarUso:new RegistrarUsoUseCase(usos),
   listarUsos:new ListarUsosUseCase(usos),
-  registrarParteUso:new RegistrarParteUsoUseCase(partesUso,usos,validaciones),
+  registrarParteUso:registrarParteUsoUC,
   obtenerParteUso:new ObtenerParteUsoUseCase(partesUso),
   listarPartesUso:new ListarPartesUsoUseCase(partesUso),
   aprobar:new AprobarContenidoUseCase(validaciones,notificador,entidadesValidables),
   observar:new ObservarContenidoUseCase(validaciones,notificador,entidadesValidables),
   rechazar:new RechazarContenidoUseCase(validaciones,notificador,entidadesValidables),
-  listarPendientes:new ListarPendientesUseCase(validaciones,publicaciones,usuarios,preparaciones,partesUso,productos,estadosConservacion,plantas),
+  obtenerDetalleValidacion:new ObtenerDetalleValidacionUseCase(validaciones,usuarios,plantas,partesUso,usos,publicaciones,preparaciones,productos,estadosConservacion,cultivos),
+  listarPendientes:new ListarPendientesUseCase(validaciones,publicaciones,usuarios,preparaciones,partesUso,productos,estadosConservacion,plantas,cultivos),
   reportar:new ReportarContenidoUseCase(reportes),
   listarReportesPendientes:new ListarReportesPendientesUseCase(reportes),
   listarReportes:new ListarReportesUseCase(reportes,usuarios,comentarios),

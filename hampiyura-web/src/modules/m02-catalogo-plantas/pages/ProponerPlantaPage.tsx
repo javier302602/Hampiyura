@@ -17,8 +17,8 @@ function ProponerPlantaPage({ onVolver }: { onVolver: () => void }) {
         {propuesta ? (
           <>
             <p className="advertencia-no-verificado">
-              ⚠ "{propuesta.nombreComun}" fue enviada como <strong>Pendiente</strong>. No aparecerá en el catálogo público hasta que
-              el equipo la revise y apruebe.
+              ⚠ "{propuesta.nombreComun}" fue enviada como <strong>Pendiente</strong>, junto con su parte medicinal y uso. No aparecerá en el
+              catálogo público —ni como uso verificado— hasta que el equipo y un especialista la revisen y aprueben.
             </p>
             <Button variant="secondary" onClick={() => setPropuesta(null)}>Proponer otra planta</Button>
           </>

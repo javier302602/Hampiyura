@@ -22,7 +22,7 @@ const FAQ_ITEMS = [
   },
   {
     pregunta: '¿Qué es la comisión del 5%?',
-    respuesta: 'Al publicar tu primer producto como productor, aceptas una comisión del 5% sobre las ventas realizadas a través del directorio. Se pide una sola vez por cuenta, no en cada publicación.',
+    respuesta: 'Al publicar tu primer producto como productor, aceptas una comisión mínima del 5% sobre las ventas que se concreten a partir de tu publicación. A cambio, tu producto aparece en el directorio público con su ficha, fotos, mapa y contacto, después de una revisión del equipo. Se pide una sola vez por cuenta, no en cada publicación.',
   },
   {
     pregunta: '¿Cómo propongo una planta que no está en el catálogo?',

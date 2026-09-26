@@ -30,10 +30,10 @@
   --brand-on-brand-muted:rgba(246,244,236,.86);
 
   /* Estados semánticos -- reemplazan los hex sueltos que hoy viven repartidos en badges/alertas */
-  --color-success:#1e7a42;      --color-success-bg:#e3f3e8;
-  --color-warning:#8a5a10;      --color-warning-bg:#fff2e0;
-  --color-info:#1f5c8a;         --color-info-bg:#eef6ff;
-  --color-danger:#b0322f;       --color-danger-bg:#fbe4e3;
+  --color-success:#145a2e;      --color-success-bg:#e3f3e8;
+  --color-warning:#6b3f0c;      --color-warning-bg:#fff2e0;
+  --color-info:#1a5078;         --color-info-bg:#eef6ff;
+  --color-danger:#852220;       --color-danger-bg:#fbe4e3;
 
   /* Amazonía -- fondos decorativos (idénticos a los que ya existían) */
   --jungle-1:#0f2f26;
@@ -106,9 +106,9 @@
     --color-accent-soft:#33210f;
 
     --color-success:#6fcf97;   --color-success-bg:#123524;
-    --color-warning:#f0b35c;  --color-warning-bg:#3a2a14;
+    --color-warning:#f5c47f;  --color-warning-bg:#3a2a14;
     --color-info:#7ab8e6;     --color-info-bg:#16283a;
-    --color-danger:#f7aaa5;   --color-danger-bg:#3a1a18;
+    --color-danger:#fcc0bb;   --color-danger-bg:#3a1a18;
 
     --jungle-1:#04120e;
     --jungle-2:#0f3a2b;
@@ -143,9 +143,9 @@
   --color-accent-soft:#33210f;
 
   --color-success:#6fcf97;   --color-success-bg:#123524;
-  --color-warning:#f0b35c;  --color-warning-bg:#3a2a14;
+  --color-warning:#f5c47f;  --color-warning-bg:#3a2a14;
   --color-info:#7ab8e6;     --color-info-bg:#16283a;
-  --color-danger:#f7aaa5;   --color-danger-bg:#3a1a18;
+  --color-danger:#fcc0bb;   --color-danger-bg:#3a1a18;
 
   --jungle-1:#04120e;
   --jungle-2:#0f3a2b;

@@ -28,6 +28,19 @@ export interface ProponerPlantaInput {
   region: string;
   habitat: string;
   imagenPrincipal?: string;
+  // Ubicación de observación (GPS o mapa). Solo la ve quien valida; el catálogo público nunca la devuelve.
+  latitud?: number;
+  longitud?: number;
+  // Parte medicinal + uso propuestos junto con la planta (RF-255): quedan "Pendiente" en M-09.
+  parteUso?: {
+    parte: string;
+    parteDetalle?: string;
+    usoId: string;
+    motivoUso: string;
+    tipoConocimiento: string;
+    fuente: string;
+    contraindicaciones?: string;
+  };
 }
 export function proponerPlanta(input: ProponerPlantaInput): Promise<Planta> {
   return apiRequest<Planta>('/plantas/proponer', { method: 'POST', body: JSON.stringify(input) });

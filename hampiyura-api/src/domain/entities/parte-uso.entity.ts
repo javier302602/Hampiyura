@@ -16,6 +16,9 @@ export interface ParteUsoProps {
   // RF-258: solo se llena si la fuente citada declara contraindicaciones explícitamente.
   // El sistema nunca las infiere ni las autocompleta.
   contraindicaciones?: string;
+  // Texto de quien propone: por qué/para qué se usa; y, si parte === 'Otra', cuál es.
+  motivoUso?: string;
+  parteDetalle?: string;
   fuente: Fuente;
   estadoValidacion: EstadoValidacion;
 }

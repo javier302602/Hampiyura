@@ -91,7 +91,7 @@ export class PrismaPlantaRepository implements PlantaRepositoryPort {
 }
 export class PrismaParteUsoRepository implements ParteUsoRepositoryPort {
   constructor(private readonly prisma:PrismaClient) {}
-  private aDominio(x:any):ParteUso { return new ParteUso({...x, parte:x.parte as TipoParte, tipoConocimiento:x.tipoConocimiento as TipoConocimiento, preparacionId:x.preparacionId??undefined, contraindicaciones:x.contraindicaciones??undefined, fuente:new Fuente(x.fuente)}); }
+  private aDominio(x:any):ParteUso { return new ParteUso({...x, parte:x.parte as TipoParte, tipoConocimiento:x.tipoConocimiento as TipoConocimiento, preparacionId:x.preparacionId??undefined, contraindicaciones:x.contraindicaciones??undefined, motivoUso:x.motivoUso??undefined, parteDetalle:x.parteDetalle??undefined, fuente:new Fuente(x.fuente)}); }
   async guardar(p:ParteUso){await this.prisma.parteUso.create({data:{...p.props, fuente:p.props.fuente.valor} as any});}
   async buscarPorId(id:string){const x=await this.prisma.parteUso.findUnique({where:{id}}); return x?this.aDominio(x):null;}
   async listarPorPlanta(plantaId:string){const xs=await this.prisma.parteUso.findMany({where:{plantaId}}); return xs.map((x)=>this.aDominio(x));}

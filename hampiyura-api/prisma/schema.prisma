@@ -104,6 +104,10 @@ model Planta {
   region String
   habitat String
   imagenPrincipal String?
+  // Ubicación de observación (GPS/mapa al proponer). Nunca se expone en el catálogo público (RN-07: la
+  // ubicación exacta de una planta puede ponerla en riesgo); solo la ve quien valida.
+  latitud Float?
+  longitud Float?
   // Frente 4 (auditoría): "Proponer planta" no existía en ningún rol -- las plantas solo se podían
   // crear directo (POST /plantas, requireValidator) sin pasar por M-09. @default(Validado) hace
   // que TODAS las plantas ya existentes en la base queden exactamente igual de visibles que hoy
@@ -157,6 +161,9 @@ model ParteUso {
   tipoConocimiento String
   preparacionId String?
   contraindicaciones String?
+  // Por qué/para qué se usa (texto de quien lo propone) y, si parte='Otra', cuál es.
+  motivoUso String?
+  parteDetalle String?
   fuente String
   estadoValidacion EstadoValidacion
   planta Planta @relation(fields: [plantaId], references: [id])

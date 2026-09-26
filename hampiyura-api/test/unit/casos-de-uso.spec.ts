@@ -244,6 +244,35 @@ describe('M-02 · Catálogo de plantas', () => {
       expect(planta.props.estadoValidacion).toBe('Pendiente');
       expect(validaciones.guardar).toHaveBeenCalledWith(expect.objectContaining({props:expect.objectContaining({tipoEntidad:'Planta',entidadId:planta.props.id,estado:'Pendiente',autorId:'u1'})}));
     });
+    describe('con parte medicinal y uso (RF-255)', () => {
+      const parteUso:any={parte:'Hoja',usoId:'uso1',motivoUso:'Se usa en infusión para la inflamación',tipoConocimiento:'Tradicional',fuente:new Fuente('saber de mi comunidad')};
+      test('guarda la planta Y la parte+uso por el flujo normal de M-04 (ambas Pendiente), con el mismo proponente', async () => {
+        const repo:any={guardar:jest.fn()};
+        const validaciones:any={guardar:jest.fn()};
+        const registrarParteUso:any={ejecutar:jest.fn()};
+        const usos:any={buscarPorId:jest.fn().mockResolvedValue({props:{id:'uso1'}})};
+        const planta=await new ProponerPlantaUseCase(repo,validaciones,registrarParteUso,usos).ejecutar({...plantaInput,latitud:-9.3,longitud:-76,proponenteId:'u1',parteUso});
+        expect(planta.props.latitud).toBe(-9.3);
+        expect(registrarParteUso.ejecutar).toHaveBeenCalledWith(expect.objectContaining({plantaId:planta.props.id,autorId:'u1',parte:'Hoja',usoId:'uso1',motivoUso:'Se usa en infusión para la inflamación'}));
+      });
+      test('si el uso no existe NO guarda la planta (nada huérfano)', async () => {
+        const repo:any={guardar:jest.fn()};
+        const usos:any={buscarPorId:jest.fn().mockResolvedValue(null)};
+        await expect(new ProponerPlantaUseCase(repo,{guardar:jest.fn()} as any,{ejecutar:jest.fn()} as any,usos).ejecutar({...plantaInput,proponenteId:'u1',parteUso})).rejects.toThrow(/uso/i);
+        expect(repo.guardar).not.toHaveBeenCalled();
+      });
+      test('exige el motivo, y el detalle cuando la parte es "Otra"', async () => {
+        const usos:any={buscarPorId:jest.fn().mockResolvedValue({props:{id:'uso1'}})};
+        const uc=new ProponerPlantaUseCase({guardar:jest.fn()} as any,{guardar:jest.fn()} as any,{ejecutar:jest.fn()} as any,usos);
+        await expect(uc.ejecutar({...plantaInput,proponenteId:'u1',parteUso:{...parteUso,motivoUso:'  '}})).rejects.toThrow(/para qué/i);
+        await expect(uc.ejecutar({...plantaInput,proponenteId:'u1',parteUso:{...parteUso,parte:'Otra'}})).rejects.toThrow(/cuál es la parte/i);
+      });
+    });
+    test('valida la ubicación: latitud y longitud juntas y dentro de rango', async () => {
+      const uc=new ProponerPlantaUseCase({guardar:jest.fn()} as any,{guardar:jest.fn()} as any);
+      await expect(uc.ejecutar({...plantaInput,latitud:-9,proponenteId:'u1'})).rejects.toThrow(/juntas/);
+      await expect(uc.ejecutar({...plantaInput,latitud:95,longitud:0,proponenteId:'u1'})).rejects.toThrow(/Latitud/);
+    });
     test('rechaza proponer sin nombre científico', async () => {
       const repo:any={guardar:jest.fn()};
       const validaciones:any={guardar:jest.fn()};

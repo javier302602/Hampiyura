@@ -34,6 +34,10 @@
 }
 .consent-box input[type="checkbox"]{margin-top:3px;width:18px;height:18px;flex-shrink:0}
 .consent-box label{font-weight:var(--font-weight-regular);font-size:var(--font-size-small);color:var(--color-text)}
+.consent-box-texto{display:grid;gap:var(--space-2);font-size:var(--font-size-small)}
+.consent-box-texto p{margin:0;font-size:inherit}
+.consent-box-titulo{font-weight:var(--font-weight-bold);color:var(--color-text)}
+.consent-box-texto ul{margin:0;padding-left:1.2em;display:grid;gap:var(--space-1);color:var(--color-text)}
 .consent-box-ya-aceptado{
   display:flex;gap:var(--space-2);align-items:center;
   padding:var(--space-3) var(--space-4);border-radius:var(--radius-md);

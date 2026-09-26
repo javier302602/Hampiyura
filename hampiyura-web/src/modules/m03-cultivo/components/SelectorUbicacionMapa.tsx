@@ -6,12 +6,17 @@ import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import { CENTRO_PERU_AMAZONICO, agregarTileLayer, iconoPinNuevo } from '../leaflet-setup';
 import { buscarLocalidad, type SugerenciaLocalidad } from '../api/geocoding.api';
 import { listarMapaCultivo } from '../api/mapa-cultivo.api';
+import { LocateFixed } from 'lucide-react';
+import Button from '../../../shared/ui/Button';
 
 interface Props {
   // Para mostrar pines de referencia de ubicaciones YA registradas de la misma planta -- ayuda a
   // no registrar dos veces la misma ubicación. Si no se pasa, el selector funciona igual pero sin
   // esos pines (y sin cargar el plugin de clustering, que no hace falta con un único pin nuevo).
   plantaId?: string;
+  // Muestra el botón "Usar mi ubicación actual" (GPS del navegador). El permiso lo pide el propio navegador
+  // SOLO al hacer clic en el botón -- nunca se consulta la ubicación por sí solo.
+  permitirGps?: boolean;
   onCambiarUbicacion: (lat: number, lon: number) => void;
 }
 
@@ -22,7 +27,7 @@ const ZOOM_AL_HACER_CLICK = 14;
 // Reutiliza la base de Leaflet de M-03 (leaflet-setup.ts) -- mismo tile layer, mismo fix de ícono,
 // mismo retinte de tema oscuro (global, en styles.css) que MapaCultivoPage. No es una reimplementación
 // del mapa: es la segunda pantalla que usa la misma base compartida.
-function SelectorUbicacionMapa({ plantaId, onCambiarUbicacion }: Props) {
+function SelectorUbicacionMapa({ plantaId, permitirGps, onCambiarUbicacion }: Props) {
   const contenedorRef = useRef<HTMLDivElement>(null);
   const mapaRef = useRef<L.Map | null>(null);
   const marcadorNuevoRef = useRef<L.Marker | null>(null);
@@ -40,6 +45,8 @@ function SelectorUbicacionMapa({ plantaId, onCambiarUbicacion }: Props) {
   const [buscando, setBuscando] = useState(false);
   const [errorBusqueda, setErrorBusqueda] = useState<string | null>(null);
   const [pinNuevo, setPinNuevo] = useState<{ lat: number; lon: number } | null>(null);
+  const [obteniendoGps, setObteniendoGps] = useState(false);
+  const [avisoGps, setAvisoGps] = useState<string | null>(null);
 
   function colocarPinNuevo(lat: number, lon: number) {
     const mapa = mapaRef.current;
@@ -121,6 +128,32 @@ function SelectorUbicacionMapa({ plantaId, onCambiarUbicacion }: Props) {
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [busqueda]);
 
+  // GPS del dispositivo: el navegador muestra su propio diálogo de permiso. Requiere contexto seguro
+  // (HTTPS o localhost) -- en un servidor sin HTTPS el navegador lo bloquea y se cae al modo manual.
+  function usarUbicacionActual() {
+    setAvisoGps(null);
+    if (!('geolocation' in navigator)) { setAvisoGps('Este dispositivo o navegador no permite obtener la ubicación. Busca la localidad o marca el punto en el mapa.'); return; }
+    setObteniendoGps(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setObteniendoGps(false);
+        const { latitude, longitude, accuracy } = pos.coords;
+        mapaRef.current?.setView([latitude, longitude], 15);
+        colocarPinNuevo(latitude, longitude);
+        setAvisoGps(`Ubicación del dispositivo obtenida (precisión aproximada: ${Math.round(accuracy)} m). Puedes arrastrar el pin para ajustarla.`);
+      },
+      (err) => {
+        setObteniendoGps(false);
+        setAvisoGps(
+          err.code === err.PERMISSION_DENIED ? 'No diste permiso para usar tu ubicación. No pasa nada: busca la localidad o marca el punto a mano en el mapa.'
+          : err.code === err.TIMEOUT ? 'No se pudo obtener la ubicación a tiempo. Inténtalo de nuevo o marca el punto a mano en el mapa.'
+          : 'No se pudo determinar tu ubicación. Busca la localidad o marca el punto a mano en el mapa.',
+        );
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+    );
+  }
+
   function elegirSugerencia(s: SugerenciaLocalidad) {
     suprimirProximaBusquedaRef.current = true;
     setSugerencias([]);
@@ -152,6 +185,15 @@ function SelectorUbicacionMapa({ plantaId, onCambiarUbicacion }: Props) {
           </ul>
         )}
       </div>
+
+      {permitirGps && (
+        <div className="selector-ubicacion-gps">
+          <Button type="button" variant="secondary" size="sm" loading={obteniendoGps} iconLeft={<LocateFixed size={16} aria-hidden="true" />} onClick={usarUbicacionActual}>
+            Usar mi ubicación actual
+          </Button>
+          {avisoGps && <p className="comentario-meta" role="status">{avisoGps}</p>}
+        </div>
+      )}
 
       <div ref={contenedorRef} className="selector-ubicacion-mapa-lienzo" />
 

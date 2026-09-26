@@ -263,11 +263,17 @@ function PublicarProductoForm({ onPublicado }: { onPublicado: (creado: Producto)
         ) : (
           <div className="consent-box">
             <input type="checkbox" id="acepta-comision" checked={aceptaComisionAhora} onChange={(e) => setAceptaComisionAhora(e.target.checked)} />
-            <label htmlFor="acepta-comision">
-              Acepto que HampiYura retiene una <strong>comisión mínima del 5%</strong> sobre las ganancias generadas por la venta de
-              este producto a través de la plataforma. Esta aceptación queda registrada en tu perfil y aplica a todas tus
-              publicaciones futuras -- no se te volverá a preguntar.
-            </label>
+            <div className="consent-box-texto">
+              <p className="consent-box-titulo">Qué recibes y qué aportas</p>
+              <ul>
+                <li><strong>Visibilidad:</strong> tu producto aparece en el directorio público de HampiYura, con su ficha, tus fotos, su ubicación en el mapa y tu forma de contacto, para que más compradores lo encuentren.</li>
+                <li><strong>Confianza:</strong> antes de publicarse, el equipo revisa que la información sea clara y responsable; eso ayuda a que quien compra confíe en tu producto.</li>
+                <li><strong>A cambio:</strong> HampiYura retiene una <strong>comisión mínima del 5%</strong> sobre las ventas que se concreten a partir de tu publicación.</li>
+              </ul>
+              <label htmlFor="acepta-comision">
+                Acepto la comisión mínima del 5%. Queda registrada en tu perfil y aplica a tus publicaciones futuras: no se te volverá a preguntar.
+              </label>
+            </div>
           </div>
         )}
 

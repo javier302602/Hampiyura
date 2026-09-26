@@ -268,6 +268,7 @@ Tras el reinicio el backend tarda ~1 s en volver a escuchar: si haces `curl` jus
 - [ ] Contraseña de Postgres distinta de `postgres`; el puerto 5432 **no** expuesto a internet
       (el paquete `postgresql` de Debian y el `docker-compose.yml` ya escuchan solo en localhost).
 - [ ] HTTPS activo (certbot) y un firewall que solo deje entrar 22, 80 y 443.
+  El botón "Usar mi ubicación actual" (Proponer planta) usa el GPS del navegador, que **solo funciona en HTTPS** (o localhost): sin certificado el navegador lo bloquea y la persona debe marcar el punto a mano en el mapa.
 - [ ] Copias de seguridad periódicas: `sudo -u postgres pg_dump hampiyura > respaldo.sql` y `hampiyura-api/uploads/`.
 - [ ] Quita `SEED_ADMIN_PASSWORD` del entorno tras el primer seed y cambia la clave del admin.
 - El backend no incluye *rate limiting* ni `helmet`; si lo expones a mucho tráfico, ponlos delante (nginx `limit_req`) o añádelos.

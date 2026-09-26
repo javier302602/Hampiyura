@@ -6,7 +6,7 @@ import { registrarUso, listarUsos } from '../controllers/m04-usos-partes/usos.co
 import { registrarParteUso, obtenerParteUso, listarPartesUsoPorPlanta } from '../controllers/m04-usos-partes/partes-uso.controller';
 import { crearPublicacion, obtenerPublicacion, listarPublicaciones, editarPublicacion, eliminarPublicacion, subirMedia } from '../controllers/m06-publicaciones/publicaciones.controller';
 import { comentarPublicacion, listarComentarios, calificarPublicacion } from '../controllers/m07-comunidad/comunidad.controller';
-import { aprobar, observar, rechazar, listarPendientes, reportar, listarReportes, actualizarEstadoReporte } from '../controllers/m09-validacion.controller';
+import { aprobar, observar, rechazar, listarPendientes, detalleValidacion, reportar, listarReportes, actualizarEstadoReporte } from '../controllers/m09-validacion.controller';
 import { obtenerPanel, listarUsuarios, suspenderUsuario, reactivarUsuario, cambiarRolUsuario, eliminarPlanta, obtenerAuditoria } from '../controllers/m13-analitica-estadisticas/administracion.controller';
 import { listarNotificaciones, marcarTodasLeidas, marcarLeida, eliminarNotificacion } from '../controllers/m14-seguridad-notificaciones/notificaciones.controller';
 import { documentarPreparacion, obtenerPreparacion, listarPreparaciones } from '../controllers/m05-preparaciones/preparaciones.controller';
@@ -27,7 +27,7 @@ router.post('/publicaciones/media',requireAuth,subirMedia);
 router.post('/publicaciones',requireAuth,crearPublicacion); router.get('/publicaciones',listarPublicaciones); router.get('/publicaciones/:id',attachUserIfPresent,obtenerPublicacion); router.patch('/publicaciones/:id',requireAuth,editarPublicacion); router.delete('/publicaciones/:id',requireAuth,eliminarPublicacion);
 router.post('/publicaciones/:publicacionId/comentarios',requireAuth,comentarPublicacion); router.get('/publicaciones/:publicacionId/comentarios',listarComentarios);
 router.post('/publicaciones/:publicacionId/calificacion',requireAuth,calificarPublicacion);
-router.get('/validaciones/pendientes',requireValidator,listarPendientes);
+router.get('/validaciones/pendientes',requireValidator,listarPendientes); router.get('/validaciones/:id/detalle',requireValidator,detalleValidacion);
 router.post('/validaciones/:id/aprobar',requireValidator,aprobar); router.post('/validaciones/:id/observar',requireValidator,observar); router.post('/validaciones/:id/rechazar',requireValidator,rechazar);
 router.post('/reportes',requireAuth,reportar); router.get('/reportes',requireValidator,listarReportes); router.patch('/reportes/:id',requireValidator,actualizarEstadoReporte);
 router.get('/admin/panel',requireAdmin,obtenerPanel);

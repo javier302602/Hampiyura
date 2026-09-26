@@ -7,6 +7,7 @@ function id(req:Request):string { return String(req.params.id); }
 export async function aprobar(req:Request,res:Response){const user=auth(req); await container.aprobar.ejecutar({validacionId:id(req),validadorId:user.id,rol:user.rol}); res.status(204).send();}
 export async function observar(req:Request,res:Response){const user=auth(req); await container.observar.ejecutar({validacionId:id(req),validadorId:user.id,rol:user.rol,comentario:String(req.body.comentario)}); res.status(204).send();}
 export async function rechazar(req:Request,res:Response){const user=auth(req); await container.rechazar.ejecutar({validacionId:id(req),validadorId:user.id,rol:user.rol,comentario:String(req.body.comentario)}); res.status(204).send();}
+export async function detalleValidacion(req:Request,res:Response){res.json(await container.obtenerDetalleValidacion.ejecutar(id(req)));}
 export async function listarPendientes(_req:Request,res:Response){const pendientes=await container.listarPendientes.ejecutar(); res.json(pendientes);}
 
 const reportarSchema=z.object({tipoEntidad:z.string().min(1),entidadId:z.string().min(1),motivo:z.string().min(1)});

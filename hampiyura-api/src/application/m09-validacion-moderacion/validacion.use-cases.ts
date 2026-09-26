@@ -8,6 +8,7 @@ import { PreparacionRepositoryPort } from '../../domain/ports/out/preparacion.re
 import { ParteUsoRepositoryPort } from '../../domain/ports/out/parte-uso.repository.port';
 import { ProductoRepositoryPort } from '../../domain/ports/out/producto.repository.port';
 import { EstadoConservacionRepositoryPort } from '../../domain/ports/out/estado-conservacion.repository.port';
+import { CultivoRepositoryPort } from '../../domain/ports/out/cultivo.repository.port';
 import { PlantaRepositoryPort } from '../../domain/ports/out/planta.repository.port';
 import { UsuarioRepositoryPort } from '../../domain/ports/out/usuario.repository.port';
 import { NotificadorPort } from '../../domain/ports/out/notificador.port';
@@ -34,6 +35,7 @@ export class ListarPendientesUseCase implements ListarPendientesPort {
     private readonly productos:ProductoRepositoryPort,
     private readonly estadosConservacion:EstadoConservacionRepositoryPort,
     private readonly plantas:PlantaRepositoryPort,
+    private readonly cultivos?:CultivoRepositoryPort,
   ) {}
   async ejecutar():Promise<ValidacionPendienteVisible[]> {
     const pendientes = await this.repo.listarPendientes();
@@ -74,6 +76,22 @@ export class ListarPendientesUseCase implements ListarPendientesPort {
       if (!planta) return `Planta · ${props.entidadId}`;
       const autor = await this.usuarios.buscarPorId(props.autorId);
       return `${planta.props.nombreComun} (${planta.props.nombreCientifico})${autor ? ` — propuesta por ${autor.props.nombre}` : ''}`;
+    }
+    // Parte+Uso (RF-255): antes caía al texto genérico "ParteUso · <uuid>" y en la bandeja no se distinguía una de otra.
+    if (props.tipoEntidad === 'ParteUso') {
+      const parteUso = await this.partesUso.buscarPorId(props.entidadId);
+      if (!parteUso) return `ParteUso · ${props.entidadId}`;
+      const planta = await this.plantas.buscarPorId(parteUso.props.plantaId);
+      const autor = await this.usuarios.buscarPorId(props.autorId);
+      const parte = parteUso.props.parte === 'Otra' && parteUso.props.parteDetalle ? parteUso.props.parteDetalle : parteUso.props.parte;
+      return `Uso de ${parte} — ${planta ? planta.props.nombreComun : parteUso.props.plantaId}${autor ? ` — propuesto por ${autor.props.nombre}` : ''}`;
+    }
+    if (props.tipoEntidad === 'Cultivo' && this.cultivos) {
+      const cultivo = await this.cultivos.buscarPorId(props.entidadId);
+      if (!cultivo) return `Cultivo · ${props.entidadId}`;
+      const planta = await this.plantas.buscarPorId(cultivo.props.plantaId);
+      const autor = await this.usuarios.buscarPorId(props.autorId);
+      return `Ficha de cultivo de ${planta ? planta.props.nombreComun : cultivo.props.plantaId}${autor ? ` — por ${autor.props.nombre}` : ''}`;
     }
     return `${props.tipoEntidad} · ${props.entidadId}`;
   }

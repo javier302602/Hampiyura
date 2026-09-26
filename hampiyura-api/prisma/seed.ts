@@ -19,7 +19,7 @@ const USOS = [
   'Antimicrobiano/Antibacteriano', 'Antifúngico', 'Antiparasitario', 'Antiviral', 'Cicatrizante',
   'Dermatológico', 'Hepatoprotector', 'Cardiovascular', 'Diurético', 'Sedante/Relajante',
   'Antioxidante', 'Inmunoestimulante', 'Ginecológico/Reproductivo', 'Urológico', 'Oftálmico',
-  'Odontológico', 'Veterinario', 'Cosmético', 'Alimenticio/Nutricional', 'Ritual/Espiritual',
+  'Odontológico', 'Veterinario', 'Cosmético', 'Alimenticio/Nutricional', 'Ritual/Espiritual', 'Otro',
 ];
 
 // Plantas base del catálogo. El frontend asocia la fotografía por nombreCientifico

@@ -1,0 +1,31 @@
+/* shared/ui/Modal.tsx -- diálogo sobre superficie elevada; el pie con acciones queda fijo abajo. */
+.modal-fondo{
+  position:fixed;inset:0;z-index:900;
+  background:color-mix(in srgb,#04120e 62%,transparent);
+  display:flex;align-items:center;justify-content:center;padding:var(--space-4);
+}
+.modal{
+  width:min(760px,100%);max-height:min(90vh,900px);
+  display:flex;flex-direction:column;
+  background:var(--color-surface-elevated);color:var(--color-text);
+  border:1px solid var(--color-border);border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-lg);
+  outline:none;
+}
+.modal-cabecera{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-3);padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--color-border)}
+.modal-titulo{margin:0;font-size:var(--font-size-h3);line-height:1.25}
+.modal-cuerpo{padding:var(--space-4) var(--space-5);overflow-y:auto;display:grid;gap:var(--space-4)}
+.modal-pie{padding:var(--space-4) var(--space-5);border-top:1px solid var(--color-border);display:grid;gap:var(--space-3)}
+.modal-pie-acciones{display:flex;gap:var(--space-2);flex-wrap:wrap}
+
+/* Lista de campos etiqueta -> valor del detalle de validación */
+.detalle-campos{display:grid;gap:var(--space-3);margin:0}
+.detalle-campos div{display:grid;gap:2px}
+.detalle-campos dt{font-size:var(--font-size-caption);text-transform:uppercase;letter-spacing:.05em;color:var(--color-text-muted);font-weight:var(--font-weight-medium)}
+.detalle-campos dd{margin:0;font-size:var(--font-size-body);line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--color-text)}
+.detalle-relacionado{border:1px solid var(--color-border);border-radius:var(--radius-md);padding:var(--space-4);background:var(--color-surface);display:grid;gap:var(--space-3)}
+.detalle-relacionado h3{margin:0;font-size:1rem}
+.detalle-imagenes{display:flex;gap:var(--space-2);flex-wrap:wrap}
+.detalle-imagenes img{width:140px;height:140px;object-fit:cover;border-radius:var(--radius-md);border:1px solid var(--color-border)}
+.detalle-meta{display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center;color:var(--color-text-muted);font-size:var(--font-size-small)}
+.detalle-meta p{margin:0;font-size:inherit;max-width:none;color:inherit}
