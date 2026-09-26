@@ -4,13 +4,14 @@ import { randomInt } from 'crypto';
 import { appendFileSync, existsSync } from 'fs';
 import path from 'path';
 
-// 18 caracteres sin ambiguos (sin 0/O/1/l/I), con mayúscula, minúscula, número y símbolo garantizados.
+// 16 caracteres SOLO letras y números, sin ambiguos (sin 0/O/1/l/I), con mayúscula, minúscula y número garantizados. Sin símbolos a propósito:
+// se copian y dictan sin errores (un guion o un # al inicio o al final se pierden fácil al pasarlos por chat). ~93 bits de entropía.
 export function contraseñaAleatoria(): string {
-  const may = 'ABCDEFGHJKLMNPQRSTUVWXYZ', min = 'abcdefghijkmnopqrstuvwxyz', num = '23456789', sim = '#$%&*+-=?@';
-  const todos = may + min + num + sim;
+  const may = 'ABCDEFGHJKLMNPQRSTUVWXYZ', min = 'abcdefghijkmnopqrstuvwxyz', num = '23456789';
+  const todos = may + min + num;
   const pick = (s: string) => s[randomInt(s.length)];
-  const chars = [pick(may), pick(min), pick(num), pick(sim)];
-  while (chars.length < 18) chars.push(pick(todos));
+  const chars = [pick(may), pick(min), pick(num)];
+  while (chars.length < 16) chars.push(pick(todos));
   for (let i = chars.length - 1; i > 0; i--) { const j = randomInt(i + 1); [chars[i], chars[j]] = [chars[j], chars[i]]; }
   return chars.join('');
 }

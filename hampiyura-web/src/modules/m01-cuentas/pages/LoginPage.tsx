@@ -15,6 +15,7 @@ interface Props {
 function LoginPage({ onIngreso, onIrARegistro, onIrARecuperar, onIrAActivar }: Props) {
   const [correo, setCorreo] = useState('');
   const [contraseña, setContraseña] = useState('');
+  const [verClave, setVerClave] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sesionExpirada] = useState(hayAvisoDeSesionExpirada());
@@ -66,11 +67,17 @@ function LoginPage({ onIngreso, onIrARegistro, onIrARecuperar, onIrAActivar }: P
       <form onSubmit={manejarSubmit} className="formulario">
         <label>
           Correo
-          <input type="email" value={correo} onChange={(e) => setCorreo(e.target.value)} required autoFocus />
+          {/* autoCapitalize/autoCorrect apagados: el teléfono ponía la primera letra en mayúscula ("Junior@..."). */}
+          <input type="email" value={correo} onChange={(e) => setCorreo(e.target.value)} required autoFocus autoCapitalize="none" autoCorrect="off" spellCheck={false} autoComplete="username" />
         </label>
         <label>
           Contraseña
-          <input type="password" value={contraseña} onChange={(e) => setContraseña(e.target.value)} required />
+          <input type={verClave ? "text" : "password"} value={contraseña} onChange={(e) => setContraseña(e.target.value)} required autoCapitalize="none" autoCorrect="off" spellCheck={false} autoComplete="current-password" />
+        </label>
+        {/* Poder ver lo escrito y cuántos caracteres son ayuda a detectar claves copiadas a medias (p. ej. sin el primer o el último símbolo). */}
+        <label className="mostrar-clave">
+          <input type="checkbox" checked={verClave} onChange={(e) => setVerClave(e.target.checked)} />
+          Mostrar contraseña <span className="comentario-meta">({contraseña.length} caracteres)</span>
         </label>
         {error && <p className="error-formulario">{error}</p>}
         <Button type="submit" variant="primary" fullWidth loading={enviando}>{enviando ? 'Ingresando…' : 'Iniciar sesión'}</Button>

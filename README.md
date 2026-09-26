@@ -90,7 +90,7 @@ Con Docker, apunta el script a la base del contenedor (ajusta el puerto si cambi
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/hampiyura" npx tsx scripts/crear-cuentas-equipo.ts --aplicar
 ```
 
-Las contraseñas se **generan al azar en tu máquina** (18 caracteres, distintas en cada cuenta) y se escriben **solo** en
+Las contraseñas se **generan al azar en tu máquina** (16 letras y números sin símbolos, distintas en cada cuenta) y se escriben **solo** en
 `credenciales-equipo-<fecha>.txt` en la raíz del proyecto (ignorado por git: nunca se commitea ni se imprime en la terminal). Entrégalas a cada
 persona por un canal privado y luego borra el archivo. Si corres el script otra vez el mismo día y falta alguna cuenta, sus claves se **añaden**
 al final del mismo archivo. Cada persona debe cambiar su clave desde *Mi perfil*.

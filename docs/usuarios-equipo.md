@@ -1,7 +1,7 @@
 # Cuentas del equipo HampiYura
 
 Cuentas reales creadas en la base de trabajo (Ronda 19). **Este documento NO contiene contraseñas**: el repositorio es público.
-Las contraseñas (aleatorias, de 18 caracteres, distintas en cada cuenta) están solo en el archivo local
+Las contraseñas (aleatorias, de 16 letras y números, distintas en cada cuenta) están solo en el archivo local
 `credenciales-equipo-2026-09-26.txt` en la raíz del proyecto, que está en `.gitignore`. Se entregan a cada persona por un canal
 privado y luego ese archivo se borra.
 
