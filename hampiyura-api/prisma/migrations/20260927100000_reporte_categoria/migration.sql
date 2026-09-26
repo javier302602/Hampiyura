@@ -1,0 +1,1 @@
+ALTER TABLE "Reporte" ADD COLUMN "categoria" TEXT NOT NULL DEFAULT 'Otro';

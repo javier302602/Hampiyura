@@ -1,3 +1,4 @@
+import { CATEGORIAS_REPORTE } from '../../../../../domain/value-objects/categoria-reporte.vo';
 import { Request, Response } from 'express';
 import { z } from 'zod';
 import { container } from '../../../../config/container';
@@ -10,7 +11,7 @@ export async function rechazar(req:Request,res:Response){const user=auth(req); a
 export async function detalleValidacion(req:Request,res:Response){res.json(await container.obtenerDetalleValidacion.ejecutar(id(req)));}
 export async function listarPendientes(_req:Request,res:Response){const pendientes=await container.listarPendientes.ejecutar(); res.json(pendientes);}
 
-const reportarSchema=z.object({tipoEntidad:z.string().min(1),entidadId:z.string().min(1),motivo:z.string().min(1)});
+const reportarSchema=z.object({tipoEntidad:z.string().min(1),entidadId:z.string().min(1),motivo:z.string().max(1000).default(''),categoria:z.enum(CATEGORIAS_REPORTE).optional()});
 export async function reportar(req:Request,res:Response){const input=reportarSchema.parse(req.body); const autorId=auth(req).id; const reporte=await container.reportar.ejecutar({...input,autorId}); res.status(201).json(reporte.props);}
 // ?estado=Pendiente|Revisado|Desestimado filtra; sin parámetro devuelve todos (antes solo Pendiente).
 export async function listarReportes(req:Request,res:Response){

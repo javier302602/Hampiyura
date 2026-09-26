@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { listarMisConsultas, ETIQUETAS_TIPO_CONSULTA, type Consulta } from '../api/consultas.api';
+import { listarMisConsultas, ETIQUETAS_TIPO_CONSULTA, ETIQUETAS_ESTADO_CONSULTA, type Consulta } from '../api/consultas.api';
 import IndicadorPrioridad from '../components/IndicadorPrioridad';
 
 function MisConsultasPage({ onSeleccionar }: { onSeleccionar: (id: string) => void }) {
@@ -20,7 +20,7 @@ function MisConsultasPage({ onSeleccionar }: { onSeleccionar: (id: string) => vo
       {consultas.map((c) => (
         <article key={c.id} className="tarjeta-clicable" onClick={() => onSeleccionar(c.id)}>
           <strong>{ETIQUETAS_TIPO_CONSULTA[c.tipo]}</strong>
-          <span className="badge badge-estado">{c.estado}</span>
+          <span className="badge badge-estado">{ETIQUETAS_ESTADO_CONSULTA[c.estado]}</span>
           <IndicadorPrioridad prioridad={c.prioridad} />
           <span>{c.descripcion}</span>
           <span className="comentario-meta">{new Date(c.fechaCreacion).toLocaleString()}</span>

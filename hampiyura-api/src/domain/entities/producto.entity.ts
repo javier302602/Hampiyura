@@ -1,4 +1,5 @@
 import { EstadoValidacion } from '../value-objects/estado-validacion.vo';
+import { TipoProductor } from '../value-objects/tipo-productor.vo';
 import { ValidationError } from '../errors/domain.errors';
 
 // Frente 3: entrada estructurada de "planta utilizada" -- reemplaza los checkboxes de una lista
@@ -36,6 +37,12 @@ export interface ProductoProps {
   longitud?: number;
   informacionProceso: string;
   fechaElaboracion?: Date;
+  // Ronda 18. tipoProductor es obligatorio al publicar (los productos anteriores no lo tienen); el resto es opcional y
+  // NUNCA se rellena por el sistema: si el productor no lo completa, queda vacío y la ficha dice "no especificado".
+  tipoProductor?: TipoProductor;
+  categoriasUso?: string[];   // nombres del catálogo de usos de M-04 (Digestivo, Cosmético, ...), sin lista paralela
+  modoDeUso?: string;
+  contraindicaciones?: string;
   contactoVendedor: string;
   documentacionCertificacion?: string;
   // RF-274: no bloquea la creación, pero marca el producto para revisión manual reforzada.

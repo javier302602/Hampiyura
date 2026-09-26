@@ -69,10 +69,18 @@ describe('M-15 · acceso al contacto (regla de negocio)', () => {
     expect(await acceso.puedeVerContacto({ id: 'x', rol: 'Administrador' }, 'prodA')).toBe(true);
     expect(await acceso.puedeVerContacto({ id: 'prod9', rol: 'Productor' }, 'prodA')).toBe(false);
   });
-  test('en las fichas de producto el contacto se oculta si no hay acceso', async () => {
+  test('en las fichas de producto el contacto Y la ubicación exacta se ocultan si no hay acceso', async () => {
     const acceso = new AccesoContactoService(repoEn([]));
-    const [p] = await new ProtegerContactoProductosUseCase(acceso).aplicar([{ productorId: 'prodA', contactoVendedor: 'WhatsApp 999' }], { id: 'c', rol: 'UsuarioRegistrado' });
+    const [p] = await new ProtegerContactoProductosUseCase(acceso).aplicar([{ productorId: 'prodA', contactoVendedor: 'WhatsApp 999', latitud: -9.29, longitud: -75.99, nombre: 'Jabón' }], { id: 'c', rol: 'UsuarioRegistrado' });
     expect(p.contactoVendedor).toBeNull(); expect(p.contactoBloqueado).toBe(true);
+    expect('latitud' in p).toBe(false); expect('longitud' in p).toBe(false);
+    expect(JSON.stringify(p)).not.toMatch(/-9.29|-75.99|WhatsApp/);
+    expect((p as any).nombre).toBe('Jabón'); // el resto de la ficha sigue siendo gratis
+  });
+  test('con acceso vigente (plan o desbloqueo de ese productor) sí se ven contacto y ubicación exacta', async () => {
+    const acceso = new AccesoContactoService(repoEn([]));
+    const [p] = await new ProtegerContactoProductosUseCase(acceso).aplicar([{ productorId: 'prodA', contactoVendedor: 'WhatsApp 999', latitud: -9.29, longitud: -75.99 }], { id: 'prodA', rol: 'Productor' });
+    expect(p.contactoBloqueado).toBe(false); expect(p.latitud).toBe(-9.29); expect(p.contactoVendedor).toBe('WhatsApp 999');
   });
 });
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { listarReportes, resolverReporte, type EstadoReporte, type Reporte } from '../api/reportes.api';
+import { listarReportes, resolverReporte, etiquetaCategoriaReporte, type EstadoReporte, type Reporte } from '../api/reportes.api';
 import Button from '../../../shared/ui/Button';
 
 type Filtro = EstadoReporte | 'Todos';
@@ -38,7 +38,7 @@ function BandejaReportesPage({ onVerPublicacion }: { onVerPublicacion: (publicac
 
   return (
     <section className="gestion-panel">
-      <h2>Bandeja de reportes (M-09)</h2>
+      <h2>Bandeja de reportes</h2>
       <div role="group" aria-label="Filtrar por estado" style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
         {FILTROS.map((f) => (
           <Button key={f.valor} size="sm" variant={filtro === f.valor ? 'primary' : 'secondary'} aria-pressed={filtro === f.valor} onClick={() => setFiltro(f.valor)}>
@@ -54,7 +54,8 @@ function BandejaReportesPage({ onVerPublicacion }: { onVerPublicacion: (publicac
           {reportes.map((r) => (
             <article key={r.id} style={{ flex: "1 1 100%" }}>
               <span className="badge badge-estado">{r.tipoEntidad} · {r.estado}</span>
-              <strong>Motivo: {r.motivo}</strong>
+              <strong>{etiquetaCategoriaReporte(r.categoria)}</strong>
+              {r.motivo ? <span>{r.motivo}</span> : <span className="comentario-meta">Sin descripción adicional.</span>}
               {r.contenido ? (
                 <blockquote className="comentario-meta" style={{ margin: 0 }}>
                   “{r.contenido.texto}” — {r.contenido.autorNombre}

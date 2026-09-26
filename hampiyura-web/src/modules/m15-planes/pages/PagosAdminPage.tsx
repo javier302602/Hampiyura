@@ -97,7 +97,7 @@ function PagosAdminPage() {
 
   return (
     <section className="gestion-panel">
-      <h2>Confirmación de pagos (M-15)</h2>
+      <h2>Confirmación de pagos</h2>
       <div role="group" aria-label="Filtrar por estado" style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
         {FILTROS.map((f) => <Button key={f.valor} size="sm" variant={filtro === f.valor ? 'primary' : 'secondary'} aria-pressed={filtro === f.valor} onClick={() => setFiltro(f.valor)}>{f.etiqueta}</Button>)}
       </div>

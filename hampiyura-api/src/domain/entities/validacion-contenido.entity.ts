@@ -26,6 +26,13 @@ const ROL_REQUERIDO_POR_TIPO_ENTIDAD: Partial<Record<string, string>> = {
   ParteUso: 'EspecialistaSalud',
 };
 
+// ¿Este rol puede decidir sobre contenido de este tipo? (Administrador todo; un especialista solo su área.) Lo usa el
+// panel para contar solo las validaciones pendientes que le corresponden a quien mira.
+export function rolPuedeValidarTipo(rol: string, tipoEntidad: string): boolean {
+  if (rol === 'Administrador') return true;
+  return rol.startsWith('Especialista') && ROL_REQUERIDO_POR_TIPO_ENTIDAD[tipoEntidad] === rol;
+}
+
 export interface ValidacionContenidoProps { id:string; tipoEntidad:string; entidadId:string; estado:EstadoValidacion; comentarioValidador?:string; fecha:Date; autorId:string; validadorId?:string; }
 export class ValidacionContenido {
   constructor(public readonly props: ValidacionContenidoProps) {}

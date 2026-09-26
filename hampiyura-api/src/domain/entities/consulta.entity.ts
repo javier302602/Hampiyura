@@ -42,13 +42,12 @@ export class Consulta {
   estaCerrada(): boolean { return this.props.estado === 'Cerrada'; }
 
   // RF-266: un mensaje del equipo avanza el estado (nunca lo hace un mensaje del propio usuario,
-  // que solo se agrega al hilo). Pendiente -> EnRevision en el primer contacto, EnRevision ->
-  // Respondida cuando el equipo da seguimiento. Ya Cerrada, exige reabrir primero.
+  // que solo se agrega al hilo). Pendiente -> EnRevision en el primer contacto. Pasar a "resuelta"
+  // (Respondida) es una decisión EXPLÍCITA del equipo (marcarResuelta), no un efecto de responder otra vez. Ya Cerrada, exige reabrir primero.
   registrarMensajeDelEquipo(fecha: Date): void {
     if (this.estaCerrada()) throw new ValidationError('La consulta está cerrada; reábrela antes de agregar un nuevo mensaje del equipo');
     if (!this.props.fechaPrimeraRespuestaEquipo) this.props.fechaPrimeraRespuestaEquipo = fecha;
     if (this.props.estado === 'Pendiente') this.props.estado = 'EnRevision';
-    else if (this.props.estado === 'EnRevision') this.props.estado = 'Respondida';
     this.props.fechaActualizacion = fecha;
   }
 
@@ -63,8 +62,23 @@ export class Consulta {
     this.props.fechaActualizacion = fecha;
   }
 
+  // Cambios de estado EXPLÍCITOS del equipo (además del avance automático por mensajes): "en proceso" y "resuelta".
+  // Visible para el usuario: Pendiente = "pendiente", EnRevision = "en proceso", Respondida y Cerrada = "resuelta".
+  marcarEnProceso(fecha: Date): void {
+    if (this.props.estado !== 'Pendiente') throw new ValidationError('Solo una consulta pendiente puede pasar a "en proceso"');
+    this.props.estado = 'EnRevision';
+    if (!this.props.fechaPrimeraRespuestaEquipo) this.props.fechaPrimeraRespuestaEquipo = fecha;
+    this.props.fechaActualizacion = fecha;
+  }
+  marcarResuelta(fecha: Date): void {
+    if (this.props.estado !== 'Pendiente' && this.props.estado !== 'EnRevision') throw new ValidationError('La consulta ya está resuelta');
+    this.props.estado = 'Respondida';
+    if (!this.props.fechaPrimeraRespuestaEquipo) this.props.fechaPrimeraRespuestaEquipo = fecha;
+    this.props.fechaActualizacion = fecha;
+  }
+
   reabrir(fecha: Date): void {
-    if (!this.estaCerrada()) throw new ValidationError('Solo una consulta cerrada puede reabrirse');
+    if (this.props.estado !== 'Cerrada' && this.props.estado !== 'Respondida') throw new ValidationError('Solo una consulta resuelta puede reabrirse');
     this.props.estado = 'Pendiente';
     this.props.fechaActualizacion = fecha;
   }

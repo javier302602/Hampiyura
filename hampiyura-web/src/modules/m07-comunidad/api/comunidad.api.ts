@@ -26,6 +26,6 @@ export function calificarPublicacion(publicacionId: string, estrellas: number): 
 
 // Reusa el endpoint genérico de Reporte de FASE 3 (POST /api/reportes) -- no crea un mecanismo
 // de moderación paralelo, solo lo llama con tipoEntidad='Comentario'.
-export function reportarComentario(comentarioId: string, motivo: string): Promise<void> {
-  return apiRequest<void>('/reportes', { method: 'POST', body: JSON.stringify({ tipoEntidad: 'Comentario', entidadId: comentarioId, motivo }) });
+export function reportarComentario(comentarioId: string, categoria: string, motivo: string): Promise<void> {
+  return apiRequest<void>('/reportes', { method: 'POST', body: JSON.stringify({ tipoEntidad: 'Comentario', entidadId: comentarioId, categoria, motivo }) });
 }

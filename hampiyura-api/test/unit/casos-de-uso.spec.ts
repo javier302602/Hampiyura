@@ -37,8 +37,9 @@ import { RegistrarUbicacionCultivoUseCase } from '../../src/application/m03-cult
 import { ListarMapaCultivoUseCase } from '../../src/application/m03-cultivo/listar-mapa-cultivo.use-case';
 import { UbicacionCultivo } from '../../src/domain/entities/ubicacion-cultivo.entity';
 import { BuscarPlantasUseCase } from '../../src/application/m12-busqueda-recomendaciones/busqueda.use-cases';
-import { CrearConsultaUseCase, ListarBandejaConsultasUseCase, ListarMisConsultasUseCase, ObtenerConsultaUseCase, AgregarMensajeConsultaUseCase, CerrarConsultaUseCase, ReabrirConsultaUseCase, AsignarConsultaUseCase } from '../../src/application/m08-consultas/consultas.use-cases';
+import { CrearConsultaUseCase, ListarBandejaConsultasUseCase, ListarMisConsultasUseCase, ObtenerConsultaUseCase, AgregarMensajeConsultaUseCase, CerrarConsultaUseCase, ReabrirConsultaUseCase, CambiarEstadoConsultaEquipoUseCase, AsignarConsultaUseCase } from '../../src/application/m08-consultas/consultas.use-cases';
 import { Consulta } from '../../src/domain/entities/consulta.entity';
+import { PagoContacto } from '../../src/domain/entities/pago-contacto.entity';
 import { MensajeConsulta } from '../../src/domain/entities/mensaje-consulta.entity';
 
 const cultivoInput:any={plantaId:'p1',autorId:'u1',zonaCultivo:'dato de prueba',condicionesClimaticas:'dato de prueba',tipoSuelo:'dato de prueba',altitudAprox:'dato de prueba',aguaNecesaria:'dato de prueba',exposicionSolar:'dato de prueba',epocaSiembra:'dato de prueba',metodoPropagacion:'dato de prueba',tiempoCrecimiento:'dato de prueba',cuidados:'dato de prueba',plagasComunes:'dato de prueba',epocaCosecha:'dato de prueba',recomendacionesSobreexplotacion:'dato de prueba',consejosRecoleccion:'dato de prueba',calendario:new CalendarioCultivo([9,10],[3,4]),fuente:new Fuente('fuente de prueba')};
@@ -403,6 +404,16 @@ describe('M-09 · Reportes (RF-25/RF-26)', () => {
     expect(reporte.props.estado).toBe('Pendiente');
     expect(reporte.props.tipoEntidad).toBe('Planta');
   });
+  test('una categoría predefinida no exige descripción; "Otro" sí; una categoría inventada se rechaza', async () => {
+    const repo:any={guardar:jest.fn()};
+    const uc=new ReportarContenidoUseCase(repo);
+    const r=await uc.ejecutar({...reporteInput,motivo:'',categoria:'Spam'});
+    expect(r.props.categoria).toBe('Spam');
+    await expect(uc.ejecutar({...reporteInput,motivo:'  ',categoria:'Otro'})).rejects.toThrow(/Describe el motivo/);
+    await expect(uc.ejecutar({...reporteInput,categoria:'Inventada' as any})).rejects.toThrow(/categoría/);
+    const sinCategoria=await uc.ejecutar({...reporteInput,motivo:'texto libre'});
+    expect(sinCategoria.props.categoria).toBe('Otro');
+  });
   test('rechaza un reporte sin motivo', async () => {
     const repo:any={guardar:jest.fn()};
     await expect(new ReportarContenidoUseCase(repo).ejecutar({...reporteInput,motivo:''})).rejects.toThrow();
@@ -513,14 +524,47 @@ describe('M-13 · Administración (básico)', () => {
     await expect(new EliminarPlantaUseCase(plantas,cultivos,partesUso).ejecutar('inexistente')).rejects.toThrow();
   });
 
-  test('el panel admin devuelve las métricas básicas de RF-32 (FASE 3)', async () => {
-    const validaciones:any={listarPendientes:jest.fn().mockResolvedValue([validation(),validation()])};
-    const usuarios:any={contar:jest.fn().mockResolvedValue(5),contarActivos:jest.fn().mockResolvedValue(4)};
-    const plantas:any={contar:jest.fn().mockResolvedValue(3)};
-    const publicaciones:any={contar:jest.fn().mockResolvedValue(7)};
-    const reportes:any={contarPorEstado:jest.fn().mockResolvedValue({Pendiente:1,Revisado:2,Desestimado:0})};
-    const panel=await new ObtenerPanelAdminUseCase(validaciones,usuarios,plantas,publicaciones,reportes).ejecutar();
-    expect(panel).toEqual({validacionesPendientes:2,usuariosRegistrados:5,usuariosActivos:4,plantasPublicadas:3,publicacionesRealizadas:7,reportes:{pendientes:1,revisados:2,desestimados:0}});
+  describe('panel de administración por rol', () => {
+    const mkConsulta=(estado:any,areaAsignada?:any)=>new Consulta({id:'c'+Math.random(),tipo:'PreguntaGeneral',descripcion:'x',estado,prioridad:'Normal',areaAsignada,fechaCreacion:new Date(),fechaActualizacion:new Date()});
+    const pago=(props:any)=>new PagoContacto({id:'p'+Math.random(),usuarioId:'u',concepto:'Plan',plan:'Negocio',monto:29,metodo:'Yape',comprobanteUrl:'/uploads/x.png',creadoEn:new Date(),...props});
+    const ahora=Date.now();
+    const armar=()=>{
+      const validaciones:any={listarPendientes:jest.fn().mockResolvedValue([validation({tipoEntidad:'Cultivo'}),validation({tipoEntidad:'ParteUso'}),validation({tipoEntidad:'ParteUso'})])};
+      const usuarios:any={contar:jest.fn().mockResolvedValue(5),contarActivos:jest.fn().mockResolvedValue(4),listar:jest.fn().mockResolvedValue([{props:{aceptoComisionEn:new Date()}},{props:{}}])};
+      const plantas:any={contar:jest.fn().mockResolvedValue(3)};
+      const publicaciones:any={contar:jest.fn().mockResolvedValue(7)};
+      const reportes:any={contarPorEstado:jest.fn().mockResolvedValue({Pendiente:1,Revisado:2,Desestimado:0})};
+      const consultas:any={listar:jest.fn().mockResolvedValue([mkConsulta('Pendiente'),mkConsulta('EnRevision'),mkConsulta('Respondida'),mkConsulta('Cerrada'),mkConsulta('Pendiente','Conservacion')])};
+      const pagos:any={listar:jest.fn().mockResolvedValue([
+        pago({estado:'Pendiente'}),
+        pago({estado:'Confirmado',vigenteDesde:new Date(ahora-1e6),vigenteHasta:new Date(ahora+1e9)}),
+        pago({estado:'Confirmado',concepto:'Desbloqueo',plan:undefined,productorId:'pr',vigenteDesde:new Date(ahora-1e6),vigenteHasta:new Date(ahora+1e9)}),
+        pago({estado:'Confirmado',vigenteDesde:new Date(ahora-9e9),vigenteHasta:new Date(ahora-1e9)}),
+        pago({estado:'Rechazado',motivoRechazo:'x'}),
+      ])};
+      const productos:any={listar:jest.fn().mockResolvedValue([{},{},{}])};
+      return new ObtenerPanelAdminUseCase(validaciones,usuarios,plantas,publicaciones,reportes,consultas,pagos,productos);
+    };
+    test('el Administrador recibe el panel completo: pagos, accesos vigentes, comisión y consultas por estado', async () => {
+      const p:any=await armar().ejecutar('Administrador');
+      expect(p.alcance).toBe('completo');
+      expect(p).toMatchObject({validacionesPendientes:3,usuariosRegistrados:5,usuariosActivos:4,plantasPublicadas:3,publicacionesRealizadas:7,reportes:{pendientes:1,revisados:2,desestimados:0}});
+      expect(p.consultas).toEqual({pendientes:2,enProceso:1,resueltas:2});
+      expect(p.pagos).toEqual({pendientesDeConfirmar:1,confirmados:3,rechazados:1});
+      expect(p.accesos).toEqual({planesActivos:1,desbloqueosVigentes:1});
+      expect(p.comision).toEqual({porcentaje:5,productoresQueAceptaron:1,productosPublicados:3,ventasRegistradas:false,montoAcumulado:null});
+    });
+    test('un especialista NO recibe pagos, planes, comisión ni cifras de usuarios: solo su trabajo', async () => {
+      const p:any=await armar().ejecutar('EspecialistaSalud');
+      expect(p.alcance).toBe('especialista');
+      expect(Object.keys(p).sort()).toEqual(['alcance','consultas','reportes','validacionesPendientes']);
+      expect(p.validacionesPendientes).toBe(2); // solo las ParteUso (su área), no el Cultivo
+      expect(p.consultas).toEqual({pendientes:1,enProceso:1,resueltas:2}); // no ve la de área Conservación
+      expect(JSON.stringify(p)).not.toMatch(/pagos|accesos|comision|usuarios/i);
+    });
+    test('un usuario sin rol de equipo no puede pedir el panel', async () => {
+      await expect(armar().ejecutar('Productor')).rejects.toThrow(/Solo el equipo/);
+    });
   });
 });
 
@@ -755,7 +799,8 @@ describe('M-05 · Preparaciones', () => {
 });
 
 describe('M-11 · Productos y Emprendimientos', () => {
-  const productoInput:any={productorId:'prod1',nombre:'[DATO DE PRUEBA] Jabón de manzanilla',plantasIds:['p1'],fotografias:[],localidad:'dato de prueba',informacionProceso:'dato de prueba',contactoVendedor:'dato de prueba'};
+  const productoInput:any={productorId:'prod1',nombre:'[DATO DE PRUEBA] Jabón de manzanilla',plantasIds:['p1'],fotografias:[],localidad:'dato de prueba',informacionProceso:'dato de prueba',contactoVendedor:'dato de prueba',tipoProductor:'Campesino'};
+  const usosCatalogo:any={listar:jest.fn().mockResolvedValue([{props:{nombre:'Cosmético'}},{props:{nombre:'Digestivo'}}])};
   function producto(overrides:Partial<Producto['props']> = {}) { return new Producto({id:'prod-1',...productoInput,estadoValidacion:'Pendiente',requiereRevisionReforzada:false,etiquetaValidadoDocumental:false,etiquetaCertificado:false,...overrides}); }
   // Productor que YA aceptó la comisión (aceptoComisionEn no-null) -- así la mayoría de los tests
   // de este bloque no necesitan preocuparse por el frente de comisión, que se prueba aparte más
@@ -767,7 +812,7 @@ describe('M-11 · Productos y Emprendimientos', () => {
       const repo:any={guardar:jest.fn()};
       const plantas:any={buscarPorId:jest.fn().mockResolvedValue({id:'p1'})};
       const validaciones:any={guardar:jest.fn()};
-      const creado=await new PublicarProductoUseCase(repo,plantas,validaciones,usuariosConComisionAceptada).ejecutar({...productoInput,descripcion:'Este ungüento cura el cáncer y elimina el dolor de forma definitiva'});
+      const creado=await new PublicarProductoUseCase(repo,plantas,validaciones,usuariosConComisionAceptada,usosCatalogo).ejecutar({...productoInput,descripcion:'Este ungüento cura el cáncer y elimina el dolor de forma definitiva'});
       expect(creado.props.requiereRevisionReforzada).toBe(true);
       // Sigue publicándose (queda Pendiente, entra a M-09) -- no se bloquea la creación, se refuerza el control humano.
       expect(repo.guardar).toHaveBeenCalled();
@@ -777,14 +822,14 @@ describe('M-11 · Productos y Emprendimientos', () => {
       const repo:any={guardar:jest.fn()};
       const plantas:any={buscarPorId:jest.fn().mockResolvedValue({id:'p1'})};
       const validaciones:any={guardar:jest.fn()};
-      const creado=await new PublicarProductoUseCase(repo,plantas,validaciones,usuariosConComisionAceptada).ejecutar({...productoInput,descripcion:'Jabón artesanal elaborado con manzanilla de nuestra huerta'});
+      const creado=await new PublicarProductoUseCase(repo,plantas,validaciones,usuariosConComisionAceptada,usosCatalogo).ejecutar({...productoInput,descripcion:'Jabón artesanal elaborado con manzanilla de nuestra huerta'});
       expect(creado.props.requiereRevisionReforzada).toBe(false);
     });
     test('detecta variantes con tildes/mayúsculas ("Cura la diabetes")', async () => {
       const repo:any={guardar:jest.fn()};
       const plantas:any={buscarPorId:jest.fn().mockResolvedValue({id:'p1'})};
       const validaciones:any={guardar:jest.fn()};
-      const creado=await new PublicarProductoUseCase(repo,plantas,validaciones,usuariosConComisionAceptada).ejecutar({...productoInput,descripcion:'Cura la diabetes en pocos días'});
+      const creado=await new PublicarProductoUseCase(repo,plantas,validaciones,usuariosConComisionAceptada,usosCatalogo).ejecutar({...productoInput,descripcion:'Cura la diabetes en pocos días'});
       expect(creado.props.requiereRevisionReforzada).toBe(true);
     });
   });
@@ -795,7 +840,7 @@ describe('M-11 · Productos y Emprendimientos', () => {
       const plantas:any={buscarPorId:jest.fn().mockResolvedValue({id:'p1'})};
       const validaciones:any={guardar:jest.fn()};
       const usuarios:any={buscarPorId:jest.fn().mockResolvedValue({props:{id:'prod1',aceptoComisionEn:null}}),actualizar:jest.fn()};
-      await expect(new PublicarProductoUseCase(repo,plantas,validaciones,usuarios).ejecutar(productoInput)).rejects.toThrow(/comisión/i);
+      await expect(new PublicarProductoUseCase(repo,plantas,validaciones,usuarios,usosCatalogo).ejecutar(productoInput)).rejects.toThrow(/comisión/i);
       expect(repo.guardar).not.toHaveBeenCalled();
     });
     test('primera vez: si acepta la comisión en el envío, publica y registra la fecha en el perfil', async () => {
@@ -803,7 +848,7 @@ describe('M-11 · Productos y Emprendimientos', () => {
       const plantas:any={buscarPorId:jest.fn().mockResolvedValue({id:'p1'})};
       const validaciones:any={guardar:jest.fn()};
       const usuarios:any={buscarPorId:jest.fn().mockResolvedValue({props:{id:'prod1',aceptoComisionEn:null}}),actualizar:jest.fn()};
-      const creado=await new PublicarProductoUseCase(repo,plantas,validaciones,usuarios).ejecutar({...productoInput,aceptaComision:true});
+      const creado=await new PublicarProductoUseCase(repo,plantas,validaciones,usuarios,usosCatalogo).ejecutar({...productoInput,aceptaComision:true});
       expect(repo.guardar).toHaveBeenCalled();
       expect(usuarios.actualizar).toHaveBeenCalledWith(expect.objectContaining({props:expect.objectContaining({aceptoComisionEn:expect.any(Date)})}));
       expect(creado.props.estadoValidacion).toBe('Pendiente');
@@ -812,7 +857,7 @@ describe('M-11 · Productos y Emprendimientos', () => {
       const repo:any={guardar:jest.fn()};
       const plantas:any={buscarPorId:jest.fn().mockResolvedValue({id:'p1'})};
       const validaciones:any={guardar:jest.fn()};
-      const creado=await new PublicarProductoUseCase(repo,plantas,validaciones,usuariosConComisionAceptada).ejecutar(productoInput);
+      const creado=await new PublicarProductoUseCase(repo,plantas,validaciones,usuariosConComisionAceptada,usosCatalogo).ejecutar(productoInput);
       expect(repo.guardar).toHaveBeenCalled();
       expect(usuariosConComisionAceptada.actualizar).not.toHaveBeenCalled();
       expect(creado.props.estadoValidacion).toBe('Pendiente');
@@ -823,7 +868,7 @@ describe('M-11 · Productos y Emprendimientos', () => {
     const repo:any={guardar:jest.fn()};
     const plantas:any={buscarPorId:jest.fn().mockResolvedValue({id:'p1'})};
     const validaciones:any={guardar:jest.fn()};
-    const creado=await new PublicarProductoUseCase(repo,plantas,validaciones,usuariosConComisionAceptada).ejecutar(productoInput);
+    const creado=await new PublicarProductoUseCase(repo,plantas,validaciones,usuariosConComisionAceptada,usosCatalogo).ejecutar(productoInput);
     expect(repo.guardar).toHaveBeenCalled();
     expect(creado.props.estadoValidacion).toBe('Pendiente');
     expect(validaciones.guardar).toHaveBeenCalledWith(expect.objectContaining({props:expect.objectContaining({tipoEntidad:'Producto',entidadId:creado.props.id,estado:'Pendiente'})}));
@@ -832,13 +877,13 @@ describe('M-11 · Productos y Emprendimientos', () => {
     const repo:any={guardar:jest.fn()};
     const plantas:any={buscarPorId:jest.fn().mockResolvedValue({id:'p1'})};
     const validaciones:any={guardar:jest.fn()};
-    await expect(new PublicarProductoUseCase(repo,plantas,validaciones,usuariosConComisionAceptada).ejecutar({...productoInput,localidad:''})).rejects.toThrow();
+    await expect(new PublicarProductoUseCase(repo,plantas,validaciones,usuariosConComisionAceptada,usosCatalogo).ejecutar({...productoInput,localidad:''})).rejects.toThrow();
   });
   test('rechaza publicar un producto referenciando una planta que no existe', async () => {
     const repo:any={guardar:jest.fn()};
     const plantas:any={buscarPorId:jest.fn().mockResolvedValue(null)};
     const validaciones:any={guardar:jest.fn()};
-    await expect(new PublicarProductoUseCase(repo,plantas,validaciones,usuariosConComisionAceptada).ejecutar(productoInput)).rejects.toThrow();
+    await expect(new PublicarProductoUseCase(repo,plantas,validaciones,usuariosConComisionAceptada,usosCatalogo).ejecutar(productoInput)).rejects.toThrow();
   });
 
   const plantasStub:any={buscarPorId:jest.fn().mockResolvedValue(null)};
@@ -891,6 +936,30 @@ describe('M-11 · Productos y Emprendimientos', () => {
     expect(certificado.props.etiquetaCertificado).toBe(true);
     expect(certificado.props.documentacionCertificacion).toBe('[DATO DE PRUEBA] certificado.pdf');
   });
+  describe('Ronda 18: tipo de productor y uso del producto', () => {
+    test('exige el tipo de productor (campesino, empresario o comunidad)', async () => {
+      const repo:any={guardar:jest.fn()};const plantas:any={buscarPorId:jest.fn().mockResolvedValue({})};const validaciones:any={guardar:jest.fn()};
+      const usuarios:any={buscarPorId:jest.fn().mockResolvedValue({props:{aceptoComisionEn:new Date()}}),actualizar:jest.fn()};
+      const uc=new PublicarProductoUseCase(repo,plantas,validaciones,usuarios,usosCatalogo);
+      await expect(uc.ejecutar({...productoInput,tipoProductor:undefined})).rejects.toThrow(/tipo de productor/);
+      await expect(uc.ejecutar({...productoInput,tipoProductor:'Otro'})).rejects.toThrow(/tipo de productor/);
+      const ok=await uc.ejecutar({...productoInput,tipoProductor:'Comunidad'});
+      expect(ok.props.tipoProductor).toBe('Comunidad');
+    });
+    test('las categorías de uso salen del catálogo de usos; el texto vacío queda como no especificado', async () => {
+      const repo:any={guardar:jest.fn()};const plantas:any={buscarPorId:jest.fn().mockResolvedValue({})};const validaciones:any={guardar:jest.fn()};
+      const usuarios:any={buscarPorId:jest.fn().mockResolvedValue({props:{aceptoComisionEn:new Date()}}),actualizar:jest.fn()};
+      const uc=new PublicarProductoUseCase(repo,plantas,validaciones,usuarios,usosCatalogo);
+      await expect(uc.ejecutar({...productoInput,categoriasUso:['Capilar inventada']})).rejects.toThrow(/catálogo de usos/);
+      const p=await uc.ejecutar({...productoInput,categoriasUso:['Cosmético','Cosmético'],modoDeUso:'   ',contraindicaciones:''});
+      expect(p.props.categoriasUso).toEqual(['Cosmético']);
+      expect(p.props.modoDeUso).toBeUndefined();
+      expect(p.props.contraindicaciones).toBeUndefined();
+      const sin=await uc.ejecutar({...productoInput});
+      expect(sin.props.categoriasUso).toEqual([]);
+    });
+  });
+
 });
 
 describe('M-10 · Conservación y Especies Prioritarias', () => {
@@ -1418,14 +1487,14 @@ describe('M-08 · Consultas y Soporte (RF-263/264/265/266, RN-06, RNF-302)', () 
       expect(c.props.fechaPrimeraRespuestaEquipo).toBeDefined();
       expect(notificador.notificar).toHaveBeenCalledWith('u1','consulta_en_revision',{entidadTipo:'Consulta',entidadId:'c1'});
     });
-    test('un segundo mensaje del equipo pasa EnRevision -> Respondida y notifica', async () => {
+    test('un segundo mensaje del equipo NO resuelve la consulta por sí solo (queda en proceso, sin notificar de nuevo)', async () => {
       const c=consulta({autorId:'u1',estado:'EnRevision',fechaPrimeraRespuestaEquipo:new Date('2026-01-01T01:00:00Z')});
       const repo:any={buscarPorId:jest.fn().mockResolvedValue(c),actualizar:jest.fn()};
       const mensajes:any={guardar:jest.fn()};
       const notificador:any={notificar:jest.fn()};
       await new AgregarMensajeConsultaUseCase(repo,mensajes,notificador).ejecutar({consultaId:'c1',autorId:'admin-1',rolAutor:'Administrador',contenido:'[DATO DE PRUEBA] aquí está la respuesta'});
-      expect(c.props.estado).toBe('Respondida');
-      expect(notificador.notificar).toHaveBeenCalledWith('u1','consulta_respondida',{entidadTipo:'Consulta',entidadId:'c1'});
+      expect(c.props.estado).toBe('EnRevision');
+      expect(notificador.notificar).not.toHaveBeenCalled();
     });
     test('no notifica si la consulta es de un visitante sin autorId', async () => {
       const c=consulta({autorId:undefined,estado:'Pendiente'});
@@ -1476,6 +1545,29 @@ describe('M-08 · Consultas y Soporte (RF-263/264/265/266, RN-06, RNF-302)', () 
       const c=consulta({autorId:'u1',estado:'Pendiente'});
       const repo:any={buscarPorId:jest.fn().mockResolvedValue(c)};
       await expect(new ReabrirConsultaUseCase(repo).ejecutar('c1','u1','UsuarioRegistrado')).rejects.toThrow();
+    });
+  });
+
+  describe('Cambio explícito de estado por el equipo (pendiente -> en proceso -> resuelta)', () => {
+    const mk=(estado:any,extra:any={})=>{const c=consulta({autorId:'u1',estado,...extra});const repo:any={buscarPorId:jest.fn().mockResolvedValue(c),actualizar:jest.fn()};const notif:any={notificar:jest.fn()};return {c,repo,notif,uc:new CambiarEstadoConsultaEquipoUseCase(repo,notif)};};
+    test('un administrador pasa Pendiente -> en proceso -> resuelta y avisa al autor', async () => {
+      const {c,uc,notif}=mk('Pendiente');
+      await uc.ejecutar('c1','en_proceso','adm','Administrador'); expect(c.props.estado).toBe('EnRevision');
+      await uc.ejecutar('c1','resolver','adm','Administrador'); expect(c.props.estado).toBe('Respondida');
+      expect(notif.notificar).toHaveBeenCalledTimes(2);
+    });
+    test('un usuario común NO puede cambiar el estado con estas acciones', async () => {
+      const {uc,repo}=mk('Pendiente');
+      await expect(uc.ejecutar('c1','resolver','u1','UsuarioRegistrado')).rejects.toThrow(/Solo el equipo/);
+      expect(repo.actualizar).not.toHaveBeenCalled();
+    });
+    test('no se puede pasar a "en proceso" si no está pendiente, ni resolver una ya resuelta', async () => {
+      await expect(mk('EnRevision').uc.ejecutar('c1','en_proceso','adm','Administrador')).rejects.toThrow();
+      await expect(mk('Respondida').uc.ejecutar('c1','resolver','adm','Administrador')).rejects.toThrow(/ya está resuelta/);
+    });
+    test('una consulta resuelta (Respondida) puede reabrirse', async () => {
+      const {c,repo}=mk('Respondida');
+      await new ReabrirConsultaUseCase(repo).ejecutar('c1','u1','UsuarioRegistrado'); expect(c.props.estado).toBe('Pendiente');
     });
   });
 

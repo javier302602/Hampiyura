@@ -8,6 +8,7 @@ import { EstadoReporte } from '../../domain/value-objects/estado-reporte.vo';
 import { ComentarioRepositoryPort } from '../../domain/ports/out/comentario.repository.port';
 import { UsuarioRepositoryPort } from '../../domain/ports/out/usuario.repository.port';
 import { ReporteRepositoryPort } from '../../domain/ports/out/reporte.repository.port';
+import { esCategoriaReporte } from '../../domain/value-objects/categoria-reporte.vo';
 import { NotFoundError, ValidationError } from '../../domain/errors/domain.errors';
 
 // RF-25/26: cualquier usuario autenticado puede reportar un ítem YA publicado (planta, ficha
@@ -16,9 +17,13 @@ import { NotFoundError, ValidationError } from '../../domain/errors/domain.error
 export class ReportarContenidoUseCase implements ReportarContenidoPort {
   constructor(private readonly repo:ReporteRepositoryPort) {}
   async ejecutar(input:ReportarContenidoInput):Promise<Reporte> {
-    if (!input.motivo?.trim()) throw new ValidationError('El motivo del reporte es obligatorio');
+    // Sin categoría (clientes anteriores) equivale a "Otro". La descripción solo es obligatoria en "Otro".
+    const categoria = input.categoria ?? 'Otro';
+    if (!esCategoriaReporte(categoria)) throw new ValidationError('Elige una categoría de motivo válida');
+    const descripcion = input.motivo?.trim() ?? '';
+    if (categoria === 'Otro' && !descripcion) throw new ValidationError('Describe el motivo del reporte');
     if (!input.tipoEntidad?.trim() || !input.entidadId?.trim()) throw new ValidationError('El reporte debe indicar qué contenido se está reportando');
-    const reporte = new Reporte({ ...input, id:randomUUID(), fecha:new Date(), estado:'Pendiente' });
+    const reporte = new Reporte({ ...input, categoria, motivo:descripcion, id:randomUUID(), fecha:new Date(), estado:'Pendiente' });
     await this.repo.guardar(reporte);
     return reporte;
   }

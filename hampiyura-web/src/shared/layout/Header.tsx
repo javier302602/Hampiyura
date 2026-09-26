@@ -92,9 +92,9 @@ function Header(props: NavCallbacks) {
                       <Sprout size={16} aria-hidden="true" /> Registrar ficha de cultivo
                     </button>
                   )}
-                  {sesion && esAdministrador(sesion.rol) && (
+                  {sesion && esValidador(sesion.rol) && (
                     <button role="menuitem" onClick={() => { gestion.setAbierto(false); props.onIrAPanelAdmin(); }}>
-                      <LayoutDashboard size={16} aria-hidden="true" /> Panel admin
+                      <LayoutDashboard size={16} aria-hidden="true" /> {esAdministrador(sesion.rol) ? 'Panel admin' : 'Mi panel'}
                     </button>
                   )}
                   {sesion && esAdministrador(sesion.rol) && (

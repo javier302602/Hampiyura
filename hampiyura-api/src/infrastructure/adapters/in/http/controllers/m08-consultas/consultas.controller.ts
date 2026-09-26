@@ -45,13 +45,15 @@ export async function agregarMensajeConsulta(req:Request,res:Response){
   res.status(201).json(mensaje.props);
 }
 
-const cambiarEstadoSchema=z.object({accion:z.enum(['cerrar','reabrir'])});
+const cambiarEstadoSchema=z.object({accion:z.enum(['cerrar','reabrir','en_proceso','resolver'])});
 export async function cambiarEstadoConsulta(req:Request,res:Response){
   const input=cambiarEstadoSchema.parse(req.body);
   const user=auth(req);
-  const consulta=input.accion==='cerrar'
-    ? await container.cerrarConsulta.ejecutar(id(req), user.id, user.rol)
-    : await container.reabrirConsulta.ejecutar(id(req), user.id, user.rol);
+  const consulta=input.accion==='en_proceso'||input.accion==='resolver'
+    ? await container.cambiarEstadoConsultaEquipo.ejecutar(id(req), input.accion, user.id, user.rol)
+    : input.accion==='cerrar'
+      ? await container.cerrarConsulta.ejecutar(id(req), user.id, user.rol)
+      : await container.reabrirConsulta.ejecutar(id(req), user.id, user.rol);
   res.json(consulta.props);
 }
 

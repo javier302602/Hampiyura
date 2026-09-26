@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { z } from 'zod';
 import { container } from '../../../../../config/container';
+import { TIPOS_PRODUCTOR } from '../../../../../../domain/value-objects/tipo-productor.vo';
 import { AuthenticatedRequest } from '../../middlewares/role.middleware';
 
 function auth(req:Request) { return (req as AuthenticatedRequest).user; }
@@ -36,6 +37,10 @@ const publicarSchema=z.object({
   // exige un ISO datetime completo con hora/zona y rechazaba ese formato con un error de Zod poco
   // claro para quien publica. z.string().date() valida exactamente ese formato.
   fechaElaboracion:z.string().date().optional(),
+  tipoProductor:z.enum(TIPOS_PRODUCTOR,{message:'Indica el tipo de productor: campesino, empresario o comunidad'}),
+  categoriasUso:z.array(z.string()).max(10).default([]),
+  modoDeUso:z.string().max(2000).optional(),
+  contraindicaciones:z.string().max(2000).optional(),
   contactoVendedor:z.string().min(1),
   aceptaComision:z.boolean().optional(),
 });
@@ -57,5 +62,5 @@ export async function marcarValidadoDocumentalmente(req:Request,res:Response){co
 const certificarSchema=z.object({documentacion:z.string().min(1)});
 export async function marcarCertificado(req:Request,res:Response){const input=certificarSchema.parse(req.body); const producto=await container.marcarCertificado.ejecutar(String(req.params.id), input.documentacion); res.json(producto.props);}
 
-const verificarAfirmacionesSchema=z.object({nombre:z.string().optional(),descripcion:z.string().optional(),informacionProceso:z.string().optional(),ingredientes:z.string().optional()});
+const verificarAfirmacionesSchema=z.object({nombre:z.string().optional(),descripcion:z.string().optional(),informacionProceso:z.string().optional(),ingredientes:z.string().optional(),modoDeUso:z.string().optional()});
 export async function verificarAfirmaciones(req:Request,res:Response){const input=verificarAfirmacionesSchema.parse(req.body); const resultado=await container.verificarAfirmaciones.ejecutar(input); res.json(resultado);}

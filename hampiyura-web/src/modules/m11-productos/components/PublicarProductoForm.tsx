@@ -1,7 +1,8 @@
 import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
 import { CheckCircle2, Plus, Sprout, X } from 'lucide-react';
 import { listarPlantas, type Planta } from '../../m02-catalogo-plantas/api/plantas.api';
-import { publicarProducto, verificarAfirmaciones, subirMedia, leerArchivoComoBase64, type Producto, type PlantaUtilizada } from '../api/productos.api';
+import { listarUsos, type Uso } from '../../m04-usos-partes/api/partes-uso.api';
+import { publicarProducto, verificarAfirmaciones, TIPOS_PRODUCTOR, ETIQUETAS_TIPO_PRODUCTOR, type TipoProductor, subirMedia, leerArchivoComoBase64, type Producto, type PlantaUtilizada } from '../api/productos.api';
 import { obtenerPerfil } from '../../m01-cuentas/api/cuentas.api';
 import { direccionInversa } from '../../m03-cultivo/api/geocoding.api';
 import SelectorUbicacionMapa from '../../m03-cultivo/components/SelectorUbicacionMapa';
@@ -35,6 +36,11 @@ function PublicarProductoForm({ onPublicado }: { onPublicado: (creado: Producto)
   const [informacionProceso, setInformacionProceso] = useState('');
   const [fechaElaboracion, setFechaElaboracion] = useState('');
   const [contactoVendedor, setContactoVendedor] = useState('');
+  const [tipoProductor, setTipoProductor] = useState<TipoProductor | ''>('');
+  const [catalogoUsos, setCatalogoUsos] = useState<Uso[]>([]);
+  const [categoriasUso, setCategoriasUso] = useState<string[]>([]);
+  const [modoDeUso, setModoDeUso] = useState('');
+  const [contraindicaciones, setContraindicaciones] = useState('');
 
   const [yaAceptoComision, setYaAceptoComision] = useState<boolean | null>(null);
   const [aceptaComisionAhora, setAceptaComisionAhora] = useState(false);
@@ -44,18 +50,19 @@ function PublicarProductoForm({ onPublicado }: { onPublicado: (creado: Producto)
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => { listarPlantas().then(setPlantasCatalogo).catch(() => {}); }, []);
+  useEffect(() => { listarUsos().then((l) => setCatalogoUsos([...l].sort((a, b) => (a.nombre === 'Otro' ? 1 : b.nombre === 'Otro' ? -1 : a.nombre.localeCompare(b.nombre, 'es'))))).catch(() => {}); }, []);
   useEffect(() => { obtenerPerfil().then((p) => setYaAceptoComision(!!p.aceptoComisionEn)).catch(() => setYaAceptoComision(false)); }, []);
 
   // RF-274: reconsulta la misma detección del backend cada vez que cambia un campo de texto
   // relevante, para avisar ANTES de que el usuario intente enviar el formulario.
   useEffect(() => {
     const timeout = setTimeout(() => {
-      verificarAfirmaciones({ nombre, descripcion, informacionProceso, ingredientes })
+      verificarAfirmaciones({ nombre, descripcion, informacionProceso, ingredientes, modoDeUso })
         .then((r) => setRequiereRevisionReforzada(r.requiereRevisionReforzada))
         .catch(() => {});
     }, 400);
     return () => clearTimeout(timeout);
-  }, [nombre, descripcion, informacionProceso, ingredientes]);
+  }, [nombre, descripcion, informacionProceso, ingredientes, modoDeUso]);
 
   function agregarPlanta() {
     if (!entradaTexto.trim()) return;
@@ -106,9 +113,10 @@ function PublicarProductoForm({ onPublicado }: { onPublicado: (creado: Producto)
     if (plantasUtilizadas.length === 0) { setError('Agrega al menos una planta utilizada.'); return; }
     if (!yaAceptoComision && !aceptaComisionAhora) { setError('Debes aceptar los términos de comisión para publicar.'); return; }
     if (requiereRevisionReforzada) {
-      const continuar = window.confirm('El texto ingresado contiene afirmaciones que activarán una revisión reforzada por parte del equipo (RF-274) antes de aprobarse. ¿Deseas publicar de todas formas?');
+      const continuar = window.confirm('El texto ingresado contiene afirmaciones que activarán una revisión reforzada por parte del equipo antes de aprobarse. ¿Deseas publicar de todas formas?');
       if (!continuar) return;
     }
+    if (!tipoProductor) { setError('Indica el tipo de productor: campesino, empresario o comunidad.'); return; }
     setEnviando(true);
     setError(null);
     try {
@@ -118,6 +126,8 @@ function PublicarProductoForm({ onPublicado }: { onPublicado: (creado: Producto)
         precioReferencial: precioReferencial.trim() || undefined, fotografias, localidad,
         latitud: coordenadas?.lat, longitud: coordenadas?.lon, informacionProceso,
         fechaElaboracion: fechaElaboracion || undefined, contactoVendedor,
+        tipoProductor: tipoProductor as TipoProductor, categoriasUso,
+        modoDeUso: modoDeUso.trim() || undefined, contraindicaciones: contraindicaciones.trim() || undefined,
         aceptaComision: aceptaComisionAhora || undefined,
       });
       onPublicado(creado);
@@ -155,6 +165,42 @@ function PublicarProductoForm({ onPublicado }: { onPublicado: (creado: Producto)
         <label>
           Precio referencial (opcional)
           <input type="text" value={precioReferencial} onChange={(e) => setPrecioReferencial(e.target.value)} />
+        </label>
+      </div>
+
+      <div className="form-section">
+        <h3 className="form-section-title">Quién lo produce</h3>
+        <label>
+          Tipo de productor
+          <select value={tipoProductor} onChange={(e) => setTipoProductor(e.target.value as TipoProductor | '')} required>
+            <option value="">Elige una opción…</option>
+            {TIPOS_PRODUCTOR.map((t) => <option key={t} value={t}>{ETIQUETAS_TIPO_PRODUCTOR[t]}</option>)}
+          </select>
+        </label>
+        <p className="comentario-meta">Se muestra en la ficha del producto, gratis para todos: ayuda a quien compra a saber de quién compra.</p>
+      </div>
+
+      <div className="form-section">
+        <h3 className="form-section-title">Para qué sirve y cómo se usa</h3>
+        <p className="comentario-meta">Todo es opcional. Si no lo completas, la ficha dirá “no especificado”: no se rellena nada por ti.</p>
+        <fieldset style={{ border: 0, padding: 0, margin: 0 }}>
+          <legend>Categoría de uso (puedes marcar varias)</legend>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.4rem .9rem' }}>
+            {catalogoUsos.map((u) => (
+              <label key={u.id} style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem', flexDirection: 'row', fontWeight: 400 }}>
+                <input type="checkbox" checked={categoriasUso.includes(u.nombre)} onChange={(e) => setCategoriasUso((prev) => (e.target.checked ? [...prev, u.nombre] : prev.filter((x) => x !== u.nombre)))} />
+                {u.nombre}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+        <label>
+          Modo de uso
+          <textarea value={modoDeUso} onChange={(e) => setModoDeUso(e.target.value)} maxLength={2000} placeholder="Ej. aplicar una pequeña cantidad sobre la zona limpia, dos veces al día." />
+        </label>
+        <label>
+          Prevenciones y contraindicaciones
+          <textarea value={contraindicaciones} onChange={(e) => setContraindicaciones(e.target.value)} maxLength={2000} placeholder="Ej. no usar en embarazo; suspender si hay irritación." />
         </label>
       </div>
 
@@ -279,7 +325,7 @@ function PublicarProductoForm({ onPublicado }: { onPublicado: (creado: Producto)
 
         {requiereRevisionReforzada && (
           <p className="advertencia-no-verificado">
-            ⚠ El texto ingresado (nombre, descripción, proceso o ingredientes) contiene afirmaciones que la plataforma detecta como potencialmente engañosas o peligrosas (RF-274, ej. "cura", "elimina", "sustituye tratamiento médico"). Esto NO bloquea la publicación, pero el producto quedará marcado para una <strong>revisión reforzada</strong> por el equipo antes de poder aprobarse. Revisa el texto si esto no era tu intención.
+            ⚠ El texto ingresado (nombre, descripción, proceso o ingredientes) contiene afirmaciones que la plataforma detecta como potencialmente engañosas o peligrosas (ej. "cura", "elimina", "sustituye tratamiento médico"). Esto NO bloquea la publicación, pero el producto quedará marcado para una <strong>revisión reforzada</strong> por el equipo antes de poder aprobarse. Revisa el texto si esto no era tu intención.
           </p>
         )}
         <p className="comentario-meta">Tu producto quedará "Pendiente" hasta que el equipo lo revise; no aparecerá en el directorio público hasta entonces.</p>

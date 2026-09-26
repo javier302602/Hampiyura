@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { registrar, login, activarCuenta, solicitarRecuperacion, restablecerContraseña, cambiarContraseña, obtenerPerfil, actualizarPerfil } from '../controllers/m01-cuentas.controller';
+import { registrar, login, activarCuenta, solicitarRecuperacion, restablecerContraseña, cambiarContraseña, obtenerPerfil, actualizarPerfil, solicitarTipoCuenta, obtenerMiTipoCuenta } from '../controllers/m01-cuentas.controller';
 import { registrarPlanta, proponerPlanta, listarPlantas, obtenerPlanta } from '../controllers/m02-catalogo-plantas/plantas.controller';
 import { registrarFicha, obtenerFicha, listarFichasPorPlanta, registrarUbicacionCultivo, obtenerUbicacionCultivo, listarMapaCultivo } from '../controllers/m03-cultivo.controller';
 import { registrarUso, listarUsos } from '../controllers/m04-usos-partes/usos.controller';
@@ -21,6 +21,7 @@ export const router=Router();
 router.get('/planes',listarPlanes); router.get('/planes/mi-plan',requireAuth,miPlan); router.post('/planes/pagos',requireAuth,solicitarPago);
 router.get('/planes/pagos',requireAdmin,listarPagos); router.get('/planes/pagos/:id',requireAdmin,detallePago); router.post('/planes/pagos/:id/confirmar',requireAdmin,confirmarPago); router.post('/planes/pagos/:id/rechazar',requireAdmin,rechazarPago);
 router.get('/productores',listarProductores); router.get('/productores/:id',attachUserIfPresent,obtenerProductor);
+router.post('/cuentas/solicitud-tipo-cuenta',requireAuth,solicitarTipoCuenta); router.get('/cuentas/solicitud-tipo-cuenta',requireAuth,obtenerMiTipoCuenta);
 router.post('/cuentas/registro',registrar); router.post('/cuentas/login',login); router.post('/cuentas/activar',activarCuenta); router.post('/cuentas/recuperar-contrasena',solicitarRecuperacion); router.post('/cuentas/restablecer-contrasena',restablecerContraseña); router.post('/cuentas/cambiar-contrasena',requireAuth,cambiarContraseña); router.get('/cuentas/perfil',requireAuth,obtenerPerfil); router.patch('/cuentas/perfil',requireAuth,actualizarPerfil);
 router.post('/plantas',requireValidator,registrarPlanta); router.post('/plantas/proponer',requireAuth,proponerPlanta); router.get('/plantas',listarPlantas); router.get('/plantas/:id',obtenerPlanta);
 router.post('/cultivos',requireValidator,registrarFicha); router.get('/cultivos/:id',obtenerFicha); router.get('/plantas/:plantaId/cultivos',listarFichasPorPlanta);
@@ -36,7 +37,7 @@ router.post('/publicaciones/:publicacionId/calificacion',requireAuth,calificarPu
 router.get('/validaciones/pendientes',requireValidator,listarPendientes); router.get('/validaciones/:id/detalle',requireValidator,detalleValidacion);
 router.post('/validaciones/:id/aprobar',requireValidator,aprobar); router.post('/validaciones/:id/observar',requireValidator,observar); router.post('/validaciones/:id/rechazar',requireValidator,rechazar);
 router.post('/reportes',requireAuth,reportar); router.get('/reportes',requireValidator,listarReportes); router.patch('/reportes/:id',requireValidator,actualizarEstadoReporte);
-router.get('/admin/panel',requireAdmin,obtenerPanel);
+router.get('/admin/panel',requireValidator,obtenerPanel);
 router.get('/admin/usuarios',requireAdmin,listarUsuarios);
 router.patch('/admin/usuarios/:id/suspender',requireAdmin,suspenderUsuario); router.patch('/admin/usuarios/:id/reactivar',requireAdmin,reactivarUsuario);
 router.patch('/admin/usuarios/:id/rol',requireAdmin,cambiarRolUsuario);

@@ -2,7 +2,7 @@ import { Usuario } from '../../domain/entities/usuario.entity';
 import { ListarUsuariosPort } from '../../domain/ports/in/m13-analitica-estadisticas/listar-usuarios.port';
 import { CambiarEstadoCuentaPort } from '../../domain/ports/in/m13-analitica-estadisticas/cambiar-estado-cuenta.port';
 import { EliminarPlantaPort } from '../../domain/ports/in/m13-analitica-estadisticas/eliminar-planta.port';
-import { ObtenerPanelAdminPort, PanelAdmin } from '../../domain/ports/in/m13-analitica-estadisticas/obtener-panel-admin.port';
+import { ObtenerPanelAdminPort, PanelAdmin, ResumenConsultas } from '../../domain/ports/in/m13-analitica-estadisticas/obtener-panel-admin.port';
 import { ObtenerAuditoriaPort, RegistroAuditoria } from '../../domain/ports/in/m13-analitica-estadisticas/obtener-auditoria.port';
 import { UsuarioRepositoryPort } from '../../domain/ports/out/usuario.repository.port';
 import { PlantaRepositoryPort } from '../../domain/ports/out/planta.repository.port';
@@ -10,6 +10,12 @@ import { CultivoRepositoryPort } from '../../domain/ports/out/cultivo.repository
 import { ParteUsoRepositoryPort } from '../../domain/ports/out/parte-uso.repository.port';
 import { PublicacionRepositoryPort } from '../../domain/ports/out/publicacion.repository.port';
 import { ReporteRepositoryPort } from '../../domain/ports/out/reporte.repository.port';
+import { ConsultaRepositoryPort } from '../../domain/ports/out/consulta.repository.port';
+import { PagoContactoRepositoryPort } from '../../domain/ports/out/pago-contacto.repository.port';
+import { ProductoRepositoryPort } from '../../domain/ports/out/producto.repository.port';
+import { rolPuedeValidarTipo } from '../../domain/entities/validacion-contenido.entity';
+import { puedeVerArea } from '../m08-consultas/consultas.use-cases';
+import { UnauthorizedError } from '../../domain/errors/domain.errors';
 import { ValidacionContenidoRepositoryPort } from '../../domain/ports/out/validacion-contenido.repository.port';
 import { NotFoundError, ValidationError } from '../../domain/errors/domain.errors';
 
@@ -65,18 +71,39 @@ export class EliminarPlantaUseCase implements EliminarPlantaPort {
 }
 
 export class ObtenerPanelAdminUseCase implements ObtenerPanelAdminPort {
-  constructor(private readonly validaciones:ValidacionContenidoRepositoryPort, private readonly usuarios:UsuarioRepositoryPort, private readonly plantas:PlantaRepositoryPort, private readonly publicaciones:PublicacionRepositoryPort, private readonly reportes:ReporteRepositoryPort) {}
-  async ejecutar():Promise<PanelAdmin> {
-    const [pendientes, usuariosRegistrados, usuariosActivos, plantasPublicadas, publicacionesRealizadas, porEstado] = await Promise.all([
-      this.validaciones.listarPendientes(), this.usuarios.contar(), this.usuarios.contarActivos(), this.plantas.contar(), this.publicaciones.contar(), this.reportes.contarPorEstado(),
+  constructor(
+    private readonly validaciones:ValidacionContenidoRepositoryPort, private readonly usuarios:UsuarioRepositoryPort, private readonly plantas:PlantaRepositoryPort,
+    private readonly publicaciones:PublicacionRepositoryPort, private readonly reportes:ReporteRepositoryPort,
+    private readonly consultas:ConsultaRepositoryPort, private readonly pagos:PagoContactoRepositoryPort, private readonly productos:ProductoRepositoryPort,
+  ) {}
+  async ejecutar(rol:string):Promise<PanelAdmin> {
+    const esAdmin = rol === 'Administrador';
+    if (!esAdmin && !rol.startsWith('Especialista')) throw new UnauthorizedError('Solo el equipo puede ver el panel');
+    const [pendientes, porEstado, todasConsultas] = await Promise.all([this.validaciones.listarPendientes(), this.reportes.contarPorEstado(), this.consultas.listar({})]);
+    const propias = pendientes.filter((v) => rolPuedeValidarTipo(rol, v.props.tipoEntidad));
+    const visibles = todasConsultas.filter((c) => puedeVerArea(rol, c.props.areaAsignada));
+    // Pendiente = pendiente; EnRevision = en proceso; Respondida y Cerrada = resuelta (mismo mapeo que la interfaz).
+    const consultas:ResumenConsultas = {
+      pendientes: visibles.filter((c) => c.props.estado === 'Pendiente').length,
+      enProceso: visibles.filter((c) => c.props.estado === 'EnRevision').length,
+      resueltas: visibles.filter((c) => c.props.estado === 'Respondida' || c.props.estado === 'Cerrada').length,
+    };
+    const reportes = { pendientes:porEstado.Pendiente, revisados:porEstado.Revisado, desestimados:porEstado.Desestimado };
+    if (!esAdmin) return { alcance:'especialista', validacionesPendientes:propias.length, reportes, consultas };
+
+    const [usuariosRegistrados, usuariosActivos, plantasPublicadas, publicacionesRealizadas, pagos, usuarios, productos] = await Promise.all([
+      this.usuarios.contar(), this.usuarios.contarActivos(), this.plantas.contar(), this.publicaciones.contar(), this.pagos.listar(), this.usuarios.listar(), this.productos.listar(),
     ]);
+    const ahora = new Date();
+    const vigentes = pagos.filter((p) => p.estaVigente(ahora));
     return {
+      alcance:'completo',
       validacionesPendientes:pendientes.length,
-      usuariosRegistrados,
-      usuariosActivos,
-      plantasPublicadas,
-      publicacionesRealizadas,
-      reportes:{ pendientes:porEstado.Pendiente, revisados:porEstado.Revisado, desestimados:porEstado.Desestimado },
+      usuariosRegistrados, usuariosActivos, plantasPublicadas, publicacionesRealizadas,
+      reportes, consultas,
+      pagos:{ pendientesDeConfirmar:pagos.filter((p) => p.props.estado === 'Pendiente').length, confirmados:pagos.filter((p) => p.props.estado === 'Confirmado').length, rechazados:pagos.filter((p) => p.props.estado === 'Rechazado').length },
+      accesos:{ planesActivos:vigentes.filter((p) => p.props.concepto === 'Plan').length, desbloqueosVigentes:vigentes.filter((p) => p.props.concepto === 'Desbloqueo').length },
+      comision:{ porcentaje:5, productoresQueAceptaron:usuarios.filter((u) => !!u.props.aceptoComisionEn).length, productosPublicados:productos.length, ventasRegistradas:false, montoAcumulado:null },
     };
   }
 }

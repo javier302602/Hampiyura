@@ -84,7 +84,7 @@ function DetalleValidacionModal({ validacionId, onCerrar, onAprobar, onObservar,
       {detalle && (
         <>
           <div className="detalle-meta">
-            <span className="badge badge-estado">{detalle.tipoEntidad}</span>
+            <span className="badge badge-estado">{detalle.tipoEntidad === 'SolicitudCuenta' ? 'Solicitud de cuenta' : detalle.tipoEntidad}</span>
             <span className="badge badge-estado">{detalle.estado}</span>
             <p>Enviado por <strong>{detalle.autorNombre}</strong> · {new Date(detalle.fecha).toLocaleString()}</p>
           </div>

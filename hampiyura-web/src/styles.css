@@ -72,6 +72,11 @@ p{font-size:1.1rem;line-height:1.6;max-width:620px;color:var(--color-text)}
 .imagen-ficha-planta{display:block;width:min(100%,560px);height:clamp(260px,42vw,420px);object-fit:cover;border-radius:var(--radius-lg);border:1px solid var(--card-border);box-shadow:var(--shadow-md);outline:1px solid var(--media-ring);outline-offset:-2px;margin:1rem 0 1.5rem}
 .gestion-panel{background:linear-gradient(135deg,var(--color-surface),color-mix(in srgb,var(--color-surface) 86%,var(--color-accent) 14%));border:1px solid var(--card-border);border-top:5px solid var(--color-accent-deep);border-radius:var(--radius-lg);padding:1.5rem;margin-top:2rem;box-shadow:var(--shadow-md)}
 .gestion-panel h2{margin-top:0;color:var(--color-text)}
+/* Tarjetas de estadísticas del panel (Ronda 18): celeste suave en claro, verde claro en oscuro; colores medidos >=7:1. */
+.panel-stats article{background:var(--stat-bg);border-color:var(--stat-border);color:var(--stat-text)}
+.panel-stats article strong{color:var(--stat-number)}
+.panel-stats article span{color:var(--stat-text)}
+.panel-stats article .comentario-meta{color:var(--stat-muted)}
 .gestion-panel .cards{margin-top:1.25rem}
 .cards strong{color:var(--color-accent-text)}
 .cards span{font-weight:600}

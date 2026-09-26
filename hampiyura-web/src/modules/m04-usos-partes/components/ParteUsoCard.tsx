@@ -33,7 +33,7 @@ function ParteUsoCard({ parteUso, nombreUso }: { parteUso: ParteUso; nombreUso: 
       {parteUso.contraindicaciones && <span>Contraindicaciones: {parteUso.contraindicaciones}</span>}
       <span className="fuente-cita">Fuente: {parteUso.fuente.valor}</span>
 
-      <h4>Preparaciones (M-05)</h4>
+      <h4>Preparaciones</h4>
       {preparaciones.length === 0 && !pendienteRecienCreada && <p>Todavía no hay preparaciones documentadas y validadas para esta combinación.</p>}
       {preparaciones.map((p) => <PreparacionCard key={p.id} preparacion={p} avisoLegal={p.avisoLegal} />)}
       {pendienteRecienCreada && (

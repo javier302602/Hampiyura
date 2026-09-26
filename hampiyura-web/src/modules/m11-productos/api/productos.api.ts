@@ -12,6 +12,11 @@ export interface PlantaUtilizada {
   cantidad?: string;
 }
 
+// Quién produce: visible y gratis en la ficha. Es una declaración del productor.
+export const TIPOS_PRODUCTOR = ['Campesino', 'Empresario', 'Comunidad'] as const;
+export type TipoProductor = (typeof TIPOS_PRODUCTOR)[number];
+export const ETIQUETAS_TIPO_PRODUCTOR: Record<TipoProductor, string> = { Campesino: 'Campesino', Empresario: 'Empresario', Comunidad: 'Comunidad' };
+
 export interface Producto {
   id: string;
   productorId: string;
@@ -33,6 +38,11 @@ export interface Producto {
   longitud?: number;
   informacionProceso: string;
   fechaElaboracion?: string;
+  // Ronda 18. Productos anteriores no tienen tipoProductor; lo demás es opcional y nunca se rellena por el sistema.
+  tipoProductor?: TipoProductor;
+  categoriasUso?: string[];
+  modoDeUso?: string;
+  contraindicaciones?: string;
   // M-15: null cuando quien consulta no tiene plan activo ni desbloqueo vigente de este productor.
   contactoVendedor: string | null;
   contactoBloqueado?: boolean;
@@ -63,6 +73,10 @@ export interface PublicarProductoInput {
   longitud?: number;
   informacionProceso: string;
   fechaElaboracion?: string;
+  tipoProductor: TipoProductor;
+  categoriasUso?: string[];
+  modoDeUso?: string;
+  contraindicaciones?: string;
   contactoVendedor: string;
   // Solo hace falta enviarlo en true la primera vez que el usuario publica (el backend lo exige
   // solo si Usuario.aceptoComisionEn todavía es null) -- ver PublicarProductoUseCase.
@@ -92,7 +106,7 @@ export function marcarCertificado(id: string, documentacion: string): Promise<Pr
 
 // RF-274: reusa exactamente la misma detección que el backend aplica al publicar (no duplica la
 // lista de términos/heurística en el cliente) -- permite avisar ANTES de enviar el formulario.
-export function verificarAfirmaciones(input: { nombre?: string; descripcion?: string; informacionProceso?: string; ingredientes?: string }): Promise<{ requiereRevisionReforzada: boolean }> {
+export function verificarAfirmaciones(input: { nombre?: string; descripcion?: string; informacionProceso?: string; ingredientes?: string; modoDeUso?: string }): Promise<{ requiereRevisionReforzada: boolean }> {
   return apiRequest('/productos/verificar-afirmaciones', { method: 'POST', body: JSON.stringify(input) });
 }
 

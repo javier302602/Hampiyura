@@ -79,6 +79,9 @@ model Usuario {
   telefono String?
   biografia String?
   nombreNegocio String?
+  // Ronda 18: tipo de cuenta aprobado por un administrador (Productor / Empresario / Institucion). Null = cuenta normal.
+  tipoCuenta String?
+  solicitudesCuenta SolicitudCuenta[]
   cultivos Cultivo[]
   validaciones ValidacionContenido[]
   notificaciones Notificacion[]
@@ -307,6 +310,7 @@ model Reporte {
   entidadId String
   autorId String
   motivo String
+  categoria String @default("Otro")
   fecha DateTime
   estado EstadoReporte
   autor Usuario @relation(fields: [autorId], references: [id])
@@ -384,6 +388,11 @@ model Producto {
   longitud Float?
   informacionProceso String
   fechaElaboracion DateTime?
+  // Ronda 18: quién produce y para qué sirve / cómo se usa (todo lo declara el productor; vacío = no especificado).
+  tipoProductor String?
+  categoriasUso String[] @default([])
+  modoDeUso String?
+  contraindicaciones String?
   contactoVendedor String
   documentacionCertificacion String?
   requiereRevisionReforzada Boolean @default(false)
@@ -391,6 +400,21 @@ model Producto {
   etiquetaCertificado Boolean @default(false)
   estadoValidacion EstadoValidacion
   productor Usuario @relation(fields: [productorId], references: [id])
+}
+// Ronda 18: solicitud de cambio de tipo de cuenta; se decide en la bandeja de validación (M-09), solo Administrador.
+model SolicitudCuenta {
+  id String @id @default(uuid())
+  usuarioId String
+  tipoSolicitado String
+  nombreOrganizacion String?
+  descripcion String
+  identificacion String?
+  sitioWeb String?
+  estadoValidacion EstadoValidacion
+  creadaEn DateTime
+  usuario Usuario @relation(fields: [usuarioId], references: [id])
+
+  @@index([usuarioId])
 }
 model Notificacion {
   id String @id @default(uuid())

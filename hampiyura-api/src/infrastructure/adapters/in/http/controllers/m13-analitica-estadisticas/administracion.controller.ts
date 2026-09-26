@@ -1,11 +1,13 @@
 import { Request, Response } from 'express';
 import { z } from 'zod';
 import { container } from '../../../../../config/container';
+import { AuthenticatedRequest } from '../../middlewares/role.middleware';
 import { ROLES } from '../../../../../../domain/value-objects/rol.vo';
 
 function idParam(req:Request):string { return String(req.params.id); }
 
-export async function obtenerPanel(_req:Request,res:Response){const panel=await container.obtenerPanelAdmin.ejecutar(); res.json(panel);}
+// Administrador y especialistas entran, pero cada rol recibe SOLO lo suyo (lo decide el caso de uso, no la pantalla).
+export async function obtenerPanel(req:Request,res:Response){const panel=await container.obtenerPanelAdmin.ejecutar((req as AuthenticatedRequest).user.rol); res.json(panel);}
 export async function listarUsuarios(_req:Request,res:Response){
   const usuarios=await container.listarUsuarios.ejecutar();
   res.json(usuarios.map(u=>({id:u.props.id,nombre:u.props.nombre,correo:u.props.correo,rol:u.props.rol,estado:u.props.estado})));

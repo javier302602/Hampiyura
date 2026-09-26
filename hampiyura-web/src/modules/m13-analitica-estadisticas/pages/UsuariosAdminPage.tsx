@@ -58,7 +58,7 @@ function UsuariosAdminPage() {
 
   return (
     <section className="gestion-panel">
-      <h2>Usuarios (M-13)</h2>
+      <h2>Usuarios</h2>
       <p className="comentario-meta">
         Cambiar el rol o suspender/reactivar una cuenta tiene efecto inmediato. Solo un Administrador puede llegar a esta pantalla,
         así que solo un Administrador puede asignar el rol Administrador a otra cuenta.

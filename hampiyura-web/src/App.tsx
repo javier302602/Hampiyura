@@ -150,7 +150,7 @@ function App() {
         <Route path={`${RUTAS.planes}/pagos`} element={<RequireRole permitido={esAdministrador}><PagosAdminPage /></RequireRole>} />
         <Route path={`${RUTAS.planes}/productores`} element={<ProductoresPage />} />
         <Route path={`${RUTAS.planes}/productores/:productorId`} element={<ProductorPage />} />
-        <Route path={RUTAS.admin} element={<RequireRole permitido={esAdministrador}><PanelAdminPage /></RequireRole>} />
+        <Route path={RUTAS.admin} element={<RequireRole permitido={esValidador}><PanelAdminPage /></RequireRole>} />
         <Route path={RUTAS.adminUsuarios} element={<RequireRole permitido={esAdministrador}><UsuariosAdminPage /></RequireRole>} />
         <Route path="*" element={<Navigate to={RUTAS.home} replace />} />
       </Routes>

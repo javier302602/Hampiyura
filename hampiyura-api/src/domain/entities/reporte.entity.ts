@@ -1,10 +1,11 @@
 import { EstadoReporte } from '../value-objects/estado-reporte.vo';
+import { CategoriaReporte } from '../value-objects/categoria-reporte.vo';
 import { ValidationError } from '../errors/domain.errors';
 
 // Reporte: alerta de un usuario sobre contenido YA PUBLICADO que puede estar mal
 // (planta, ficha de cultivo, parte+uso...). No confundir con ValidacionContenido,
 // que es el flujo de aprobación de contenido NUEVO antes de publicarse (M-09).
-export interface ReporteProps { id: string; tipoEntidad: string; entidadId: string; autorId: string; motivo: string; fecha: Date; estado: EstadoReporte; }
+export interface ReporteProps { id: string; tipoEntidad: string; entidadId: string; autorId: string; motivo: string; categoria: CategoriaReporte; fecha: Date; estado: EstadoReporte; }
 
 export class Reporte {
   constructor(public readonly props: ReporteProps) {}

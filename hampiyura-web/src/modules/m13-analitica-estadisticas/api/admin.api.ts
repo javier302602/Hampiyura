@@ -1,15 +1,25 @@
 import { apiRequest } from '../../../shared/api/client';
 
-// Mismo contrato que devuelve GET /admin/panel (ObtenerPanelAdminUseCase) -- antes el frontend solo
-// declaraba y mostraba tres de estos campos.
-export interface PanelAdmin {
+// Contrato de GET /admin/panel. El servidor decide qué manda según el rol: el Administrador recibe el panel completo
+// y un especialista solo su trabajo (validaciones de su área, reportes, consultas) -- las cifras de pagos, planes,
+// comisión y usuarios nunca llegan al navegador de un especialista.
+export interface ResumenReportes { pendientes: number; revisados: number; desestimados: number }
+export interface ResumenConsultas { pendientes: number; enProceso: number; resueltas: number }
+export interface PanelEspecialista { alcance: 'especialista'; validacionesPendientes: number; reportes: ResumenReportes; consultas: ResumenConsultas }
+export interface PanelCompleto {
+  alcance: 'completo';
   validacionesPendientes: number;
   usuariosRegistrados: number;
   usuariosActivos: number;
   plantasPublicadas: number;
   publicacionesRealizadas: number;
-  reportes: { pendientes: number; revisados: number; desestimados: number };
+  reportes: ResumenReportes;
+  consultas: ResumenConsultas;
+  pagos: { pendientesDeConfirmar: number; confirmados: number; rechazados: number };
+  accesos: { planesActivos: number; desbloqueosVigentes: number };
+  comision: { porcentaje: number; productoresQueAceptaron: number; productosPublicados: number; ventasRegistradas: false; montoAcumulado: null };
 }
+export type PanelAdmin = PanelCompleto | PanelEspecialista;
 
 export function obtenerPanel(): Promise<PanelAdmin> { return apiRequest<PanelAdmin>('/admin/panel'); }
 

@@ -68,7 +68,7 @@ function UsosPage() {
   return (
     <section>
       <SectionHeader
-        eyebrow="Catálogo · M-04"
+        eyebrow="Catálogo"
         title="Usos y finalidades"
         description="Categorías compartidas que describen para qué se usa cada planta -- alimentan el filtro de búsqueda y el registro de partes de uso."
       />

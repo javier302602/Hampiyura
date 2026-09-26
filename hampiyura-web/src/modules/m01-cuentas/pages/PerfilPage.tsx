@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { ArrowLeft, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { obtenerPerfil, cambiarContrasena, actualizarPerfil, type Perfil } from '../api/cuentas.api';
+import { obtenerPerfil, cambiarContrasena, actualizarPerfil, obtenerMiTipoCuenta, solicitarTipoCuenta, TIPOS_CUENTA, type MiTipoCuenta, type TipoCuentaSolicitable, type Perfil } from '../api/cuentas.api';
 import ReglasContrasena, { contraseñaEsSegura } from '../components/ReglasContrasena';
 import { Avatar, Badge, Button, Card, ErrorState, LoadingState, SectionHeader } from '../../../shared/ui';
 import type { BadgeVariant } from '../../../shared/ui/Badge';
@@ -26,7 +26,7 @@ const ESTADO_CUENTA: Record<string, { etiqueta: string; variant: BadgeVariant }>
 // Campos básicos: teléfono, ubicación/región, biografía corta y, para Productor, el nombre de su negocio.
 // El teléfono y el nombre del negocio son lo que otras personas ven cuando desbloquean tu contacto (M-15).
 function FormularioEditarPerfil({ perfil, onGuardado }: { perfil: Perfil; onGuardado: (p: Perfil) => void }) {
-  const esProductor = perfil.rol === 'Productor';
+  const esProductor = perfil.rol === 'Productor' || !!perfil.tipoCuenta;
   const [telefono, setTelefono] = useState(perfil.telefono ?? '');
   const [region, setRegion] = useState(perfil.region === 'Pendiente' ? '' : perfil.region);
   const [biografia, setBiografia] = useState(perfil.biografia ?? '');
@@ -72,6 +72,115 @@ function FormularioEditarPerfil({ perfil, onGuardado }: { perfil: Perfil; onGuar
       {guardado && <p className="sello-verificado" role="status">✔ Perfil guardado.</p>}
       <Button type="submit" variant="primary" loading={guardando}>{guardando ? 'Guardando…' : 'Guardar cambios'}</Button>
     </form>
+  );
+}
+
+const ESTADO_SOLICITUD: Record<string, { etiqueta: string; variant: BadgeVariant }> = {
+  Pendiente: { etiqueta: 'Pendiente de aprobación', variant: 'warning' },
+  EnRevision: { etiqueta: 'En revisión', variant: 'warning' },
+  Observado: { etiqueta: 'El equipo dejó una observación', variant: 'warning' },
+  Validado: { etiqueta: 'Aprobada', variant: 'success' },
+  Rechazado: { etiqueta: 'Rechazada', variant: 'danger' },
+};
+
+// Pedir el cambio a Productor / Empresario / Institución de investigación. No se aplica solo: queda pendiente y lo decide
+// un administrador. El plan que le corresponde sale del catálogo de planes (M-15); aprobar el tipo no regala el plan.
+function TarjetaTipoCuenta({ onCambio }: { onCambio: () => void }) {
+  const navigate = useNavigate();
+  const [estado, setEstado] = useState<MiTipoCuenta | null>(null);
+  const [abierto, setAbierto] = useState(false);
+  const [tipo, setTipo] = useState<TipoCuentaSolicitable>('Productor');
+  const [nombre, setNombre] = useState('');
+  const [descripcion, setDescripcion] = useState('');
+  const [identificacion, setIdentificacion] = useState('');
+  const [sitioWeb, setSitioWeb] = useState('');
+  const [enviando, setEnviando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  function cargar() { obtenerMiTipoCuenta().then(setEstado).catch(() => setEstado(null)); }
+  useEffect(cargar, []);
+
+  const def = TIPOS_CUENTA.find((t) => t.valor === tipo)!;
+  const pideNombre = tipo !== 'Productor';
+  const etiquetaNombre = tipo === 'Institucion' ? 'Nombre de la institución' : tipo === 'Empresario' ? 'Nombre de tu empresa' : 'Nombre de tu empresa o negocio (opcional)';
+  const etiquetaDescripcion = tipo === 'Institucion' ? 'Qué investiga o a qué se dedica' : tipo === 'Empresario' ? 'A qué se dedica tu empresa' : 'Qué produces';
+
+  async function enviar(e: FormEvent) {
+    e.preventDefault();
+    setEnviando(true); setError(null);
+    try {
+      await solicitarTipoCuenta({ tipo, nombreOrganizacion: nombre.trim() || undefined, descripcion, identificacion: identificacion.trim() || undefined, sitioWeb: sitioWeb.trim() || undefined });
+      setAbierto(false); setNombre(''); setDescripcion(''); setIdentificacion(''); setSitioWeb('');
+      cargar(); onCambio();
+    } catch (err) { setError(err instanceof Error ? err.message : 'No se pudo enviar la solicitud.'); }
+    finally { setEnviando(false); }
+  }
+
+  if (!estado) return null;
+  const s = estado.solicitud;
+  // Quien ya es del equipo (o ya tiene tipo) no ve el formulario: solo su estado.
+  if (!estado.puedeSolicitar && !s && !estado.tipoCuenta) return null;
+
+  return (
+    <Card>
+      <div className="card-ui-body">
+        <h3 className="perfil-nombre">Tipo de cuenta</h3>
+        {estado.tipoCuenta && <p className="perfil-correo">Tu cuenta está aprobada como <strong>{TIPOS_CUENTA.find((t) => t.valor === estado.tipoCuenta)?.etiqueta}</strong>.</p>}
+        {s && (
+          <div style={{ display: 'grid', gap: '.5rem', marginBottom: '.75rem' }}>
+            <div className="perfil-badges">
+              <Badge variant={ESTADO_SOLICITUD[s.estado]?.variant ?? 'neutral'}>{ESTADO_SOLICITUD[s.estado]?.etiqueta ?? s.estado}</Badge>
+              <span className="perfil-correo">Solicitud: {s.etiquetaTipo} · {new Date(s.creadaEn).toLocaleDateString('es-PE')}</span>
+            </div>
+            {s.comentarioDelEquipo && <p className="comentario-meta">Comentario del equipo: {s.comentarioDelEquipo}</p>}
+            <p className="perfil-correo">
+              Plan que le corresponde a este tipo: <strong>{s.plan.nombre}</strong> ({s.plan.precioTexto}).{' '}
+              {s.plan.gratis ? 'No tiene costo.' : 'Es un plan de pago: se contrata aparte, aprobar el tipo de cuenta no lo activa.'}
+            </p>
+            {(s.estado === 'Validado' && !s.plan.gratis) && <Button variant="secondary" onClick={() => navigate('/m15-planes')}>Ver planes</Button>}
+          </div>
+        )}
+        {estado.puedeSolicitar && !abierto && (
+          <>
+            {!s && <p className="perfil-correo">Tu cuenta es de usuario normal (gratis). Si produces, tienes un negocio o representas a una institución, puedes pedir el cambio: un administrador lo revisa.</p>}
+            <Button variant="secondary" onClick={() => setAbierto(true)}>{s ? 'Enviar una nueva solicitud' : 'Solicitar cambio de tipo de cuenta'}</Button>
+          </>
+        )}
+        {estado.puedeSolicitar && abierto && (
+          <form onSubmit={enviar} className="formulario" style={{ maxWidth: 'none', padding: 0, border: 'none', background: 'none', boxShadow: 'none', marginTop: 0 }}>
+            <label>
+              Quiero una cuenta de tipo
+              <select value={tipo} onChange={(e) => setTipo(e.target.value as TipoCuentaSolicitable)}>
+                {TIPOS_CUENTA.map((t) => <option key={t.valor} value={t.valor}>{t.etiqueta}</option>)}
+              </select>
+              <span className="comentario-meta">{def.ayuda}</span>
+            </label>
+            <label>
+              {etiquetaNombre}
+              <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} maxLength={80} required={pideNombre} />
+            </label>
+            <label>
+              {etiquetaDescripcion}
+              <textarea value={descripcion} onChange={(e) => setDescripcion(e.target.value)} maxLength={600} required minLength={20} />
+              <span className="comentario-meta">{descripcion.length}/600 (mínimo 20)</span>
+            </label>
+            <label>
+              RUC u otro documento (opcional)
+              <input type="text" value={identificacion} onChange={(e) => setIdentificacion(e.target.value)} maxLength={40} />
+            </label>
+            <label>
+              Sitio web (opcional)
+              <input type="url" value={sitioWeb} onChange={(e) => setSitioWeb(e.target.value)} placeholder="https://" />
+            </label>
+            {error && <p className="error-formulario" role="alert">{error}</p>}
+            <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap' }}>
+              <Button type="submit" variant="primary" loading={enviando}>{enviando ? 'Enviando…' : 'Enviar solicitud'}</Button>
+              <Button type="button" variant="ghost" onClick={() => setAbierto(false)}>Cancelar</Button>
+            </div>
+          </form>
+        )}
+      </div>
+    </Card>
   );
 }
 
@@ -187,6 +296,8 @@ function PerfilPage({ onVolver }: { onVolver: () => void }) {
               <FormularioEditarPerfil perfil={perfil} onGuardado={setPerfil} />
             </div>
           </Card>
+
+          <TarjetaTipoCuenta onCambio={() => obtenerPerfil().then(setPerfil).catch(() => {})} />
 
           <Card>
             <div className="card-ui-body">

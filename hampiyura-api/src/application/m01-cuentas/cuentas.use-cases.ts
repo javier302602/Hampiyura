@@ -136,7 +136,7 @@ export class ActualizarPerfilUseCase {
     }
     if (input.nombreNegocio !== undefined) {
       const n = limpio(input.nombreNegocio);
-      if (n && usuario.props.rol !== 'Productor') throw new ValidationError('El nombre de negocio es solo para cuentas de Productor');
+      if (n && usuario.props.rol !== 'Productor' && !usuario.props.tipoCuenta) throw new ValidationError('El nombre de negocio es solo para cuentas de Productor, Empresario o Institución');
       if (n && n.length > 80) throw new ValidationError('El nombre del negocio admite hasta 80 caracteres');
       usuario.props.nombreNegocio = n;
     }

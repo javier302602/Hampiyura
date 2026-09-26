@@ -25,7 +25,7 @@ function FichasCultivoSection({ plantaId }: { plantaId: string }) {
 
   return (
     <section style={{ marginTop: '1.5rem' }}>
-      <h3>Fichas de cultivo (M-03)</h3>
+      <h3>Fichas de cultivo</h3>
       {ubicacionRegistrada && <p className="sello-verificado">✔ Ubicación registrada correctamente.</p>}
       <div className="cards">
         {fichas.map((f) => (

@@ -13,6 +13,8 @@ import { PlantaRepositoryPort } from '../../domain/ports/out/planta.repository.p
 import { UsuarioRepositoryPort } from '../../domain/ports/out/usuario.repository.port';
 import { NotificadorPort } from '../../domain/ports/out/notificador.port';
 import { RegistroEntidadesValidables } from '../../domain/ports/out/entidad-validable.repository.port';
+import { SolicitudCuentaRepositoryPort } from '../../domain/ports/out/solicitud-cuenta.repository.port';
+import { ETIQUETA_TIPO_CUENTA } from '../../domain/value-objects/tipo-cuenta.vo';
 import { NotFoundError } from '../../domain/errors/domain.errors';
 async function cargar(repo:ValidacionContenidoRepositoryPort,id:string) { const item=await repo.buscarPorId(id); if(!item) throw new NotFoundError(`Validación no encontrada: ${id}`); return item; }
 // Sincroniza el estado hacia la entidad de origen (Cultivo, ParteUso, ...) según su tipoEntidad,
@@ -36,6 +38,7 @@ export class ListarPendientesUseCase implements ListarPendientesPort {
     private readonly estadosConservacion:EstadoConservacionRepositoryPort,
     private readonly plantas:PlantaRepositoryPort,
     private readonly cultivos?:CultivoRepositoryPort,
+    private readonly solicitudesCuenta?:SolicitudCuentaRepositoryPort,
   ) {}
   async ejecutar():Promise<ValidacionPendienteVisible[]> {
     const pendientes = await this.repo.listarPendientes();
@@ -92,6 +95,12 @@ export class ListarPendientesUseCase implements ListarPendientesPort {
       const planta = await this.plantas.buscarPorId(cultivo.props.plantaId);
       const autor = await this.usuarios.buscarPorId(props.autorId);
       return `Ficha de cultivo de ${planta ? planta.props.nombreComun : cultivo.props.plantaId}${autor ? ` — por ${autor.props.nombre}` : ''}`;
+    }
+    if (props.tipoEntidad === 'SolicitudCuenta' && this.solicitudesCuenta) {
+      const solicitud = await this.solicitudesCuenta.buscarPorId(props.entidadId);
+      if (!solicitud) return `Solicitud de cuenta · ${props.entidadId}`;
+      const autor = await this.usuarios.buscarPorId(props.autorId);
+      return `Solicitud de cuenta ${ETIQUETA_TIPO_CUENTA[solicitud.props.tipoSolicitado]}${autor ? ` — de ${autor.props.nombre}` : ''}`;
     }
     return `${props.tipoEntidad} · ${props.entidadId}`;
   }

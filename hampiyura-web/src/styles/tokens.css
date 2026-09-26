@@ -20,6 +20,7 @@
   --color-accent-soft:#f3e3d3;
   /* Terracota como TEXTO pequeño (eyebrows, badges de acento): la terracota de botón mide 4.2-4.75:1; esta variante llega a AAA. */
   --color-accent-text:#6d3b1a;
+  --stat-bg:#dcecf7; --stat-border:#a9cbe3; --stat-text:#17352b; --stat-number:#6d3b1a; --stat-muted:#3d3d3d;
   --color-accent-deep:#b56837;  /* terracota de la paleta, para acentos NO textuales (bordes, barras, brillos) en ambos temas */
   --color-surface-elevated:#ffffff;
   --warm-glow:transparent;
@@ -100,21 +101,22 @@
    incluso si el sistema está en claro. */
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --color-bg:#08201a;
-    --color-surface:#0f2b23;
-    --color-surface-elevated:#173a2e;
+    --color-bg:#0d2f26;
+    --color-surface:#153a2f;
+    --color-surface-elevated:#1a4335;
     --color-text:#eef2ea;
-    --color-text-muted:#c5d2c9;
-    --color-border:#2c5446;
+    --color-text-muted:#d3ddd6;
+    --color-border:#3a6b5a;
     --color-accent:#f0ab78;
     --color-accent-contrast:#08201a;
     --color-accent-hover:#f7bf97;
-    --color-accent-text:#f0ab78;
+    --color-accent-text:#f8c7a2;
     --color-accent-soft:#33210f;
+    --stat-bg:#cfe6d2; --stat-border:#9cc6a5; --stat-text:#0b2a20; --stat-number:#5c2f0f; --stat-muted:#2b3b33;
 
-    --color-success:#6fcf97;   --color-success-bg:#123524;
+    --color-success:#86dca9;   --color-success-bg:#123524;
     --color-warning:#f5c47f;  --color-warning-bg:#3a2a14;
-    --color-info:#7ab8e6;     --color-info-bg:#16283a;
+    --color-info:#93c8ee;     --color-info-bg:#16283a;
     --color-danger:#fcc0bb;   --color-danger-bg:#3a1a18;
 
     --jungle-1:#04120e;
@@ -140,21 +142,22 @@
 /* Mismo bloque que arriba, aplicado sin condición de @media -- cubre "el usuario eligió oscuro
    a mano" aunque el sistema operativo esté en claro. */
 :root[data-theme="dark"]{
-  --color-bg:#08201a;
-  --color-surface:#0f2b23;
-    --color-surface-elevated:#173a2e;
+  --color-bg:#0d2f26;
+  --color-surface:#153a2f;
+    --color-surface-elevated:#1a4335;
   --color-text:#eef2ea;
-  --color-text-muted:#c5d2c9;
-  --color-border:#2c5446;
+  --color-text-muted:#d3ddd6;
+  --color-border:#3a6b5a;
   --color-accent:#f0ab78;
   --color-accent-contrast:#08201a;
   --color-accent-hover:#f7bf97;
-  --color-accent-text:#f0ab78;
+  --color-accent-text:#f8c7a2;
   --color-accent-soft:#33210f;
+  --stat-bg:#cfe6d2; --stat-border:#9cc6a5; --stat-text:#0b2a20; --stat-number:#5c2f0f; --stat-muted:#2b3b33;
 
-  --color-success:#6fcf97;   --color-success-bg:#123524;
+  --color-success:#86dca9;   --color-success-bg:#123524;
   --color-warning:#f5c47f;  --color-warning-bg:#3a2a14;
-  --color-info:#7ab8e6;     --color-info-bg:#16283a;
+  --color-info:#93c8ee;     --color-info-bg:#16283a;
   --color-danger:#fcc0bb;   --color-danger-bg:#3a1a18;
 
   --jungle-1:#04120e;

@@ -14,3 +14,8 @@ export async function cambiarContraseña(req:Request,res:Response){const input=z
 const perfilSchema=z.object({telefono:z.string().max(40).nullable().optional(),region:z.string().max(200).optional(),biografia:z.string().max(600).nullable().optional(),nombreNegocio:z.string().max(200).nullable().optional()});
 export async function actualizarPerfil(req:Request,res:Response){const input=perfilSchema.parse(req.body); const perfil=await container.actualizarPerfil.ejecutar((req as AuthenticatedRequest).user.id,input); res.json(perfil);}
 export async function obtenerPerfil(req:Request,res:Response){const perfil=await container.obtenerPerfil.ejecutar((req as AuthenticatedRequest).user.id); res.json(perfil);}
+
+// Solicitar cambio de tipo de cuenta (queda pendiente: lo aprueba un administrador en la bandeja de validación).
+const solicitudTipoSchema=z.object({tipo:z.string().min(1),nombreOrganizacion:z.string().max(200).optional(),descripcion:z.string().min(1).max(2000),identificacion:z.string().max(60).optional(),sitioWeb:z.string().max(200).optional()});
+export async function solicitarTipoCuenta(req:Request,res:Response){const input=solicitudTipoSchema.parse(req.body); const s=await container.solicitarTipoCuenta.ejecutar({...input,usuarioId:(req as AuthenticatedRequest).user.id}); res.status(201).json(s.props);}
+export async function obtenerMiTipoCuenta(req:Request,res:Response){res.json(await container.obtenerMiTipoCuenta.ejecutar((req as AuthenticatedRequest).user.id));}

@@ -31,7 +31,7 @@ function enrutarArea(tipo: TipoConsulta): AreaEspecialidad | undefined {
 // RN-05 (mismo principio aplicado a M-08): Administrador ve todo; un especialista con área
 // conocida ve su propia área y las consultas sin área asignada (para poder triarlas); un
 // especialista sin área mapeada (rol no reconocido en areaDelRol) solo ve las sin área asignada.
-function puedeVerArea(rolSolicitante: string, areaConsulta: AreaEspecialidad | undefined): boolean {
+export function puedeVerArea(rolSolicitante: string, areaConsulta: AreaEspecialidad | undefined): boolean {
   if (rolSolicitante === 'Administrador') return true;
   if (!areaConsulta) return true;
   return areaDelRol(rolSolicitante) === areaConsulta;
@@ -162,6 +162,21 @@ export class ReabrirConsultaUseCase implements ReabrirConsultaPort {
     const consulta = await cargarConAcceso(this.repo, id, solicitanteId, rolSolicitante);
     consulta.reabrir(new Date());
     await this.repo.actualizar(consulta);
+    return consulta;
+  }
+}
+
+// Cambio explícito de estado por el equipo (Pendiente -> en proceso -> resuelta). Solo Administrador/Especialista
+// con acceso al área de la consulta (cargarConAcceso); se avisa al autor con las mismas notificaciones que ya existen.
+export class CambiarEstadoConsultaEquipoUseCase {
+  constructor(private readonly repo: ConsultaRepositoryPort, private readonly notificador: NotificadorPort) {}
+  async ejecutar(id: string, accion: 'en_proceso' | 'resolver', solicitanteId: string, rolSolicitante: string): Promise<Consulta> {
+    if (!esRolDeEquipo(rolSolicitante)) throw new UnauthorizedError('Solo el equipo puede cambiar el estado de una consulta');
+    const consulta = await cargarConAcceso(this.repo, id, solicitanteId, rolSolicitante);
+    const ahora = new Date();
+    if (accion === 'en_proceso') consulta.marcarEnProceso(ahora); else consulta.marcarResuelta(ahora);
+    await this.repo.actualizar(consulta);
+    if (consulta.props.autorId) await this.notificador.notificar(consulta.props.autorId, accion === 'en_proceso' ? 'consulta_en_revision' : 'consulta_respondida', { entidadTipo: 'Consulta', entidadId: consulta.props.id });
     return consulta;
   }
 }

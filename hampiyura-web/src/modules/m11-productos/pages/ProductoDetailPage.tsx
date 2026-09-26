@@ -1,8 +1,8 @@
 import { FormEvent, useEffect, useState } from 'react';
-import { obtenerProducto, marcarValidadoDocumentalmente, marcarCertificado, type ProductoVisible } from '../api/productos.api';
+import { obtenerProducto, marcarValidadoDocumentalmente, marcarCertificado, ETIQUETAS_TIPO_PRODUCTOR, type ProductoVisible } from '../api/productos.api';
+import Button from '../../../shared/ui/Button';
 import IndicadoresProducto from '../components/IndicadoresProducto';
-import RequireRole from '../../../shared/auth/RequireRole';
-import { esValidador } from '../../../shared/auth/session';
+import { esValidador, getSession } from '../../../shared/auth/session';
 import MiniMapaUbicacion from '../../m03-cultivo/components/MiniMapaUbicacion';
 
 function PanelCertificacion({ producto, onActualizado }: { producto: ProductoVisible; onActualizado: () => void }) {
@@ -30,16 +30,16 @@ function PanelCertificacion({ producto, onActualizado }: { producto: ProductoVis
 
   return (
     <section style={{ marginTop: '1.5rem' }}>
-      <h3>Panel de certificación / validación documental (M-09)</h3>
+      <h3>Panel de certificación / validación documental</h3>
       {producto.requiereRevisionReforzada && (
-        <p className="advertencia-no-verificado">⚠ Este producto fue marcado en su momento para revisión reforzada (RF-274): el texto original activó la detección de afirmaciones potencialmente engañosas.</p>
+        <p className="advertencia-no-verificado">⚠ Este producto fue marcado en su momento para revisión reforzada: el texto original activó la detección de afirmaciones potencialmente engañosas.</p>
       )}
       {error && <p className="error-formulario">{error}</p>}
 
       {producto.etiquetaValidadoDocumental ? (
         <p className="comentario-meta">Ya está marcado como validado documentalmente.</p>
       ) : (
-        <button onClick={manejarValidarDocumental} disabled={enviando}>Validar documentalmente</button>
+        <Button variant="secondary" size="sm" onClick={manejarValidarDocumental} disabled={enviando}>Validar documentalmente</Button>
       )}
 
       {producto.etiquetaCertificado ? (
@@ -79,9 +79,10 @@ function ProductoDetailPage({ productoId, onVolver, onContactar }: { productoId:
 
   return (
     <section>
-      <button onClick={onVolver}>← Volver al directorio</button>
+      <Button variant="ghost" size="sm" onClick={onVolver}>← Volver al directorio</Button>
       <h2>{producto.nombre}</h2>
       <p>Por {producto.productorNombre} · {producto.localidad}</p>
+      <p><strong>Tipo de productor:</strong> {producto.tipoProductor ? ETIQUETAS_TIPO_PRODUCTOR[producto.tipoProductor] : 'No especificado'}</p>
 
       <IndicadoresProducto revisadoPorEquipo={producto.revisadoPorEquipo} validadoDocumental={producto.etiquetaValidadoDocumental} certificado={producto.etiquetaCertificado} />
 
@@ -94,6 +95,10 @@ function ProductoDetailPage({ productoId, onVolver, onContactar }: { productoId:
           <h3>Ubicación</h3>
           <MiniMapaUbicacion latitud={producto.latitud} longitud={producto.longitud} etiqueta={producto.localidad} />
         </div>
+      ) : producto.contactoBloqueado ? (
+        <p className="comentario-meta" style={{ marginTop: '1rem' }}>
+          El punto exacto donde se fabrica solo lo ven quienes tienen un plan activo o desbloquean a este productor.
+        </p>
       ) : (
         <p className="comentario-meta" style={{ marginTop: '1rem' }}>
           Este producto no tiene un punto exacto guardado en el mapa (se publicó con la localidad escrita a mano, sin usar el selector de mapa).
@@ -107,6 +112,11 @@ function ProductoDetailPage({ productoId, onVolver, onContactar }: { productoId:
       )}
 
       {producto.descripcion && (<><h3>Descripción</h3><p>{producto.descripcion}</p></>)}
+      <h3>Para qué sirve y cómo se usa</h3>
+      <p><strong>Categoría de uso:</strong> {producto.categoriasUso && producto.categoriasUso.length > 0 ? producto.categoriasUso.join(', ') : 'No especificada por el productor'}</p>
+      <p><strong>Modo de uso:</strong> {producto.modoDeUso ?? 'No especificado por el productor'}</p>
+      <p><strong>Prevenciones y contraindicaciones:</strong> {producto.contraindicaciones ?? 'No especificadas por el productor'}</p>
+      <p className="comentario-meta">Información aportada por quien produce; no sustituye la consulta con un profesional de la salud.</p>
       <h3>Plantas utilizadas</h3>
       {/* plantasUtilizadas (Frente 3) es la entrada estructurada nueva -- productos publicados
           antes de este cambio no la tienen, así que se conserva el fallback a plantasNombres
@@ -135,15 +145,14 @@ function ProductoDetailPage({ productoId, onVolver, onContactar }: { productoId:
       )}
       {producto.contactoBloqueado && (
         <div className="contacto-bloqueado" role="region" aria-label="Contacto bloqueado">
-          <h3>El contacto del vendedor está bloqueado</h3>
-          <p>Necesitas un plan activo o desbloquear el contacto de este productor. La información del producto sigue siendo gratis.</p>
+          <h3>El contacto y la ubicación exacta están bloqueados</h3>
+          <p>Necesitas un plan activo o desbloquear a este productor para ver cómo contactarlo y dónde se fabrica. La ficha del producto sigue siendo gratis.</p>
           <button type="button" className="btn btn-primary" onClick={() => onContactar?.(producto.productorId)}>Contactar</button>
         </div>
       )}
 
-      <RequireRole permitido={esValidador}>
-        <PanelCertificacion producto={producto} onActualizado={cargar} />
-      </RequireRole>
+      {/* Solo el equipo ve este panel; el resto no debe ver un aviso de "Sin permisos" en una ficha pública. */}
+      {(() => { const sesion = getSession(); return sesion && esValidador(sesion.rol) ? <PanelCertificacion producto={producto} onActualizado={cargar} /> : null; })()}
     </section>
   );
 }

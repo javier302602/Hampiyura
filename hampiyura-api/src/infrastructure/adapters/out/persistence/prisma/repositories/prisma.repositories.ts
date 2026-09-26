@@ -9,6 +9,9 @@ import { Uso } from '../../../../../../domain/entities/uso.entity';
 import { PagoContacto } from '../../../../../../domain/entities/pago-contacto.entity';
 import { PagoContactoRepositoryPort } from '../../../../../../domain/ports/out/pago-contacto.repository.port';
 import { Reporte } from '../../../../../../domain/entities/reporte.entity';
+import { SolicitudCuenta } from '../../../../../../domain/entities/solicitud-cuenta.entity';
+import { SolicitudCuentaRepositoryPort } from '../../../../../../domain/ports/out/solicitud-cuenta.repository.port';
+import { CategoriaReporte } from '../../../../../../domain/value-objects/categoria-reporte.vo';
 import { Publicacion } from '../../../../../../domain/entities/publicacion.entity';
 import { Comentario } from '../../../../../../domain/entities/comentario.entity';
 import { Valoracion } from '../../../../../../domain/entities/valoracion.entity';
@@ -121,6 +124,14 @@ export class PrismaUsoRepository implements UsoRepositoryPort {
   async buscarPorNombre(nombre:string){const x=await this.prisma.uso.findUnique({where:{nombre}}); return x?new Uso({...x,descripcion:x.descripcion??undefined}):null;}
 }
 // M-15: pagos con comprobante (planes y desbloqueos puntuales).
+export class PrismaSolicitudCuentaRepository implements SolicitudCuentaRepositoryPort {
+  constructor(private readonly prisma:PrismaClient) {}
+  private aDominio(x:any):SolicitudCuenta { return new SolicitudCuenta({...x, nombreOrganizacion:x.nombreOrganizacion??undefined, identificacion:x.identificacion??undefined, sitioWeb:x.sitioWeb??undefined}); }
+  async guardar(s:SolicitudCuenta){await this.prisma.solicitudCuenta.create({data:s.props as any});}
+  async buscarPorId(id:string){const x=await this.prisma.solicitudCuenta.findUnique({where:{id}}); return x?this.aDominio(x):null;}
+  async listarPorUsuario(usuarioId:string){const xs=await this.prisma.solicitudCuenta.findMany({where:{usuarioId}}); return xs.map((x)=>this.aDominio(x));}
+  async actualizarEstadoValidacion(id:string, estado:EstadoValidacion){await this.prisma.solicitudCuenta.update({where:{id},data:{estadoValidacion:estado}});}
+}
 export class PrismaPagoContactoRepository implements PagoContactoRepositoryPort {
   constructor(private readonly prisma:PrismaClient) {}
   private aDominio(x:any):PagoContacto {
@@ -135,9 +146,9 @@ export class PrismaPagoContactoRepository implements PagoContactoRepositoryPort 
 export class PrismaReporteRepository implements ReporteRepositoryPort {
   constructor(private readonly prisma:PrismaClient) {}
   async guardar(r:Reporte){await this.prisma.reporte.create({data:r.props as any});}
-  async buscarPorId(id:string){const x=await this.prisma.reporte.findUnique({where:{id}}); return x?new Reporte({...x,estado:x.estado}):null;}
-  async listarPendientes(){const xs=await this.prisma.reporte.findMany({where:{estado:'Pendiente'}}); return xs.map(x=>new Reporte({...x,estado:x.estado}));}
-  async listarPorEstado(estado?:'Pendiente'|'Revisado'|'Desestimado'){const xs=await this.prisma.reporte.findMany({where:estado?{estado}:undefined,orderBy:{fecha:'desc'}}); return xs.map(x=>new Reporte({...x,estado:x.estado}));}
+  async buscarPorId(id:string){const x=await this.prisma.reporte.findUnique({where:{id}}); return x?new Reporte({...x,estado:x.estado,categoria:x.categoria as CategoriaReporte}):null;}
+  async listarPendientes(){const xs=await this.prisma.reporte.findMany({where:{estado:'Pendiente'}}); return xs.map(x=>new Reporte({...x,estado:x.estado,categoria:x.categoria as CategoriaReporte}));}
+  async listarPorEstado(estado?:'Pendiente'|'Revisado'|'Desestimado'){const xs=await this.prisma.reporte.findMany({where:estado?{estado}:undefined,orderBy:{fecha:'desc'}}); return xs.map(x=>new Reporte({...x,estado:x.estado,categoria:x.categoria as CategoriaReporte}));}
   async actualizar(r:Reporte){await this.prisma.reporte.update({where:{id:r.props.id},data:{estado:r.props.estado}});}
   async contarPorEstado(){
     const grupos=await this.prisma.reporte.groupBy({by:['estado'],_count:{estado:true}});
@@ -181,7 +192,7 @@ export class PrismaPreparacionRepository implements PreparacionRepositoryPort {
 }
 export class PrismaProductoRepository implements ProductoRepositoryPort {
   constructor(private readonly prisma:PrismaClient) {}
-  private aDominio(x:any):Producto { return new Producto({...x, descripcion:x.descripcion??undefined, ingredientes:x.ingredientes??undefined, presentacion:x.presentacion??undefined, cantidad:x.cantidad??undefined, precioReferencial:x.precioReferencial??undefined, fechaElaboracion:x.fechaElaboracion??undefined, documentacionCertificacion:x.documentacionCertificacion??undefined, plantasUtilizadas:x.plantasUtilizadas??undefined, latitud:x.latitud??undefined, longitud:x.longitud??undefined}); }
+  private aDominio(x:any):Producto { return new Producto({...x, descripcion:x.descripcion??undefined, ingredientes:x.ingredientes??undefined, presentacion:x.presentacion??undefined, cantidad:x.cantidad??undefined, precioReferencial:x.precioReferencial??undefined, fechaElaboracion:x.fechaElaboracion??undefined, documentacionCertificacion:x.documentacionCertificacion??undefined, plantasUtilizadas:x.plantasUtilizadas??undefined, tipoProductor:x.tipoProductor??undefined, modoDeUso:x.modoDeUso??undefined, contraindicaciones:x.contraindicaciones??undefined, latitud:x.latitud??undefined, longitud:x.longitud??undefined}); }
   async guardar(p:Producto){await this.prisma.producto.create({data:p.props as any});}
   async buscarPorId(id:string){const x=await this.prisma.producto.findUnique({where:{id}}); return x?this.aDominio(x):null;}
   async listar(){const xs=await this.prisma.producto.findMany(); return xs.map((x)=>this.aDominio(x));}

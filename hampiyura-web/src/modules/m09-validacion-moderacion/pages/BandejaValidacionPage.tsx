@@ -46,7 +46,7 @@ function BandejaValidacionPage() {
 
   return (
     <section className="gestion-panel">
-      <h2>Bandeja de validación (M-09)</h2>
+      <h2>Bandeja de validación</h2>
       <div role="tablist" aria-label="Secciones de la bandeja" style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
         <Button role="tab" aria-selected={pestana === 'pendientes'} size="sm" variant={pestana === 'pendientes' ? 'primary' : 'secondary'} onClick={() => setPestana('pendientes')}>Pendientes de revisión ({pendientes.length})</Button>
         <Button role="tab" aria-selected={pestana === 'seguimiento'} size="sm" variant={pestana === 'seguimiento' ? 'primary' : 'secondary'} iconLeft={<FlaskConical size={15} aria-hidden="true" />} onClick={() => setPestana('seguimiento')}>Pendientes de validación científica</Button>
@@ -59,7 +59,7 @@ function BandejaValidacionPage() {
           {pendientes.map((v) => (
             <article key={v.id} className="tarjeta-clicable" style={{ flex: '1 1 300px' }} tabIndex={0} role="button" aria-label={`Ver detalle: ${v.etiqueta}`}
               onClick={() => setAbierta(v.id)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setAbierta(v.id); } }}>
-              <span className="badge badge-estado">{v.tipoEntidad}</span>
+              <span className="badge badge-estado">{v.tipoEntidad === 'SolicitudCuenta' ? 'Solicitud de cuenta' : v.tipoEntidad}</span>
               <strong>{v.etiqueta}</strong>
               <span>{new Date(v.fecha).toLocaleString()}</span>
               <div style={{ marginTop: '.5rem' }}>

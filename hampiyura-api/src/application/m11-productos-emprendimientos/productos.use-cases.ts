@@ -11,6 +11,8 @@ import { ProductoRepositoryPort } from '../../domain/ports/out/producto.reposito
 import { PlantaRepositoryPort } from '../../domain/ports/out/planta.repository.port';
 import { UsuarioRepositoryPort } from '../../domain/ports/out/usuario.repository.port';
 import { ValidacionContenidoRepositoryPort } from '../../domain/ports/out/validacion-contenido.repository.port';
+import { UsoRepositoryPort } from '../../domain/ports/out/uso.repository.port';
+import { esTipoProductor } from '../../domain/value-objects/tipo-productor.vo';
 import { contieneAfirmacionEnganosa } from '../../domain/value-objects/afirmaciones-enganosas.vo';
 import { NotFoundError, ValidationError } from '../../domain/errors/domain.errors';
 
@@ -31,13 +33,21 @@ async function aVista(producto:Producto, plantas:PlantaRepositoryPort, usuarios:
 // vuelve a pedirlo; si es la primera vez, input.aceptaComision debe venir en true y acá se
 // registra la fecha de aceptación en el perfil.
 export class PublicarProductoUseCase implements PublicarProductoPort {
-  constructor(private readonly repo:ProductoRepositoryPort, private readonly plantas:PlantaRepositoryPort, private readonly validaciones:ValidacionContenidoRepositoryPort, private readonly usuarios:UsuarioRepositoryPort) {}
+  constructor(private readonly repo:ProductoRepositoryPort, private readonly plantas:PlantaRepositoryPort, private readonly validaciones:ValidacionContenidoRepositoryPort, private readonly usuarios:UsuarioRepositoryPort, private readonly usos:UsoRepositoryPort) {}
   async ejecutar(input:PublicarProductoInput & { aceptaComision?: boolean }):Promise<Producto> {
     if (!input.nombre?.trim()) throw new ValidationError('El nombre del producto es obligatorio');
     if (!input.plantasIds?.length) throw new ValidationError('Debes indicar al menos una planta utilizada');
     if (!input.localidad?.trim()) throw new ValidationError('La localidad es obligatoria');
     if (!input.contactoVendedor?.trim()) throw new ValidationError('La forma de contacto es obligatoria');
     if (!input.informacionProceso?.trim()) throw new ValidationError('La descripción del proceso es obligatoria');
+    if (!input.tipoProductor || !esTipoProductor(input.tipoProductor)) throw new ValidationError('Indica el tipo de productor: campesino, empresario o comunidad');
+    const categoriasUso = [...new Set((input.categoriasUso ?? []).map((c) => c.trim()).filter(Boolean))];
+    if (categoriasUso.length > 0) {
+      // Mismo catálogo de usos/finalidades de M-04: no se mantiene una lista paralela de categorías.
+      const catalogo = new Set((await this.usos.listar()).map((u) => u.props.nombre));
+      const desconocida = categoriasUso.find((c) => !catalogo.has(c));
+      if (desconocida) throw new ValidationError(`"${desconocida}" no está en el catálogo de usos`);
+    }
     for (const plantaId of input.plantasIds) {
       if (!(await this.plantas.buscarPorId(plantaId))) throw new ValidationError(`La planta indicada no existe en el catálogo: ${plantaId}`);
     }
@@ -48,9 +58,10 @@ export class PublicarProductoUseCase implements PublicarProductoPort {
       productor.props.aceptoComisionEn = new Date();
       await this.usuarios.actualizar(productor);
     }
-    const requiereRevisionReforzada = contieneAfirmacionEnganosa(input.nombre, input.descripcion, input.informacionProceso, input.ingredientes);
+    const requiereRevisionReforzada = contieneAfirmacionEnganosa(input.nombre, input.descripcion, input.informacionProceso, input.ingredientes, input.modoDeUso);
     const { aceptaComision: _omitir, ...productoInput } = input;
-    const producto = new Producto({ ...productoInput, id:randomUUID(), estadoValidacion:'Pendiente', requiereRevisionReforzada, etiquetaValidadoDocumental:false, etiquetaCertificado:false });
+    // Texto vacío = no especificado: se guarda como ausente, nunca como relleno.
+    const producto = new Producto({ ...productoInput, categoriasUso, modoDeUso: input.modoDeUso?.trim() || undefined, contraindicaciones: input.contraindicaciones?.trim() || undefined, id:randomUUID(), estadoValidacion:'Pendiente', requiereRevisionReforzada, etiquetaValidadoDocumental:false, etiquetaCertificado:false });
     await this.repo.guardar(producto);
     await this.validaciones.guardar(new ValidacionContenido({ id:randomUUID(), tipoEntidad:'Producto', entidadId:producto.props.id, estado:'Pendiente', fecha:new Date(), autorId:producto.props.productorId }));
     return producto;
@@ -96,6 +107,6 @@ export class MarcarCertificadoUseCase implements MarcarCertificadoPort {
 }
 export class VerificarAfirmacionesUseCase implements VerificarAfirmacionesPort {
   async ejecutar(input:VerificarAfirmacionesInput):Promise<{ requiereRevisionReforzada: boolean }> {
-    return { requiereRevisionReforzada: contieneAfirmacionEnganosa(input.nombre, input.descripcion, input.informacionProceso, input.ingredientes) };
+    return { requiereRevisionReforzada: contieneAfirmacionEnganosa(input.nombre, input.descripcion, input.informacionProceso, input.ingredientes, input.modoDeUso) };
   }
 }

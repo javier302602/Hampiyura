@@ -19,7 +19,7 @@ function PublicacionesFeedPage({ onSeleccionar }: { onSeleccionar: (publicacionI
 
   return (
     <section>
-      <h2>Publicaciones de la comunidad (M-06)</h2>
+      <h2>Publicaciones de la comunidad</h2>
       {publicaciones.length === 0 ? (
         <p>Todavía no hay publicaciones validadas para mostrar.</p>
       ) : (

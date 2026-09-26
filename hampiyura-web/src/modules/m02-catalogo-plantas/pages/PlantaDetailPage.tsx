@@ -78,7 +78,7 @@ function PlantaDetailPage({ plantaId, onVolver }: Props) {
         </div>
       </RequireRole>
 
-      <h3>Publicaciones sobre esta planta (M-06)</h3>
+      <h3>Publicaciones sobre esta planta</h3>
       <RequireRole permitido={() => true}>
         <div style={{ marginTop: '1rem' }}>
           {publicacionCreada && <p className="comentario-meta">Publicación enviada como "Pendiente". Aparecerá en el feed público solo tras ser validada por un especialista.</p>}

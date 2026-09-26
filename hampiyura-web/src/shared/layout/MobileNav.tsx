@@ -57,11 +57,11 @@ function MobileNav({ sesion, puedeGestionar, onCerrar, ...nav }: Props) {
                 <button onClick={() => ir(nav.onIrABandejaConsultas)}><Inbox size={17} aria-hidden="true" /> Bandeja de consultas</button>
                 <button onClick={() => ir(nav.onIrABandejaReportes)}><Flag size={17} aria-hidden="true" /> Bandeja de reportes</button>
                 <button onClick={() => ir(nav.onIrARegistrarFichaCultivo)}><Sprout size={17} aria-hidden="true" /> Registrar ficha de cultivo</button>
+                <button onClick={() => ir(nav.onIrAPanelAdmin)}><LayoutDashboard size={17} aria-hidden="true" /> {sesion && esAdministrador(sesion.rol) ? 'Panel admin' : 'Mi panel'}</button>
               </>
             )}
             {sesion && esAdministrador(sesion.rol) && (
               <>
-                <button onClick={() => ir(nav.onIrAPanelAdmin)}><LayoutDashboard size={17} aria-hidden="true" /> Panel admin</button>
                 <button onClick={() => ir(nav.onIrAUsuariosAdmin)}><Users size={17} aria-hidden="true" /> Usuarios</button>
                 <button onClick={() => ir(nav.onIrAPagosAdmin)}><Wallet size={17} aria-hidden="true" /> Pagos y planes</button>
               </>

@@ -26,6 +26,21 @@ export const ETIQUETAS_TIPO_CONSULTA: Record<TipoConsulta, string> = {
 export const ESTADOS_CONSULTA = ['Pendiente', 'EnRevision', 'Respondida', 'Cerrada'] as const;
 export type EstadoConsulta = (typeof ESTADOS_CONSULTA)[number];
 
+// Lo que se LEE en pantalla: tres estados en español natural. Los identificadores internos "Respondida" y "Cerrada"
+// (cierre manual o automático tras 7 días sin actividad) significan lo mismo para quien lee: la consulta ya está resuelta.
+export const ETIQUETAS_ESTADO_CONSULTA: Record<EstadoConsulta, string> = {
+  Pendiente: 'Consulta pendiente',
+  EnRevision: 'Consulta en proceso',
+  Respondida: 'Consulta resuelta',
+  Cerrada: 'Consulta resuelta',
+};
+export const OPCIONES_FILTRO_ESTADO = [
+  { valor: 'Pendiente', etiqueta: 'Consulta pendiente' },
+  { valor: 'EnRevision', etiqueta: 'Consulta en proceso' },
+  { valor: 'Resuelta', etiqueta: 'Consulta resuelta' },
+] as const;
+export const esResuelta = (estado: EstadoConsulta) => estado === 'Respondida' || estado === 'Cerrada';
+
 export const AREAS_ESPECIALIDAD = ['Agronomia', 'PlantasMedicinales', 'Conservacion', 'Salud'] as const;
 export type AreaEspecialidad = (typeof AREAS_ESPECIALIDAD)[number];
 
@@ -83,6 +98,12 @@ export function agregarMensajeConsulta(id: string, contenido: string): Promise<M
   return apiRequest<MensajeConsulta>(`/consultas/${id}/mensajes`, { method: 'POST', body: JSON.stringify({ contenido }) });
 }
 
+export function marcarConsultaEnProceso(id: string): Promise<Consulta> {
+  return apiRequest<Consulta>(`/consultas/${id}/estado`, { method: 'PATCH', body: JSON.stringify({ accion: 'en_proceso' }) });
+}
+export function marcarConsultaResuelta(id: string): Promise<Consulta> {
+  return apiRequest<Consulta>(`/consultas/${id}/estado`, { method: 'PATCH', body: JSON.stringify({ accion: 'resolver' }) });
+}
 export function cerrarConsulta(id: string): Promise<Consulta> {
   return apiRequest<Consulta>(`/consultas/${id}/estado`, { method: 'PATCH', body: JSON.stringify({ accion: 'cerrar' }) });
 }

@@ -9,6 +9,10 @@ import { PlantaRepositoryPort } from '../../domain/ports/out/planta.repository.p
 import { CultivoRepositoryPort } from '../../domain/ports/out/cultivo.repository.port';
 import { UsuarioRepositoryPort } from '../../domain/ports/out/usuario.repository.port';
 import { UsoRepositoryPort } from '../../domain/ports/out/uso.repository.port';
+import { SolicitudCuentaRepositoryPort } from '../../domain/ports/out/solicitud-cuenta.repository.port';
+import { ETIQUETA_TIPO_CUENTA } from '../../domain/value-objects/tipo-cuenta.vo';
+import { CATALOGO_PLANES } from '../../domain/value-objects/plan.vo';
+import { PLAN_POR_TIPO_CUENTA } from '../../domain/value-objects/tipo-cuenta.vo';
 import { NotFoundError } from '../../domain/errors/domain.errors';
 import { ParteUso } from '../../domain/entities/parte-uso.entity';
 
@@ -37,6 +41,7 @@ export class ObtenerDetalleValidacionUseCase implements ObtenerDetalleValidacion
     private readonly productos: ProductoRepositoryPort,
     private readonly estadosConservacion: EstadoConservacionRepositoryPort,
     private readonly cultivos: CultivoRepositoryPort,
+    private readonly solicitudesCuenta?: SolicitudCuentaRepositoryPort,
   ) {}
 
   async ejecutar(validacionId: string): Promise<DetalleValidacion> {
@@ -94,6 +99,12 @@ export class ObtenerDetalleValidacionUseCase implements ObtenerDetalleValidacion
       if (!s) return this.noDisponible(base);
       const planta = await this.plantas.buscarPorId(s.props.plantaId);
       return { ...base, etiqueta: `Conservación de ${planta?.props.nombreComun ?? s.props.plantaId}`, campos: limpiar([campo('Planta', planta?.props.nombreComun), campo('Categoría (según la fuente)', s.props.categoria), campo('Nivel de riesgo', s.props.nivelRiesgo), campo('Zona (general)', s.props.zona), campo('Amenazas', s.props.amenazas), campo('Disponibilidad por temporada', s.props.disponibilidadTemporada), campo('Recomendaciones de conservación', s.props.recomendacionesConservacion), campo('Métodos de propagación', s.props.metodosPropagacion), campo('Alternativas de cultivo', s.props.alternativasCultivo), campo('Fuente oficial', s.props.fuenteOficial.valor)]) };
+    }
+    if (v.props.tipoEntidad === 'SolicitudCuenta' && this.solicitudesCuenta) {
+      const s = await this.solicitudesCuenta.buscarPorId(e);
+      if (!s) return this.noDisponible(base);
+      const plan = CATALOGO_PLANES.find((p) => p.id === PLAN_POR_TIPO_CUENTA[s.props.tipoSolicitado]);
+      return { ...base, etiqueta: `Solicitud de cuenta ${ETIQUETA_TIPO_CUENTA[s.props.tipoSolicitado]}`, campos: limpiar([campo('Tipo de cuenta solicitado', ETIQUETA_TIPO_CUENTA[s.props.tipoSolicitado]), campo('Nombre del negocio / empresa / institución', s.props.nombreOrganizacion), campo('A qué se dedica', s.props.descripcion), campo('RUC u otro documento', s.props.identificacion), campo('Sitio web', s.props.sitioWeb), campo('Plan que le corresponde', plan ? `${plan.nombre} (${plan.precioTexto})` : undefined)]) };
     }
     if (v.props.tipoEntidad === 'Cultivo') {
       const c = await this.cultivos.buscarPorId(e);

@@ -131,7 +131,7 @@ function MapaCultivoPage({ onSeleccionarPlanta }: Props) {
 
   return (
     <section>
-      <h2>Mapa de distribución de cultivos (RF-271)</h2>
+      <h2>Mapa de distribución de cultivos</h2>
       <p className="comentario-meta">
         Ubicaciones de cultivo registradas por la comunidad. Se usa OpenTopoMap + Leaflet, con relieve y curvas de nivel, sin necesidad de clave de API de pago.
       </p>

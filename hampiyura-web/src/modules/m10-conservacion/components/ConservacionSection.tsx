@@ -19,7 +19,7 @@ function ConservacionSection({ plantaId, conservacion }: { plantaId: string; con
 
   return (
     <section style={{ marginTop: '1.5rem' }}>
-      <h3>Conservación (M-10)</h3>
+      <h3>Conservación</h3>
 
       {conservacion.disponible && (
         <>

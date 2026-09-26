@@ -14,7 +14,7 @@ function PublicarProductoPage({ onVolver }: { onVolver: () => void }) {
   return (
     <section>
       <Button variant="ghost" onClick={onVolver}>← Volver al catálogo</Button>
-      <h2>Publicar producto (M-11)</h2>
+      <h2>Publicar producto</h2>
       <RequireRole permitido={esProductor}>
         {publicado ? (
           <>

@@ -1,5 +1,6 @@
 import { FormEvent, useEffect, useState } from 'react';
-import { obtenerConsulta, agregarMensajeConsulta, cerrarConsulta, reabrirConsulta, ETIQUETAS_TIPO_CONSULTA, type ConsultaConHilo } from '../api/consultas.api';
+import { obtenerConsulta, agregarMensajeConsulta, cerrarConsulta, reabrirConsulta, marcarConsultaEnProceso, marcarConsultaResuelta, ETIQUETAS_TIPO_CONSULTA, ETIQUETAS_ESTADO_CONSULTA, esResuelta, type ConsultaConHilo } from '../api/consultas.api';
+import Button from '../../../shared/ui/Button';
 import IndicadorPrioridad from '../components/IndicadorPrioridad';
 import MiniMapaUbicacion from '../../m03-cultivo/components/MiniMapaUbicacion';
 import { getSession, esValidador } from '../../../shared/auth/session';
@@ -31,6 +32,11 @@ function ConsultaDetailPage({ consultaId, onVolver }: { consultaId: string; onVo
     catch (err) { setError(err instanceof Error ? err.message : 'No se pudo enviar el mensaje.'); }
     finally { setEnviando(false); }
   }
+  async function manejarCambioEquipo(accion: () => Promise<unknown>, mensajeError: string) {
+    setError(null);
+    try { await accion(); cargar(); }
+    catch (err) { setError(err instanceof Error ? err.message : mensajeError); }
+  }
   async function manejarCerrar() {
     setError(null);
     try { await cerrarConsulta(consultaId); cargar(); }
@@ -59,10 +65,10 @@ function ConsultaDetailPage({ consultaId, onVolver }: { consultaId: string; onVo
 
   return (
     <section>
-      <button onClick={onVolver}>← Volver</button>
+      <Button variant="ghost" size="sm" onClick={onVolver}>← Volver</Button>
       <h2>{ETIQUETAS_TIPO_CONSULTA[consulta.tipo]}</h2>
       <div style={{ display: 'flex', gap: '.4rem', flexWrap: 'wrap' }}>
-        <span className="badge badge-estado">{consulta.estado}</span>
+        <span className="badge badge-estado">{ETIQUETAS_ESTADO_CONSULTA[consulta.estado]}</span>
         {consulta.areaAsignada && <span className="badge badge-estado">Área: {consulta.areaAsignada}</span>}
       </div>
       <IndicadorPrioridad prioridad={consulta.prioridad} />
@@ -102,10 +108,22 @@ function ConsultaDetailPage({ consultaId, onVolver }: { consultaId: string; onVo
         </form>
       )}
 
-      {puedeActuar && (
+      {esEquipo && (
+        <div style={{ marginTop: '1rem' }}>
+          <h3>Estado de la consulta</h3>
+          <p className="comentario-meta">Ahora: <strong>{ETIQUETAS_ESTADO_CONSULTA[consulta.estado]}</strong>. Cada cambio le avisa a quien preguntó.</p>
+          <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap' }}>
+            {consulta.estado === 'Pendiente' && <Button size="sm" variant="secondary" onClick={() => manejarCambioEquipo(() => marcarConsultaEnProceso(consultaId), 'No se pudo cambiar el estado.')}>Marcar en proceso</Button>}
+            {(consulta.estado === 'Pendiente' || consulta.estado === 'EnRevision') && <Button size="sm" onClick={() => manejarCambioEquipo(() => marcarConsultaResuelta(consultaId), 'No se pudo cambiar el estado.')}>Marcar como resuelta</Button>}
+            {esResuelta(consulta.estado) && <Button size="sm" variant="secondary" onClick={manejarReabrir}>Reabrir consulta</Button>}
+          </div>
+        </div>
+      )}
+
+      {esAutor && !esEquipo && (
         <div style={{ marginTop: '1rem', display: 'flex', gap: '.5rem' }}>
           {!estaCerrada && <button onClick={manejarCerrar}>Cerrar consulta</button>}
-          {estaCerrada && <button onClick={manejarReabrir}>Reabrir consulta</button>}
+          {esResuelta(consulta.estado) && <button onClick={manejarReabrir}>Reabrir consulta</button>}
         </div>
       )}
     </section>

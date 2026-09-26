@@ -130,15 +130,19 @@ export class DirectorioProductoresUseCase {
 // ---------- Contacto en las fichas de producto (M-11) ----------
 // La ficha de producto traía `contactoVendedor` a cualquiera: saltaba el muro de pago. Ahora solo lo ve quien
 // tenga acceso al contacto de ese productor; el resto recibe contactoBloqueado=true.
+// Ronda 18: el muro de pago cubre CONTACTO y UBICACIÓN EXACTA (dónde se fabrica). La ficha, las fotos, la descripción, el
+// precio y la localidad general siguen siendo gratis; el punto exacto (latitud/longitud) y el contacto directo, no.
 export class ProtegerContactoProductosUseCase {
   constructor(private readonly acceso: AccesoContactoService) {}
-  async aplicar<T extends { productorId: string; contactoVendedor: string }>(productos: T[], solicitante?: Solicitante): Promise<(Omit<T, 'contactoVendedor'> & { contactoVendedor: string | null; contactoBloqueado: boolean })[]> {
+  async aplicar<T extends { productorId: string; contactoVendedor: string; latitud?: number; longitud?: number }>(productos: T[], solicitante?: Solicitante): Promise<(Omit<T, 'contactoVendedor' | 'latitud' | 'longitud'> & { contactoVendedor: string | null; latitud?: number; longitud?: number; contactoBloqueado: boolean })[]> {
     const permiso = new Map<string, boolean>();
     const salida = [];
     for (const p of productos) {
       if (!permiso.has(p.productorId)) permiso.set(p.productorId, await this.acceso.puedeVerContacto(solicitante, p.productorId));
       const ok = permiso.get(p.productorId)!;
-      salida.push({ ...p, contactoVendedor: ok ? p.contactoVendedor : null, contactoBloqueado: !ok });
+      if (ok) { salida.push({ ...p, contactoBloqueado: false }); continue; }
+      const { latitud: _lat, longitud: _lon, ...resto } = p;
+      salida.push({ ...resto, contactoVendedor: null, contactoBloqueado: true });
     }
     return salida;
   }

@@ -16,9 +16,10 @@ import { RegistrarUsoUseCase, ListarUsosUseCase } from '../../application/m04-us
 import { RegistrarParteUsoUseCase, ObtenerParteUsoUseCase, ListarPartesUsoUseCase } from '../../application/m04-usos-partes/partes-uso.use-cases';
 import { AprobarContenidoUseCase, ObservarContenidoUseCase, RechazarContenidoUseCase, ListarPendientesUseCase } from '../../application/m09-validacion-moderacion/validacion.use-cases';
 import { ListarSeguimientoUseCase, ObtenerSeguimientoUseCase, ActualizarContactoSeguimientoUseCase, RegistrarValidacionCientificaUseCase } from '../../application/m04-usos-partes/seguimiento-cientifico.use-cases';
+import { SolicitarTipoCuentaUseCase, ObtenerMiTipoCuentaUseCase, SolicitudCuentaValidable } from '../../application/m01-cuentas/solicitud-tipo-cuenta.use-cases';
 import { ObtenerDetalleValidacionUseCase } from '../../application/m09-validacion-moderacion/detalle-validacion.use-case';
 import { AccesoContactoService, ListarPlanesUseCase, MiPlanUseCase, SolicitarPagoUseCase, ListarPagosAdminUseCase, ResolverPagoUseCase, DirectorioProductoresUseCase, ProtegerContactoProductosUseCase } from '../../application/m15-planes/planes.use-cases';
-import { PrismaPagoContactoRepository } from '../adapters/out/persistence/prisma/repositories/prisma.repositories';
+import { PrismaPagoContactoRepository, PrismaSolicitudCuentaRepository } from '../adapters/out/persistence/prisma/repositories/prisma.repositories';
 import { env as envM15 } from './env';
 import { ReportarContenidoUseCase, ListarReportesPendientesUseCase, ListarReportesUseCase, ActualizarEstadoReporteUseCase } from '../../application/m09-validacion-moderacion/reportes.use-cases';
 import { ListarUsuariosUseCase, SuspenderUsuarioUseCase, ReactivarUsuarioUseCase, CambiarRolUsuarioUseCase, EliminarPlantaUseCase, ObtenerPanelAdminUseCase, ObtenerAuditoriaUseCase } from '../../application/m13-analitica-estadisticas/administracion.use-cases';
@@ -29,7 +30,7 @@ import { DocumentarPreparacionUseCase, ObtenerPreparacionUseCase, ListarPreparac
 import { PublicarProductoUseCase, ObtenerProductoUseCase, ListarProductosUseCase, MarcarValidadoDocumentalmenteUseCase, MarcarCertificadoUseCase, VerificarAfirmacionesUseCase } from '../../application/m11-productos-emprendimientos/productos.use-cases';
 import { RegistrarEstadoConservacionUseCase, ObtenerEstadoConservacionUseCase, RegistrarAccionConservacionUseCase, ListarAccionesConservacionUseCase } from '../../application/m10-conservacion/conservacion.use-cases';
 import { BuscarPlantasUseCase } from '../../application/m12-busqueda-recomendaciones/busqueda.use-cases';
-import { CrearConsultaUseCase, ListarBandejaConsultasUseCase, ListarMisConsultasUseCase, ObtenerConsultaUseCase, AgregarMensajeConsultaUseCase, CerrarConsultaUseCase, ReabrirConsultaUseCase, AsignarConsultaUseCase } from '../../application/m08-consultas/consultas.use-cases';
+import { CrearConsultaUseCase, ListarBandejaConsultasUseCase, ListarMisConsultasUseCase, ObtenerConsultaUseCase, AgregarMensajeConsultaUseCase, CerrarConsultaUseCase, ReabrirConsultaUseCase, CambiarEstadoConsultaEquipoUseCase, AsignarConsultaUseCase } from '../../application/m08-consultas/consultas.use-cases';
 import { RegistroEntidadesValidables } from '../../domain/ports/out/entidad-validable.repository.port';
 export const prisma=new PrismaClient();
 const usuarios=new PrismaUsuarioRepository(prisma); const cultivos=new PrismaCultivoRepository(prisma); const validaciones=new PrismaValidacionRepository(prisma); const tokensAccion=new PrismaTokenAccionRepository(prisma); const plantas=new PrismaPlantaRepository(prisma); const partesUso=new PrismaParteUsoRepository(prisma); const usos=new PrismaUsoRepository(prisma); const reportes=new PrismaReporteRepository(prisma); const publicaciones=new PrismaPublicacionRepository(prisma); const comentarios=new PrismaComentarioRepository(prisma); const valoraciones=new PrismaValoracionRepository(prisma); const preparaciones=new PrismaPreparacionRepository(prisma); const productos=new PrismaProductoRepository(prisma); const estadosConservacion=new PrismaEstadoConservacionRepository(prisma); const accionesConservacion=new PrismaAccionConservacionRepository(prisma); const notificaciones=new PrismaNotificacionRepository(prisma); const consultas=new PrismaConsultaRepository(prisma); const mensajesConsulta=new PrismaMensajeConsultaRepository(prisma); const mapaCultivo=new PrismaMapaCultivoRepository(prisma);
@@ -41,7 +42,8 @@ const notificador=new PersistenteNotificadorAdapter(notificaciones); const email
 const registrarParteUsoUC=new RegistrarParteUsoUseCase(partesUso,usos,validaciones);
 const pagosContacto=new PrismaPagoContactoRepository(prisma); const accesoContacto=new AccesoContactoService(pagosContacto);
 const directorioProductores=new DirectorioProductoresUseCase(usuarios,mapaCultivo,cultivos,plantas,productos,accesoContacto);
-const entidadesValidables:RegistroEntidadesValidables={ Cultivo:cultivos, ParteUso:partesUso, Publicacion:publicaciones, Preparacion:preparaciones, Producto:productos, EstadoConservacion:estadosConservacion, Planta:plantas };
+const solicitudesCuenta=new PrismaSolicitudCuentaRepository(prisma);
+const entidadesValidables:RegistroEntidadesValidables={ SolicitudCuenta:new SolicitudCuentaValidable(solicitudesCuenta,usuarios), Cultivo:cultivos, ParteUso:partesUso, Publicacion:publicaciones, Preparacion:preparaciones, Producto:productos, EstadoConservacion:estadosConservacion, Planta:plantas };
 export const container={
   registrarUsuario:new RegistrarUsuarioUseCase(usuarios,tokensAccion,email),
   login:new LoginUseCase(usuarios,env.jwtSecret),
@@ -50,6 +52,8 @@ export const container={
   restablecerContraseña:new RestablecerContraseñaUseCase(tokensAccion,usuarios),
   cambiarContraseña:new CambiarContraseñaUseCase(usuarios),
   obtenerPerfil:new ObtenerPerfilUseCase(usuarios),
+  solicitarTipoCuenta:new SolicitarTipoCuentaUseCase(solicitudesCuenta,validaciones,usuarios),
+  obtenerMiTipoCuenta:new ObtenerMiTipoCuentaUseCase(solicitudesCuenta,validaciones,usuarios),
   registrarPlanta:new RegistrarPlantaUseCase(plantas),
   proponerPlanta:new ProponerPlantaUseCase(plantas,validaciones,registrarParteUsoUC,usos),
   listarPlantas:new ListarPlantasUseCase(plantas),
@@ -68,7 +72,7 @@ export const container={
   aprobar:new AprobarContenidoUseCase(validaciones,notificador,entidadesValidables),
   observar:new ObservarContenidoUseCase(validaciones,notificador,entidadesValidables),
   rechazar:new RechazarContenidoUseCase(validaciones,notificador,entidadesValidables),
-  obtenerDetalleValidacion:new ObtenerDetalleValidacionUseCase(validaciones,usuarios,plantas,partesUso,usos,publicaciones,preparaciones,productos,estadosConservacion,cultivos),
+  obtenerDetalleValidacion:new ObtenerDetalleValidacionUseCase(validaciones,usuarios,plantas,partesUso,usos,publicaciones,preparaciones,productos,estadosConservacion,cultivos,solicitudesCuenta),
   listarSeguimiento:new ListarSeguimientoUseCase(partesUso,plantas,usos,usuarios),
   obtenerSeguimiento:new ObtenerSeguimientoUseCase(partesUso,plantas,usos,usuarios),
   actualizarContactoSeguimiento:new ActualizarContactoSeguimientoUseCase(partesUso,plantas,usos,usuarios),
@@ -81,7 +85,7 @@ export const container={
   directorioProductores,
   protegerContactoProductos:new ProtegerContactoProductosUseCase(accesoContacto),
   actualizarPerfil:new ActualizarPerfilUseCase(usuarios),
-  listarPendientes:new ListarPendientesUseCase(validaciones,publicaciones,usuarios,preparaciones,partesUso,productos,estadosConservacion,plantas,cultivos),
+  listarPendientes:new ListarPendientesUseCase(validaciones,publicaciones,usuarios,preparaciones,partesUso,productos,estadosConservacion,plantas,cultivos,solicitudesCuenta),
   reportar:new ReportarContenidoUseCase(reportes),
   listarReportesPendientes:new ListarReportesPendientesUseCase(reportes),
   listarReportes:new ListarReportesUseCase(reportes,usuarios,comentarios),
@@ -91,7 +95,7 @@ export const container={
   reactivarUsuario:new ReactivarUsuarioUseCase(usuarios),
   cambiarRolUsuario:new CambiarRolUsuarioUseCase(usuarios),
   eliminarPlanta:new EliminarPlantaUseCase(plantas,cultivos,partesUso),
-  obtenerPanelAdmin:new ObtenerPanelAdminUseCase(validaciones,usuarios,plantas,publicaciones,reportes),
+  obtenerPanelAdmin:new ObtenerPanelAdminUseCase(validaciones,usuarios,plantas,publicaciones,reportes,consultas,pagosContacto,productos),
   obtenerAuditoria:new ObtenerAuditoriaUseCase(validaciones),
   crearPublicacion:new CrearPublicacionUseCase(publicaciones,plantas,validaciones),
   obtenerPublicacion:new ObtenerPublicacionUseCase(publicaciones,valoraciones,usuarios,comentarios),
@@ -109,7 +113,7 @@ export const container={
   documentarPreparacion:new DocumentarPreparacionUseCase(preparaciones,partesUso,validaciones),
   obtenerPreparacion:new ObtenerPreparacionUseCase(preparaciones),
   listarPreparaciones:new ListarPreparacionesUseCase(preparaciones),
-  publicarProducto:new PublicarProductoUseCase(productos,plantas,validaciones,usuarios),
+  publicarProducto:new PublicarProductoUseCase(productos,plantas,validaciones,usuarios,usos),
   obtenerProducto:new ObtenerProductoUseCase(productos,plantas,usuarios),
   listarProductos:new ListarProductosUseCase(productos,plantas,usuarios),
   marcarValidadoDocumentalmente:new MarcarValidadoDocumentalmenteUseCase(productos),
@@ -127,5 +131,6 @@ export const container={
   agregarMensajeConsulta:new AgregarMensajeConsultaUseCase(consultas,mensajesConsulta,notificador),
   cerrarConsulta:new CerrarConsultaUseCase(consultas),
   reabrirConsulta:new ReabrirConsultaUseCase(consultas),
+  cambiarEstadoConsultaEquipo:new CambiarEstadoConsultaEquipoUseCase(consultas, notificador),
   asignarConsulta:new AsignarConsultaUseCase(consultas,usuarios),
 };
