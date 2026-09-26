@@ -148,6 +148,13 @@ model Cultivo {
   mesesSiembra Int[]
   mesesCosecha Int[]
   fuente String
+  // Ronda 19: guía para quien quiera sembrar. La escribe SOLO un especialista en agronomía (o un administrador);
+  // nace vacía y NUNCA se rellena por el sistema: vacío = pendiente de un especialista.
+  guiaSuelo String?
+  guiaNutrientes String?
+  guiaHerramientas String?
+  guiaEspecialistaId String?
+  guiaActualizadaEn DateTime?
   estadoValidacion EstadoValidacion
   planta Planta @relation(fields: [plantaId], references: [id])
   autor Usuario @relation(fields: [autorId], references: [id])

@@ -3,12 +3,20 @@ import { apiRequest } from '../../../shared/api/client';
 // RF-251, criterio de aceptación: si la ficha no está validada, el backend no expone ningún dato
 // agronómico -- solo el estado y un mensaje. `id`/`plantaId` sí llegan siempre (se necesitan para
 // poder registrar una ubicación aunque la ficha todavía no esté validada).
+// Guía de cultivo (la redacta un especialista en agronomía): null = pendiente, nunca se rellena por el sistema.
+export interface GuiaCultivo { suelo: string | null; nutrientes: string | null; herramientas: string | null; actualizadaEn: string | null }
 export type FichaCultivoVisible =
-  | { disponible: true; id: string; plantaId: string; zonaCultivo: string; metodoPropagacion: string; estadoValidacion: string }
-  | { disponible: false; id: string; plantaId: string; estadoValidacion: string; mensaje: string };
+  | { disponible: true; id: string; plantaId: string; zonaCultivo: string; metodoPropagacion: string; estadoValidacion: string; guia: GuiaCultivo }
+  | { disponible: false; id: string; plantaId: string; estadoValidacion: string; mensaje: string; guia: GuiaCultivo };
 
 export function listarFichasPorPlanta(plantaId: string): Promise<FichaCultivoVisible[]> {
   return apiRequest<FichaCultivoVisible[]>(`/plantas/${plantaId}/cultivos`);
+}
+
+// Guía de cultivo: solo Especialista en agronomía o Administrador (el servidor lo exige).
+export async function actualizarGuiaCultivo(id: string, input: { suelo: string; nutrientes: string; herramientas: string }): Promise<GuiaCultivo> {
+  const ficha = await apiRequest<FichaCultivoVisible>(`/cultivos/${encodeURIComponent(id)}/guia`, { method: 'PATCH', body: JSON.stringify(input) });
+  return ficha.guia;
 }
 
 // RF-251: solo Especialista/Administrador (POST /cultivos exige requireValidator). El autor se toma

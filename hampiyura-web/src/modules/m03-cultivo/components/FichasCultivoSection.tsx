@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { listarFichasPorPlanta, type FichaCultivoVisible } from '../api/fichas-cultivo.api';
 import RegistrarUbicacionCultivoForm from './RegistrarUbicacionCultivoForm';
+import GuiaCultivo from './GuiaCultivo';
 import RequireRole from '../../../shared/auth/RequireRole';
 
 // M-03: no existía ninguna pantalla que listara las fichas de cultivo de una planta ni que
@@ -13,6 +14,8 @@ function FichasCultivoSection({ plantaId }: { plantaId: string }) {
   const [cargando, setCargando] = useState(true);
   const [fichaConFormularioAbierto, setFichaConFormularioAbierto] = useState<string | null>(null);
   const [ubicacionRegistrada, setUbicacionRegistrada] = useState<string | null>(null);
+
+  function guardarGuia(id: string, guia: FichaCultivoVisible['guia']) { setFichas((prev) => prev.map((f) => (f.id === id ? { ...f, guia } : f))); }
 
   function cargar() {
     setCargando(true);
@@ -39,6 +42,7 @@ function FichasCultivoSection({ plantaId }: { plantaId: string }) {
               <span className="comentario-meta">{f.mensaje}</span>
             )}
             <span className="badge badge-estado">{f.estadoValidacion}</span>
+            <GuiaCultivo cultivoId={f.id} guia={f.guia} onGuardada={(g) => guardarGuia(f.id, g)} />
             <RequireRole permitido={() => true}>
               {fichaConFormularioAbierto === f.id ? (
                 <button type="button" onClick={() => setFichaConFormularioAbierto(null)}>Cancelar</button>

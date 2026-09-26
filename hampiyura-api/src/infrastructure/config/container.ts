@@ -17,6 +17,7 @@ import { RegistrarParteUsoUseCase, ObtenerParteUsoUseCase, ListarPartesUsoUseCas
 import { AprobarContenidoUseCase, ObservarContenidoUseCase, RechazarContenidoUseCase, ListarPendientesUseCase } from '../../application/m09-validacion-moderacion/validacion.use-cases';
 import { ListarSeguimientoUseCase, ObtenerSeguimientoUseCase, ActualizarContactoSeguimientoUseCase, RegistrarValidacionCientificaUseCase } from '../../application/m04-usos-partes/seguimiento-cientifico.use-cases';
 import { SolicitarTipoCuentaUseCase, ObtenerMiTipoCuentaUseCase, SolicitudCuentaValidable } from '../../application/m01-cuentas/solicitud-tipo-cuenta.use-cases';
+import { ActualizarGuiaCultivoUseCase } from '../../application/m03-cultivo/guia-cultivo.use-case';
 import { ObtenerDetalleValidacionUseCase } from '../../application/m09-validacion-moderacion/detalle-validacion.use-case';
 import { AccesoContactoService, ListarPlanesUseCase, MiPlanUseCase, SolicitarPagoUseCase, ListarPagosAdminUseCase, ResolverPagoUseCase, DirectorioProductoresUseCase, ProtegerContactoProductosUseCase } from '../../application/m15-planes/planes.use-cases';
 import { PrismaPagoContactoRepository, PrismaSolicitudCuentaRepository } from '../adapters/out/persistence/prisma/repositories/prisma.repositories';
@@ -60,6 +61,7 @@ export const container={
   obtenerPlanta:new ObtenerPlantaUseCase(plantas,estadosConservacion),
   registrarCultivo:new RegistrarFichaCultivoUseCase(cultivos,validaciones),
   obtenerFichaCultivo:new ObtenerFichaCultivoUseCase(cultivos),
+  actualizarGuiaCultivo:new ActualizarGuiaCultivoUseCase(cultivos),
   listarFichasCultivo:new ListarFichasCultivoUseCase(cultivos),
   registrarUbicacionCultivo:new RegistrarUbicacionCultivoUseCase(mapaCultivo,cultivos,estadosConservacion),
   obtenerUbicacionCultivo:new ObtenerUbicacionCultivoUseCase(mapaCultivo),

@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { container } from '../../../../config/container';
 import { Fuente } from '../../../../../domain/value-objects/fuente.vo';
 import { CalendarioCultivo } from '../../../../../domain/value-objects/calendario-cultivo.vo';
+import { aVistaFichaCultivo } from '../../../../../application/m03-cultivo/obtener-ficha-cultivo.use-case';
 import { AuthenticatedRequest } from '../middlewares/role.middleware';
 
 function auth(req:Request) { return (req as AuthenticatedRequest).user; }
@@ -33,4 +34,12 @@ export async function listarMapaCultivo(req:Request,res:Response){
   const esValidador=!!usuario && (usuario.rol==='Administrador' || usuario.rol.startsWith('Especialista'));
   const mapa=await container.listarMapaCultivo.ejecutar({incluirNoValidadas: esValidador && req.query.estado==='todas'});
   res.json(mapa);
+}
+
+// Guía de cultivo: solo Especialista en agronomía o Administrador (la regla vive en Cultivo.actualizarGuia).
+const guiaSchema=z.object({suelo:z.string().max(1500).nullable().optional(),nutrientes:z.string().max(1500).nullable().optional(),herramientas:z.string().max(1500).nullable().optional()});
+export async function actualizarGuiaCultivo(req:Request,res:Response){
+  const input=guiaSchema.parse(req.body); const user=(req as AuthenticatedRequest).user;
+  const cultivo=await container.actualizarGuiaCultivo.ejecutar(String(req.params.id),input,user);
+  res.json(aVistaFichaCultivo(cultivo));
 }

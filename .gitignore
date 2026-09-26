@@ -31,3 +31,8 @@ Thumbs.db
 .claude/
 hampiyura-web/scratch-*.cjs
 capturas-identidad-visual/
+
+# Respaldos y credenciales locales (NUNCA subir)
+backups/
+credenciales-equipo*.txt
+hampiyura-api/scripts/crear-cuentas-equipo.ts
