@@ -40,27 +40,51 @@ docker compose up -d --build
 ```
 
 La primera vez tarda unos minutos (compila la API y el frontend). Cuando termine, abre
-**<http://localhost:8080>**. Ya hay datos: 26 usos medicinales, 3 plantas base y 2 plantas "[DATO DE PRUEBA]".
+**<http://localhost:8080>**. Ya hay datos: 26 usos medicinales y las **27 plantas** del proyecto con sus fichas (foto con crédito, hábitat, preparaciones, distribución natural), los sellos de validación científica y el estado de conservación (más 2 plantas "[DATO DE PRUEBA]" si `SEED_DATOS_DE_PRUEBA=true`). La primera vez el arranque tarda un minuto más porque carga esos datos; puedes seguirlo con `docker compose logs -f api`.
 
 - **Cuenta Administrador:** `admin@hampiyura.local` / `HampiYura2026Demo` (valores de `.env`; cámbialos si el sitio será público).
 - **API directa:** <http://localhost:3000/api/plantas>. La base de datos queda solo en `127.0.0.1:5432`.
 - Si un puerto está ocupado, cambia `WEB_PORT`, `API_PORT` o `POSTGRES_PORT` en `.env` y repite `docker compose up -d`.
 
 Qué levanta (`docker-compose.yml`): `db` (PostgreSQL 16, con healthcheck), `api` (espera a que `db` esté sana; al
-arrancar aplica las migraciones de Prisma y el seed **solos**) y `web` (nginx con el frontend compilado, que reenvía
+arrancar aplica las migraciones de Prisma, el seed y la carga de las 27 plantas **solos**) y `web` (nginx con el frontend compilado, que reenvía
 `/api` y `/uploads` a la API). **No hay caché** (Redis u otro): el proyecto no usa ninguno.
 Las imágenes son de **producción** (código compilado, sin recarga en caliente); el secreto JWT se genera solo la primera vez.
 
 ```bash
-docker compose logs -f api      # ver el arranque (migraciones y seed)
+docker compose logs -f api      # ver el arranque (migraciones, seed y carga de plantas)
 docker compose down             # apagar (los datos se conservan)
 docker compose down -v          # apagar y BORRAR datos, fotos subidas y secreto
 docker compose up -d --build    # aplicar cambios del código tras un git pull
 ```
 
+**¿Ves solo 3 plantas?** Casi seguro la imagen es vieja o el arranque falló al cargar los datos. Comprueba en el log de la API que
+aparezca `datos de plantas cargados`; si aparece `DATOS INCOMPLETOS` o `ERROR: scripts/... FALLÓ`, el error está justo encima (la API
+arranca igual con lo que sí se cargó). Para descartar una imagen o un volumen viejos, empieza limpio:
+
+```bash
+docker compose down -v --remove-orphans     # borra también la base de datos vieja
+docker compose build --no-cache
+docker compose up -d
+curl http://localhost:3000/api/plantas      # debe devolver 27 plantas
+```
+
+La carga de las plantas necesita la cuenta Administrador del `.env` (`SEED_ADMIN_CORREO` y `SEED_ADMIN_PASSWORD`) y se puede apagar con
+`CARGAR_DATOS_PLANTAS=false`.
+
+**Cuentas reales del equipo (paso manual, NO automático):** el repositorio es público, así que las 12 cuentas del equipo
+(`docs/usuarios-equipo.md`) no se crean solas. Con la base levantada, cada instalación las crea una vez con contraseñas propias y
+aleatorias, que se guardan solo en `credenciales-equipo-<fecha>.txt` (ignorado por git; entrégalas por un canal privado):
+
+```bash
+cd hampiyura-api && npm ci
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/hampiyura" npx tsx scripts/crear-cuentas-equipo.ts   # ajusta el puerto si cambiaste POSTGRES_PORT
+```
+
 **Plan B (sin Docker para la API/frontend):** `docker compose up -d db` levanta solo PostgreSQL y el resto se corre a
 mano con `npm` (sección 2b). Si prefieres tu propio PostgreSQL, crea una base vacía `hampiyura`, apunta `DATABASE_URL`
-a ella y ejecuta `npx prisma migrate deploy` (crea todas las tablas) y `npm run seed` (datos base).
+a ella y ejecuta `npx prisma migrate deploy` (crea todas las tablas) y `npm run seed` (datos base), y después los cuatro scripts de datos de
+la sección 4 (sin ellos solo tendrás las 3 plantas base).
 
 ---
 
@@ -133,6 +157,19 @@ El seed es **idempotente** (puedes correrlo en cada despliegue sin duplicar nada
 - **Cuenta Administrador** solo si defines `SEED_ADMIN_CORREO` y `SEED_ADMIN_PASSWORD`
   (mínimo 8 caracteres, con letras y números). Si el correo ya existe, se le asegura el rol Administrador
   sin tocar su contraseña.
+
+### Datos de las 27 plantas (rondas 28 a 31)
+
+El seed solo trae las 3 plantas base. Las **27 plantas reales** con sus usos, fichas, sellos y conservación se cargan con cuatro scripts
+**idempotentes** (dentro de `hampiyura-api`), en este orden. Necesitan una cuenta Administrador activa (el seed la crea con
+`SEED_ADMIN_*`). Sin `--aplicar` solo simulan y muestran qué harían. **Con Docker esto ya se hace solo en cada arranque.**
+
+```bash
+npx tsx scripts/cargar-plantas-documentos.ts --aplicar       # 27 plantas y sus 66 combinaciones Parte+Uso
+npx tsx scripts/cargar-fichas-plantas.ts --aplicar           # foto (con crédito), hábitat, preparaciones y distribución natural
+npx tsx scripts/registrar-validacion-cientifica.ts --aplicar # sello "verificado" en 22 usos Científicos
+npx tsx scripts/cargar-conservacion.ts --aplicar             # estado de conservación (IUCN + D.S. 043-2006-AG)
+```
 
 **Sin administrador la app queda sin moderación**: el rol no se puede autoasignar desde la interfaz.
 Con el admin creado, el resto de roles (Especialista, Productor, otro Administrador) se asignan desde

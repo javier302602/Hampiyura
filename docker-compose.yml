@@ -4,7 +4,8 @@
 #   docker compose up -d --build        (la primera vez tarda unos minutos: compila API y frontend)
 #   -> abre http://localhost:8080
 #
-# Al arrancar, la API aplica las migraciones y el seed sola (ver hampiyura-api/docker-entrypoint.sh).
+# Al arrancar, la API aplica las migraciones, el seed y la carga de las 27 plantas (fichas, sellos y conservación) sola
+# (ver hampiyura-api/docker-entrypoint.sh).
 # No hay caché (Redis u otro): el proyecto no usa ninguno, así que no se agrega.
 #
 # Solo la base de datos, para desarrollo con Node:   docker compose up -d db
@@ -42,6 +43,7 @@ services:
       SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
       SEED_ADMIN_NOMBRE: ${SEED_ADMIN_NOMBRE:-Administrador}
       SEED_DATOS_DE_PRUEBA: ${SEED_DATOS_DE_PRUEBA:-false}
+      CARGAR_DATOS_PLANTAS: ${CARGAR_DATOS_PLANTAS:-true}
       PAGO_YAPE_NUMERO: ${PAGO_YAPE_NUMERO:-}
       PAGO_YAPE_TITULAR: ${PAGO_YAPE_TITULAR:-HampiYura}
       PAGO_PLIN_NUMERO: ${PAGO_PLIN_NUMERO:-}
