@@ -31,8 +31,8 @@ export interface ProponerPlantaInput {
   // Ubicación de observación (GPS o mapa). Solo la ve quien valida; el catálogo público nunca la devuelve.
   latitud?: number;
   longitud?: number;
-  // Parte medicinal + uso propuestos junto con la planta (RF-255): quedan "Pendiente" en M-09.
-  parteUso?: {
+  // De 1 a 8 partes medicinales con su uso (RF-255); cada una es su propio registro y queda "Pendiente" en M-09.
+  partesUso: {
     parte: string;
     parteDetalle?: string;
     usoId: string;
@@ -40,7 +40,7 @@ export interface ProponerPlantaInput {
     tipoConocimiento: string;
     fuente: string;
     contraindicaciones?: string;
-  };
+  }[];
 }
 export function proponerPlanta(input: ProponerPlantaInput): Promise<Planta> {
   return apiRequest<Planta>('/plantas/proponer', { method: 'POST', body: JSON.stringify(input) });

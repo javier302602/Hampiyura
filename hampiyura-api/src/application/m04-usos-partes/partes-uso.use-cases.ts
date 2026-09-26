@@ -12,7 +12,8 @@ import { esTipoConocimiento } from '../../domain/value-objects/tipo-conocimiento
 import { NotFoundError, ValidationError } from '../../domain/errors/domain.errors';
 
 export function aVistaParteUso(parteUso: ParteUso): ParteUsoVisible {
-  return { ...parteUso.props, verificado: parteUso.puedeMostrarseComoVerificado(), advertencia: parteUso.etiquetaAdvertencia() };
+  const { contactoSeguimiento: _contacto, validacionCientifica: _evidencia, ...publico } = parteUso.props;
+  return { ...publico, verificado: parteUso.puedeMostrarseComoVerificado(), advertencia: parteUso.etiquetaAdvertencia() };
 }
 
 export class RegistrarParteUsoUseCase implements RegistrarParteUsoPort {

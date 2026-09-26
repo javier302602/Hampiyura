@@ -18,6 +18,7 @@ const MENSAJES_POR_TIPO: Record<string, string> = {
   // M-08 (RF-263 criterio de aceptación): el equipo tomó/respondió tu consulta.
   consulta_en_revision: 'Tu consulta fue tomada en revisión por el equipo.',
   consulta_respondida: 'Tu consulta fue respondida por el equipo.',
+  validacion_cientifica_registrada: 'Un uso que propusiste fue validado científicamente por el equipo y ya se muestra como verificado.',
   // M-15: un administrador resolvió tu comprobante de pago.
   pago_confirmado: 'Tu pago fue confirmado: ya puedes ver los contactos que incluye tu plan.',
   pago_rechazado: 'Tu comprobante de pago fue rechazado; revisa el motivo en Mis planes y vuelve a intentarlo.',

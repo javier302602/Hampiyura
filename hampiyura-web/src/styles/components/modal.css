@@ -29,3 +29,7 @@
 .detalle-imagenes img{width:140px;height:140px;object-fit:cover;border-radius:var(--radius-md);border:1px solid var(--color-border)}
 .detalle-meta{display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center;color:var(--color-text-muted);font-size:var(--font-size-small)}
 .detalle-meta p{margin:0;font-size:inherit;max-width:none;color:inherit}
+
+/* Enlaces dentro de un modal (superficie elevada): color de texto + subrayado, para llegar a AAA en claro y oscuro. */
+.modal a{color:var(--color-text);text-decoration:underline;text-underline-offset:2px;font-weight:var(--font-weight-medium)}
+.modal a:hover{color:var(--color-accent-text)}

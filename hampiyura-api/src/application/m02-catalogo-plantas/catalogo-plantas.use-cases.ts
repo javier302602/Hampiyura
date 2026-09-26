@@ -41,14 +41,21 @@ export class RegistrarPlantaUseCase implements RegistrarPlantaPort {
 // `parteUso` (RF-255): parte medicinal + uso que propone la misma persona. Se registra con el flujo normal
 // de M-04 (queda 'Pendiente' y entra a la bandeja de M-09) -- nunca como uso verificado (RF-257).
 export type ParteUsoPropuesto = Pick<RegistrarParteUsoInput, 'parte' | 'usoId' | 'tipoConocimiento' | 'fuente' | 'motivoUso' | 'parteDetalle' | 'contraindicaciones'>;
-export interface ProponerPlantaInput extends RegistrarPlantaInput { proponenteId: string; parteUso?: ParteUsoPropuesto; }
+// Máximo de bloques de parte+uso por propuesta: hay 8 tipos de parte (hoja, fruto, raíz, corteza, tallo, flor, semilla, otra).
+export const MAX_PARTES_POR_PROPUESTA = 8;
+export interface ProponerPlantaInput extends RegistrarPlantaInput { proponenteId: string; partesUso?: ParteUsoPropuesto[]; }
 export class ProponerPlantaUseCase {
   constructor(private readonly repo:PlantaRepositoryPort, private readonly validaciones:ValidacionContenidoRepositoryPort, private readonly registrarParteUso?:RegistrarParteUsoPort, private readonly usos?:UsoRepositoryPort) {}
   async ejecutar(input:ProponerPlantaInput):Promise<Planta> {
     validarCampos(input);
-    const { proponenteId, parteUso, ...datos } = input;
-    // Se valida TODO antes de guardar nada, para no dejar una planta huérfana si la parte/uso es inválida.
-    if (parteUso) {
+    const { proponenteId, partesUso = [], ...datos } = input;
+    if (partesUso.length > MAX_PARTES_POR_PROPUESTA) throw new ValidationError(`Una propuesta admite hasta ${MAX_PARTES_POR_PROPUESTA} partes medicinales`);
+    const combinaciones = new Set<string>();
+    // Se valida TODO antes de guardar nada, para no dejar una planta huérfana si alguna parte/uso es inválida.
+    for (const parteUso of partesUso) {
+      const clave = `${parteUso.parte}|${parteUso.parte === 'Otra' ? parteUso.parteDetalle?.trim().toLowerCase() : ''}|${parteUso.usoId}`;
+      if (combinaciones.has(clave)) throw new ValidationError('Hay dos bloques con la misma parte y el mismo uso: agrégalos una sola vez');
+      combinaciones.add(clave);
       if (!esTipoParte(parteUso.parte)) throw new ValidationError(`Parte de la planta no reconocida: ${parteUso.parte}`);
       if (!esTipoConocimiento(parteUso.tipoConocimiento)) throw new ValidationError('Tipo de conocimiento no reconocido');
       if (this.usos && !(await this.usos.buscarPorId(parteUso.usoId))) throw new ValidationError('El uso indicado no existe en el catálogo');
@@ -58,7 +65,8 @@ export class ProponerPlantaUseCase {
     const planta = new Planta({ ...datos, id:randomUUID(), estadoValidacion:'Pendiente' });
     await this.repo.guardar(planta);
     await this.validaciones.guardar(new ValidacionContenido({ id:randomUUID(), tipoEntidad:'Planta', entidadId:planta.props.id, estado:'Pendiente', fecha:new Date(), autorId:proponenteId }));
-    if (parteUso && this.registrarParteUso) await this.registrarParteUso.ejecutar({ ...parteUso, plantaId:planta.props.id, autorId:proponenteId });
+    // Cada bloque es su propio registro Planta→Parte→Uso y entra a moderación (M-09) por separado.
+    if (this.registrarParteUso) for (const parteUso of partesUso) await this.registrarParteUso.ejecutar({ ...parteUso, plantaId:planta.props.id, autorId:proponenteId });
     return planta;
   }
 }

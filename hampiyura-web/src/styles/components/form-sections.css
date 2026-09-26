@@ -55,3 +55,8 @@
 .formulario .mes-chip-activo{background:var(--color-primary-900,var(--color-text));border-color:var(--color-primary-900,var(--color-text));color:var(--color-bg)}
 .formulario .mes-chip:focus-within{outline:2px solid var(--color-accent);outline-offset:2px}
 @media (max-width:520px){.formulario .meses-grid{grid-template-columns:repeat(4,1fr)}}
+
+/* Bloques repetibles de "Parte medicinal y uso" (Proponer planta): cada uno independiente, con su propio marco. */
+.formulario .bloque-parte{display:grid;gap:var(--space-3);margin:0;padding:var(--space-4);border:1px solid var(--card-border);border-radius:var(--radius-md);background:var(--color-bg);min-width:0}
+.formulario .bloque-parte-cabecera{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3)}
+.formulario .bloque-parte legend{font-weight:var(--font-weight-bold);font-size:var(--font-size-h3);padding:0;color:var(--color-text)}

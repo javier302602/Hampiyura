@@ -93,8 +93,21 @@ export class PrismaPlantaRepository implements PlantaRepositoryPort {
 }
 export class PrismaParteUsoRepository implements ParteUsoRepositoryPort {
   constructor(private readonly prisma:PrismaClient) {}
-  private aDominio(x:any):ParteUso { return new ParteUso({...x, parte:x.parte as TipoParte, tipoConocimiento:x.tipoConocimiento as TipoConocimiento, preparacionId:x.preparacionId??undefined, contraindicaciones:x.contraindicaciones??undefined, motivoUso:x.motivoUso??undefined, parteDetalle:x.parteDetalle??undefined, fuente:new Fuente(x.fuente)}); }
-  async guardar(p:ParteUso){await this.prisma.parteUso.create({data:{...p.props, fuente:p.props.fuente.valor} as any});}
+  private aDominio(x:any):ParteUso {
+    const { valCientEspecialista, valCientFecha, valCientEvidencia, valCientEnlace, valCientRegistradaPorId, valCientRegistradaEn, ...resto } = x;
+    const validacionCientifica = valCientEspecialista && valCientFecha && valCientEvidencia
+      ? { especialista:valCientEspecialista, fecha:valCientFecha, evidencia:valCientEvidencia, enlace:valCientEnlace??undefined, registradaPorId:valCientRegistradaPorId??'', registradaEn:valCientRegistradaEn??valCientFecha }
+      : undefined;
+    return new ParteUso({...resto, parte:x.parte as TipoParte, tipoConocimiento:x.tipoConocimiento as TipoConocimiento, preparacionId:x.preparacionId??undefined, contraindicaciones:x.contraindicaciones??undefined, motivoUso:x.motivoUso??undefined, parteDetalle:x.parteDetalle??undefined, contactoSeguimiento:x.contactoSeguimiento??undefined, validacionCientifica, fuente:new Fuente(x.fuente)});
+  }
+  private aFila(p:ParteUso) {
+    const { validacionCientifica:v, fuente, ...resto } = p.props;
+    return { ...resto, fuente:fuente.valor, contactoSeguimiento:resto.contactoSeguimiento??null,
+      valCientEspecialista:v?.especialista??null, valCientFecha:v?.fecha??null, valCientEvidencia:v?.evidencia??null, valCientEnlace:v?.enlace??null, valCientRegistradaPorId:v?.registradaPorId??null, valCientRegistradaEn:v?.registradaEn??null };
+  }
+  async guardar(p:ParteUso){await this.prisma.parteUso.create({data:this.aFila(p) as any});}
+  async actualizar(p:ParteUso){const {id,...datos}=this.aFila(p); await this.prisma.parteUso.update({where:{id:p.props.id},data:datos as any});}
+  async listar(){const xs=await this.prisma.parteUso.findMany(); return xs.map((x)=>this.aDominio(x));}
   async buscarPorId(id:string){const x=await this.prisma.parteUso.findUnique({where:{id}}); return x?this.aDominio(x):null;}
   async listarPorPlanta(plantaId:string){const xs=await this.prisma.parteUso.findMany({where:{plantaId}}); return xs.map((x)=>this.aDominio(x));}
   async listarPorUso(usoId:string){const xs=await this.prisma.parteUso.findMany({where:{usoId}}); return xs.map((x)=>this.aDominio(x));}

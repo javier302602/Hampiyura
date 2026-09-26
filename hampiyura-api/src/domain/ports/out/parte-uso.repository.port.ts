@@ -8,4 +8,7 @@ export interface ParteUsoRepositoryPort {
   // Para buscar "plantas que tengan esta propiedad" se necesita ir de usoId -> plantas.
   listarPorUso(usoId: string): Promise<ParteUso[]>;
   actualizarEstadoValidacion(id: string, estado: EstadoValidacion): Promise<void>;
+  // Seguimiento científico: persiste contactoSeguimiento, tipoConocimiento y la evidencia registrada.
+  actualizar(parteUso: ParteUso): Promise<void>;
+  listar(): Promise<ParteUso[]>;
 }

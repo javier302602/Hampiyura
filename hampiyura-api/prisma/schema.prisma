@@ -168,6 +168,14 @@ model ParteUso {
   // Por qué/para qué se usa (texto de quien lo propone) y, si parte='Otra', cuál es.
   motivoUso String?
   parteDetalle String?
+  // Nota interna (nunca pública) y evidencia de la validación científica de un uso tradicional.
+  contactoSeguimiento String?
+  valCientEspecialista String?
+  valCientFecha DateTime?
+  valCientEvidencia String?
+  valCientEnlace String?
+  valCientRegistradaPorId String?
+  valCientRegistradaEn DateTime?
   fuente String
   estadoValidacion EstadoValidacion
   planta Planta @relation(fields: [plantaId], references: [id])

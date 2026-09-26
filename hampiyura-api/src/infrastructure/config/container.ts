@@ -15,6 +15,7 @@ import { ListarMapaCultivoUseCase } from '../../application/m03-cultivo/listar-m
 import { RegistrarUsoUseCase, ListarUsosUseCase } from '../../application/m04-usos-partes/catalogo-usos.use-cases';
 import { RegistrarParteUsoUseCase, ObtenerParteUsoUseCase, ListarPartesUsoUseCase } from '../../application/m04-usos-partes/partes-uso.use-cases';
 import { AprobarContenidoUseCase, ObservarContenidoUseCase, RechazarContenidoUseCase, ListarPendientesUseCase } from '../../application/m09-validacion-moderacion/validacion.use-cases';
+import { ListarSeguimientoUseCase, ObtenerSeguimientoUseCase, ActualizarContactoSeguimientoUseCase, RegistrarValidacionCientificaUseCase } from '../../application/m04-usos-partes/seguimiento-cientifico.use-cases';
 import { ObtenerDetalleValidacionUseCase } from '../../application/m09-validacion-moderacion/detalle-validacion.use-case';
 import { AccesoContactoService, ListarPlanesUseCase, MiPlanUseCase, SolicitarPagoUseCase, ListarPagosAdminUseCase, ResolverPagoUseCase, DirectorioProductoresUseCase, ProtegerContactoProductosUseCase } from '../../application/m15-planes/planes.use-cases';
 import { PrismaPagoContactoRepository } from '../adapters/out/persistence/prisma/repositories/prisma.repositories';
@@ -68,6 +69,10 @@ export const container={
   observar:new ObservarContenidoUseCase(validaciones,notificador,entidadesValidables),
   rechazar:new RechazarContenidoUseCase(validaciones,notificador,entidadesValidables),
   obtenerDetalleValidacion:new ObtenerDetalleValidacionUseCase(validaciones,usuarios,plantas,partesUso,usos,publicaciones,preparaciones,productos,estadosConservacion,cultivos),
+  listarSeguimiento:new ListarSeguimientoUseCase(partesUso,plantas,usos,usuarios),
+  obtenerSeguimiento:new ObtenerSeguimientoUseCase(partesUso,plantas,usos,usuarios),
+  actualizarContactoSeguimiento:new ActualizarContactoSeguimientoUseCase(partesUso,plantas,usos,usuarios),
+  registrarValidacionCientifica:new RegistrarValidacionCientificaUseCase(partesUso,plantas,usos,usuarios,notificador),
   listarPlanes:new ListarPlanesUseCase(pagosContacto,envM15.cobro),
   miPlan:new MiPlanUseCase(pagosContacto,usuarios,accesoContacto),
   solicitarPago:new SolicitarPagoUseCase(pagosContacto,directorioProductores,accesoContacto),

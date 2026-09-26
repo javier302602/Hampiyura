@@ -251,21 +251,21 @@ describe('M-02 · Catálogo de plantas', () => {
         const validaciones:any={guardar:jest.fn()};
         const registrarParteUso:any={ejecutar:jest.fn()};
         const usos:any={buscarPorId:jest.fn().mockResolvedValue({props:{id:'uso1'}})};
-        const planta=await new ProponerPlantaUseCase(repo,validaciones,registrarParteUso,usos).ejecutar({...plantaInput,latitud:-9.3,longitud:-76,proponenteId:'u1',parteUso});
+        const planta=await new ProponerPlantaUseCase(repo,validaciones,registrarParteUso,usos).ejecutar({...plantaInput,latitud:-9.3,longitud:-76,proponenteId:'u1',partesUso:[parteUso]});
         expect(planta.props.latitud).toBe(-9.3);
         expect(registrarParteUso.ejecutar).toHaveBeenCalledWith(expect.objectContaining({plantaId:planta.props.id,autorId:'u1',parte:'Hoja',usoId:'uso1',motivoUso:'Se usa en infusión para la inflamación'}));
       });
       test('si el uso no existe NO guarda la planta (nada huérfano)', async () => {
         const repo:any={guardar:jest.fn()};
         const usos:any={buscarPorId:jest.fn().mockResolvedValue(null)};
-        await expect(new ProponerPlantaUseCase(repo,{guardar:jest.fn()} as any,{ejecutar:jest.fn()} as any,usos).ejecutar({...plantaInput,proponenteId:'u1',parteUso})).rejects.toThrow(/uso/i);
+        await expect(new ProponerPlantaUseCase(repo,{guardar:jest.fn()} as any,{ejecutar:jest.fn()} as any,usos).ejecutar({...plantaInput,proponenteId:'u1',partesUso:[parteUso]})).rejects.toThrow(/uso/i);
         expect(repo.guardar).not.toHaveBeenCalled();
       });
       test('exige el motivo, y el detalle cuando la parte es "Otra"', async () => {
         const usos:any={buscarPorId:jest.fn().mockResolvedValue({props:{id:'uso1'}})};
         const uc=new ProponerPlantaUseCase({guardar:jest.fn()} as any,{guardar:jest.fn()} as any,{ejecutar:jest.fn()} as any,usos);
-        await expect(uc.ejecutar({...plantaInput,proponenteId:'u1',parteUso:{...parteUso,motivoUso:'  '}})).rejects.toThrow(/para qué/i);
-        await expect(uc.ejecutar({...plantaInput,proponenteId:'u1',parteUso:{...parteUso,parte:'Otra'}})).rejects.toThrow(/cuál es la parte/i);
+        await expect(uc.ejecutar({...plantaInput,proponenteId:'u1',partesUso:[{...parteUso,motivoUso:'  '}]})).rejects.toThrow(/para qué/i);
+        await expect(uc.ejecutar({...plantaInput,proponenteId:'u1',partesUso:[{...parteUso,parte:'Otra'}]})).rejects.toThrow(/cuál es la parte/i);
       });
     });
     test('valida la ubicación: latitud y longitud juntas y dentro de rango', async () => {
@@ -298,10 +298,16 @@ describe('M-04 · Usos y Partes Curativas', () => {
       const parteUso=new ParteUso({id:'pu1',...parteUsoInput,tipoConocimiento:'Científico',estadoValidacion:'Pendiente'});
       expect(parteUso.puedeMostrarseComoVerificado()).toBe(false);
     });
-    test('conocimiento científico + validado por un especialista sí se presenta como verificado', () => {
-      const parteUso=new ParteUso({id:'pu1',...parteUsoInput,tipoConocimiento:'Científico',estadoValidacion:'Validado'});
+    test('conocimiento científico + aprobado + EVIDENCIA registrada sí se presenta como verificado', () => {
+      const validacionCientifica={especialista:'Lab UNAS',fecha:new Date('2026-05-01'),evidencia:'Ensayo in vitro de actividad antiinflamatoria del extracto de hoja, resultado positivo',registradaPorId:'admin',registradaEn:new Date()};
+      const parteUso=new ParteUso({id:'pu1',...parteUsoInput,tipoConocimiento:'Científico',estadoValidacion:'Validado',validacionCientifica});
       expect(parteUso.puedeMostrarseComoVerificado()).toBe(true);
       expect(parteUso.etiquetaAdvertencia()).toBeNull();
+    });
+    test('RF-257: "Científico" aprobado pero SIN evidencia registrada NO se presenta como verificado', () => {
+      const parteUso=new ParteUso({id:'pu1',...parteUsoInput,tipoConocimiento:'Científico',estadoValidacion:'Validado'});
+      expect(parteUso.puedeMostrarseComoVerificado()).toBe(false);
+      expect(parteUso.etiquetaAdvertencia()).toMatch(/evidencia/);
     });
   });
 
@@ -350,7 +356,7 @@ describe('M-04 · Usos y Partes Curativas', () => {
   test('lista los Parte+Uso de una planta con el flag de verificado por cada uno', async () => {
     const repo:any={listarPorPlanta:jest.fn().mockResolvedValue([
       new ParteUso({id:'pu1',...parteUsoInput,tipoConocimiento:'Tradicional',estadoValidacion:'Pendiente'}),
-      new ParteUso({id:'pu2',...parteUsoInput,tipoConocimiento:'Científico',estadoValidacion:'Validado'}),
+      new ParteUso({id:'pu2',...parteUsoInput,tipoConocimiento:'Científico',estadoValidacion:'Validado',validacionCientifica:{especialista:'Lab',fecha:new Date(),evidencia:'Ensayo con extracto de hoja, resultado positivo documentado',registradaPorId:'a',registradaEn:new Date()}}),
     ])};
     const vistas=await new ListarPartesUsoUseCase(repo).ejecutar('p1');
     expect(vistas.map(v=>v.verificado)).toEqual([false,true]);

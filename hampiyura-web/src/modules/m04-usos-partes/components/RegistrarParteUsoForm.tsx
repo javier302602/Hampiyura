@@ -1,4 +1,5 @@
 import { FormEvent, useState } from 'react';
+import { AvisoVerificacion } from '../../m02-catalogo-plantas/components/ProponerPlantaForm';
 import { TIPOS_PARTE, TIPOS_CONOCIMIENTO, registrarParteUso, type Uso, type TipoConocimiento } from '../api/partes-uso.api';
 
 interface Props {
@@ -16,7 +17,6 @@ function RegistrarParteUsoForm({ plantaId, usos, onRegistrado }: Props) {
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const noSeraVerificado = tipoConocimiento === 'Tradicional' || tipoConocimiento === 'Pendiente';
 
   async function manejarSubmit(e: FormEvent) {
     e.preventDefault();
@@ -59,13 +59,7 @@ function RegistrarParteUsoForm({ plantaId, usos, onRegistrado }: Props) {
         </select>
       </label>
 
-      {noSeraVerificado ? (
-        <p className="advertencia-no-verificado">
-          ⚠ Con "{tipoConocimiento}", esta combinación Parte+Uso <strong>nunca</strong> se mostrará como verificada científicamente — ni siquiera si un especialista la aprueba. Solo el conocimiento "Científico" ya validado puede mostrarse como verificado.
-        </p>
-      ) : (
-        <p className="nota-cientifico">Con "Científico", esta combinación podrá mostrarse como verificada, pero solo después de que un especialista la apruebe (queda "Pendiente de validar" hasta entonces).</p>
-      )}
+      <AvisoVerificacion tipo={tipoConocimiento} />
 
       <label>
         Fuente citada

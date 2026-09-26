@@ -3,7 +3,7 @@ import { registrar, login, activarCuenta, solicitarRecuperacion, restablecerCont
 import { registrarPlanta, proponerPlanta, listarPlantas, obtenerPlanta } from '../controllers/m02-catalogo-plantas/plantas.controller';
 import { registrarFicha, obtenerFicha, listarFichasPorPlanta, registrarUbicacionCultivo, obtenerUbicacionCultivo, listarMapaCultivo } from '../controllers/m03-cultivo.controller';
 import { registrarUso, listarUsos } from '../controllers/m04-usos-partes/usos.controller';
-import { registrarParteUso, obtenerParteUso, listarPartesUsoPorPlanta } from '../controllers/m04-usos-partes/partes-uso.controller';
+import { registrarParteUso, obtenerParteUso, listarPartesUsoPorPlanta, listarSeguimiento, obtenerSeguimiento, actualizarContactoSeguimiento, registrarValidacionCientifica } from '../controllers/m04-usos-partes/partes-uso.controller';
 import { crearPublicacion, obtenerPublicacion, listarPublicaciones, editarPublicacion, eliminarPublicacion, subirMedia } from '../controllers/m06-publicaciones/publicaciones.controller';
 import { comentarPublicacion, listarComentarios, calificarPublicacion } from '../controllers/m07-comunidad/comunidad.controller';
 import { aprobar, observar, rechazar, listarPendientes, detalleValidacion, reportar, listarReportes, actualizarEstadoReporte } from '../controllers/m09-validacion.controller';
@@ -27,7 +27,8 @@ router.post('/cultivos',requireValidator,registrarFicha); router.get('/cultivos/
 router.post('/cultivos/:cultivoId/ubicacion',requireAuth,registrarUbicacionCultivo); router.get('/cultivos/:cultivoId/ubicacion',obtenerUbicacionCultivo);
 router.get('/mapa-cultivo',attachUserIfPresent,listarMapaCultivo);
 router.post('/usos',requireValidator,registrarUso); router.get('/usos',listarUsos);
-router.post('/partes-uso',requireAuth,registrarParteUso); router.get('/partes-uso/:id',obtenerParteUso); router.get('/plantas/:plantaId/partes-uso',listarPartesUsoPorPlanta);
+router.post('/partes-uso',requireAuth,registrarParteUso); router.get('/partes-uso/seguimiento',requireValidator,listarSeguimiento); router.get('/partes-uso/seguimiento/:id',requireValidator,obtenerSeguimiento); router.patch('/partes-uso/seguimiento/:id/contacto',requireValidator,actualizarContactoSeguimiento); router.post('/partes-uso/seguimiento/:id/validacion-cientifica',requireValidator,registrarValidacionCientifica);
+router.get('/partes-uso/:id',obtenerParteUso); router.get('/plantas/:plantaId/partes-uso',listarPartesUsoPorPlanta);
 router.post('/publicaciones/media',requireAuth,subirMedia);
 router.post('/publicaciones',requireAuth,crearPublicacion); router.get('/publicaciones',listarPublicaciones); router.get('/publicaciones/:id',attachUserIfPresent,obtenerPublicacion); router.patch('/publicaciones/:id',requireAuth,editarPublicacion); router.delete('/publicaciones/:id',requireAuth,eliminarPublicacion);
 router.post('/publicaciones/:publicacionId/comentarios',requireAuth,comentarPublicacion); router.get('/publicaciones/:publicacionId/comentarios',listarComentarios);
