@@ -1,7 +1,11 @@
 // Guía de cultivo de un especialista en agronomía (Ronda 22): ficha técnica organizada en secciones. TODOS los campos son opcionales y
 // nacen vacíos ("pendiente de un especialista"); el sistema nunca rellena nada. Basada en los apartados habituales de las fichas
 // técnicas de extensión agronómica (suelo, nutrición, calendario, espaciamiento, riego, clima, sanidad, cosecha).
-export interface CampoGuia { clave: string; seccion: string; etiqueta: string; minimo: number }
+// `opciones`: campo de selección cerrada (el valor debe ser una de ellas). Sin `opciones`: texto libre de al menos `minimo` caracteres.
+export interface CampoGuia { clave: string; seccion: string; etiqueta: string; minimo: number; opciones?: string[] }
+export const SECCION_MARCO_LEGAL = 'Marco legal y manejo responsable';
+export const CATEGORIAS_CONSERVACION = ['No evaluada', 'Vulnerable', 'En peligro', 'En peligro crítico', 'Otra'];
+export const OPCIONES_AUTORIZACION = ['Sí', 'No', 'No verificado'];
 export const CAMPOS_GUIA: CampoGuia[] = [
   { clave: 'suelo', seccion: 'Suelo', etiqueta: 'Tipo o textura', minimo: 10 },
   { clave: 'ph', seccion: 'Suelo', etiqueta: 'Rango de pH ideal', minimo: 3 },
@@ -19,6 +23,14 @@ export const CAMPOS_GUIA: CampoGuia[] = [
   { clave: 'plagas', seccion: 'Plagas y enfermedades', etiqueta: 'Problemas comunes y manejo responsable', minimo: 10 },
   { clave: 'herramientas', seccion: 'Herramientas', etiqueta: 'Herramientas necesarias', minimo: 10 },
   { clave: 'indicadoresCosecha', seccion: 'Cosecha', etiqueta: 'Señales de que está lista para cosechar', minimo: 10 },
+  // Ronda 25 -- Marco legal y manejo responsable. Todo vacío hasta que un especialista lo complete y cite su fuente: la app NO afirma
+  // por especie si hace falta un permiso (eso depende de la categorización oficial vigente y del fin de uso).
+  { clave: 'conservacionCategoria', seccion: SECCION_MARCO_LEGAL, etiqueta: 'Categoría de conservación', minimo: 0, opciones: CATEGORIAS_CONSERVACION },
+  { clave: 'conservacionFuente', seccion: SECCION_MARCO_LEGAL, etiqueta: 'Fuente de la categoría (norma o listado)', minimo: 5 },
+  { clave: 'autorizacionSerfor', seccion: SECCION_MARCO_LEGAL, etiqueta: '¿Requiere autorización de SERFOR u otra entidad para su cosecha o cultivo con fines comerciales?', minimo: 0, opciones: OPCIONES_AUTORIZACION },
+  { clave: 'autorizacionDetalle', seccion: SECCION_MARCO_LEGAL, etiqueta: 'Detalle y fuente de la autorización', minimo: 10 },
+  { clave: 'conocimientoAncestral', seccion: SECCION_MARCO_LEGAL, etiqueta: 'Reconocimiento de conocimiento ancestral (Ley 27811)', minimo: 10 },
+  { clave: 'manejoResponsable', seccion: SECCION_MARCO_LEGAL, etiqueta: 'Notas de manejo responsable', minimo: 10 },
 ];
 export type ClaveGuia = typeof CAMPOS_GUIA[number]['clave'];
 export type GuiaCultivoDatos = Partial<Record<string, string>>;

@@ -6,7 +6,7 @@ import Button from '../../../shared/ui/Button';
 const PENDIENTE = 'Pendiente de un especialista en agronomía';
 
 // Mismos apartados y claves que el servidor (guia-cultivo.vo.ts). "corto" = un valor (rango, época); "largo" = texto explicativo.
-interface Campo { clave: string; etiqueta: string; tipo: 'corto' | 'largo'; ayuda?: string }
+interface Campo { clave: string; etiqueta: string; tipo: 'corto' | 'largo' | 'seleccion'; ayuda?: string; opciones?: string[]; porDefecto?: string }
 const SECCIONES: { titulo: string; campos: Campo[] }[] = [
   { titulo: 'Suelo', campos: [
     { clave: 'suelo', etiqueta: 'Tipo o textura', tipo: 'largo' },
@@ -28,6 +28,14 @@ const SECCIONES: { titulo: string; campos: Campo[] }[] = [
   { titulo: 'Plagas y enfermedades', campos: [{ clave: 'plagas', etiqueta: 'Problemas comunes y manejo responsable', tipo: 'largo', ayuda: 'Manejo cultural, biológico u orgánico. No se aceptan agroquímicos peligrosos.' }] },
   { titulo: 'Herramientas', campos: [{ clave: 'herramientas', etiqueta: 'Herramientas necesarias', tipo: 'largo' }] },
   { titulo: 'Cosecha', campos: [{ clave: 'indicadoresCosecha', etiqueta: 'Señales de que está lista para cosechar', tipo: 'largo' }] },
+  // Ronda 25: vacío hasta que un especialista lo complete y cite su fuente. La app no afirma nada por especie.
+  { titulo: 'Marco legal y manejo responsable', campos: [
+    { clave: 'conservacionCategoria', etiqueta: 'Categoría de conservación', tipo: 'seleccion', opciones: ['No evaluada', 'Vulnerable', 'En peligro', 'En peligro crítico', 'Otra'] },
+    { clave: 'conservacionFuente', etiqueta: 'Fuente de la categoría (norma o listado)', tipo: 'corto', ayuda: 'Ej. el decreto supremo o listado oficial del que sale la categoría' },
+    { clave: 'autorizacionSerfor', etiqueta: '¿Requiere autorización de SERFOR u otra entidad para su cosecha o cultivo con fines comerciales?', tipo: 'seleccion', opciones: ['Sí', 'No', 'No verificado'], porDefecto: 'No verificado' },
+    { clave: 'autorizacionDetalle', etiqueta: 'Detalle y fuente de la autorización', tipo: 'largo' },
+    { clave: 'conocimientoAncestral', etiqueta: 'Reconocimiento de conocimiento ancestral (Ley 27811)', tipo: 'largo', ayuda: 'Qué comunidad o fuente documenta el uso tradicional, si aplica.' },
+    { clave: 'manejoResponsable', etiqueta: 'Notas de manejo responsable', tipo: 'largo', ayuda: 'Sin recomendar extracción no sostenible.' } ] },
 ];
 
 // Guía de cultivo de una ficha: panel con secciones (suelo, nutrientes, calendario, espaciamiento, riego, clima, plagas, herramientas,
@@ -70,10 +78,12 @@ function GuiaCultivo({ cultivoId, guia, onGuardada }: { cultivoId: string; guia:
               <dl>
                 {s.campos.map((c) => {
                   const valor = guia.campos[c.clave];
+                  // Autorización: sin respuesta de un especialista se muestra el estado por defecto, nunca un Sí/No inventado.
+                  const texto = valor ?? (c.porDefecto ? `${c.porDefecto} (aún sin verificar por un especialista)` : PENDIENTE);
                   return (
                     <div key={c.clave} className="guia-item">
                       <dt>{c.etiqueta}</dt>
-                      <dd className={valor ? undefined : 'guia-pendiente'}>{valor ?? PENDIENTE}</dd>
+                      <dd className={valor ? undefined : 'guia-pendiente'}>{texto}</dd>
                     </div>
                   );
                 })}
@@ -95,7 +105,12 @@ function GuiaCultivo({ cultivoId, guia, onGuardada }: { cultivoId: string; guia:
               {s.campos.map((c) => (
                 <label key={c.clave}>
                   {c.etiqueta}
-                  {c.tipo === 'corto'
+                  {c.tipo === 'seleccion'
+                    ? <select value={valores[c.clave] || c.porDefecto || ''} onChange={(e) => setValores((v) => ({ ...v, [c.clave]: e.target.value }))}>
+                        {!c.porDefecto && <option value="">Sin completar</option>}
+                        {c.opciones!.map((o) => <option key={o} value={o}>{o}</option>)}
+                      </select>
+                    : c.tipo === 'corto'
                     ? <input type="text" value={valores[c.clave] ?? ''} maxLength={1500} placeholder={c.ayuda} onChange={(e) => setValores((v) => ({ ...v, [c.clave]: e.target.value }))} />
                     : <textarea value={valores[c.clave] ?? ''} maxLength={1500} placeholder={c.ayuda} onChange={(e) => setValores((v) => ({ ...v, [c.clave]: e.target.value }))} />}
                 </label>

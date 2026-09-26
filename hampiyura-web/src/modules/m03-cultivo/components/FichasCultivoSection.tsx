@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { listarFichasPorPlanta, type FichaCultivoVisible } from '../api/fichas-cultivo.api';
 import RegistrarUbicacionCultivoForm from './RegistrarUbicacionCultivoForm';
 import GuiaCultivo from './GuiaCultivo';
+import AvisoMarcoLegal from './AvisoMarcoLegal';
 import RequireRole from '../../../shared/auth/RequireRole';
 
 // M-03: no existía ninguna pantalla que listara las fichas de cultivo de una planta ni que
@@ -29,6 +30,7 @@ function FichasCultivoSection({ plantaId }: { plantaId: string }) {
   return (
     <section style={{ marginTop: '1.5rem' }}>
       <h3>Fichas de cultivo</h3>
+      <AvisoMarcoLegal />
       {ubicacionRegistrada && <p className="sello-verificado">✔ Ubicación registrada correctamente.</p>}
       <div className="cards">
         {fichas.map((f) => (

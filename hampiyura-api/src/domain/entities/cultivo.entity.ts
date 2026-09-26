@@ -20,12 +20,21 @@ export class Cultivo {
     for (const c of CAMPOS_GUIA) {
       const t = input[c.clave]?.trim();
       if (!t) continue; // vacío = pendiente
+      if (c.opciones) {
+        if (!c.opciones.includes(t)) throw new ValidationError(`${c.seccion} · ${c.etiqueta}: elige una de las opciones (${c.opciones.join(', ')})`);
+        if (t === 'No verificado') continue; // "No verificado" es el estado por defecto: no se guarda como respuesta
+        guia[c.clave] = t;
+        continue;
+      }
       if (t.length < c.minimo) throw new ValidationError(`${c.seccion} · ${c.etiqueta}: escribe al menos ${c.minimo} caracteres reales o déjalo vacío`);
       if (t.length > MAX_CAMPO_GUIA) throw new ValidationError(`${c.seccion} · ${c.etiqueta}: máximo ${MAX_CAMPO_GUIA} caracteres`);
       const peligroso = agroquimicoPeligrosoEn(t);
       if (peligroso) throw new ValidationError(`${c.seccion} · ${c.etiqueta}: no se recomiendan agroquímicos peligrosos (${peligroso}). Propón manejo cultural, biológico u orgánico`);
       guia[c.clave] = t;
     }
+    // Fuente citable (RF-251): una categoría de conservación concreta o una respuesta Sí/No sobre autorización deben decir de dónde sale.
+    if (guia.conservacionCategoria && guia.conservacionCategoria !== 'No evaluada' && !guia.conservacionFuente) throw new ValidationError('Marco legal · Categoría de conservación: cita la fuente (norma o listado) o déjala vacía');
+    if (guia.autorizacionSerfor && !guia.autorizacionDetalle) throw new ValidationError('Marco legal · Autorización: si respondes Sí o No, escribe el detalle y la fuente');
     const vacia = Object.keys(guia).length === 0;
     this.props.guia = vacia ? null : guia;
     this.props.guiaEspecialistaId = vacia ? null : especialistaId;

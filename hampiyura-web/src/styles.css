@@ -116,6 +116,11 @@ p{font-size:1.1rem;line-height:1.6;max-width:620px;color:var(--color-text)}
 .guia-cultivo dt{font-weight:700;color:var(--color-text)}
 .guia-cultivo dd{margin:0;color:var(--color-text);white-space:pre-wrap}
 .guia-cultivo dd.guia-pendiente{font-style:italic;color:var(--color-text-muted)}
+.aviso-marco-legal{margin:0 0 var(--space-4);border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface);max-width:760px}
+.aviso-marco-legal>summary{cursor:pointer;padding:.7rem 1rem;font-weight:700;color:var(--color-text)}
+.aviso-marco-legal-cuerpo{padding:0 1rem 1rem;display:grid;gap:.5rem}
+.aviso-marco-legal-cuerpo ul{margin:0;padding-left:1.2rem;display:grid;gap:.5rem;color:var(--color-text)}
+.aviso-marco-legal-cuerpo a{color:var(--color-accent-text);font-weight:600;text-decoration:underline}
 .guia-fieldset{border:1px solid var(--color-border);border-radius:var(--radius-md);padding:.6rem .8rem;margin:0 0 .75rem;display:grid;gap:.6rem}
 .guia-fieldset legend{font-weight:800;color:var(--color-accent-text);padding:0 .4rem}
 /* Tarjetas de estadísticas del panel (Ronda 18): celeste suave en claro, verde claro en oscuro; colores medidos >=7:1. */

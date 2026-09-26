@@ -13,8 +13,9 @@ const suelo = 'Suelo franco-arenoso, bien drenado.';
 
 describe('Guía de cultivo completa (Rondas 19 y 22)', () => {
   test('la guía cubre los apartados pedidos, agrupados en secciones', () => {
-    expect([...new Set(CAMPOS_GUIA.map((c) => c.seccion))]).toEqual(['Suelo', 'Nutrientes', 'Calendario', 'Espaciamiento', 'Riego', 'Clima', 'Plagas y enfermedades', 'Herramientas', 'Cosecha']);
-    expect(CAMPOS_GUIA.map((c) => c.clave)).toEqual(expect.arrayContaining(['suelo', 'ph', 'drenaje', 'nutrientes', 'enmiendas', 'epocaSiembra', 'cicloCosecha', 'germinacion', 'espaciamiento', 'riego', 'temperatura', 'altitud', 'precipitacion', 'plagas', 'herramientas', 'indicadoresCosecha']));
+    expect([...new Set(CAMPOS_GUIA.map((c) => c.seccion))]).toEqual(['Suelo', 'Nutrientes', 'Calendario', 'Espaciamiento', 'Riego', 'Clima', 'Plagas y enfermedades', 'Herramientas', 'Cosecha', 'Marco legal y manejo responsable']);
+    expect(CAMPOS_GUIA.map((c) => c.clave)).toEqual(expect.arrayContaining(['suelo', 'ph', 'drenaje', 'nutrientes', 'enmiendas', 'epocaSiembra', 'cicloCosecha', 'germinacion', 'espaciamiento', 'riego', 'temperatura', 'altitud', 'precipitacion', 'plagas', 'herramientas', 'indicadoresCosecha','conservacionCategoria','conservacionFuente','autorizacionSerfor','autorizacionDetalle','conocimientoAncestral','manejoResponsable']));
+    expect(CAMPOS_GUIA.length).toBe(22);
   });
   test('nace VACÍA: todos los campos null y 0 completados (nada inventado)', () => {
     for (const estado of ['Pendiente', 'Validado']) {
@@ -57,6 +58,32 @@ describe('Guía de cultivo completa (Rondas 19 y 22)', () => {
     }
     await expect(uc.ejecutar('c1', { plagas: 'Manejo cultural: rotación, trampas con feromonas y extracto de neem.' }, yo)).resolves.toBeDefined();
     expect(agroquimicoPeligrosoEn('El tratamiento paraquatificado')).toBeUndefined(); // no confunde palabras que solo contienen el nombre
+  });
+  describe('Marco legal y manejo responsable (Ronda 25)', () => {
+    const yo = { id: 'e1', rol: 'EspecialistaAgronomo' };
+    test('nace vacío: la autorización sigue "No verificado" y nada se afirma por la especie', () => {
+      const v: any = aVistaFichaCultivo(ficha());
+      for (const k of ['conservacionCategoria', 'conservacionFuente', 'autorizacionSerfor', 'autorizacionDetalle', 'conocimientoAncestral', 'manejoResponsable']) expect(v.guia.campos[k]).toBeNull();
+    });
+    test('las selecciones solo admiten las opciones definidas', async () => {
+      const uc = new ActualizarGuiaCultivoUseCase(repoCon(ficha()));
+      await expect(uc.ejecutar('c1', { conservacionCategoria: 'Extinta inventada' }, yo)).rejects.toThrow(/elige una de las opciones/);
+      await expect(uc.ejecutar('c1', { autorizacionSerfor: 'Quizás' }, yo)).rejects.toThrow(/elige una de las opciones/);
+    });
+    test('una categoría concreta o un Sí/No de autorización exigen fuente o detalle (fuente citable)', async () => {
+      const uc = new ActualizarGuiaCultivoUseCase(repoCon(ficha()));
+      await expect(uc.ejecutar('c1', { conservacionCategoria: 'Vulnerable' }, yo)).rejects.toThrow(/cita la fuente/);
+      await expect(uc.ejecutar('c1', { autorizacionSerfor: 'Sí' }, yo)).rejects.toThrow(/detalle y la fuente/);
+      await expect(uc.ejecutar('c1', { conservacionCategoria: 'No evaluada' }, yo)).resolves.toBeDefined(); // "No evaluada" no necesita fuente
+    });
+    test('con fuente se guarda; "No verificado" no se guarda como respuesta; solo especialista en agronomía/administrador', async () => {
+      const c = ficha(); const uc = new ActualizarGuiaCultivoUseCase(repoCon(c));
+      await uc.ejecutar('c1', { conservacionCategoria: 'Vulnerable', conservacionFuente: 'Listado de prueba del sector', autorizacionSerfor: 'No verificado', manejoResponsable: 'Cosechar solo una parte de la corteza por planta.' }, yo);
+      const v: any = aVistaFichaCultivo(c);
+      expect(v.guia.campos).toMatchObject({ conservacionCategoria: 'Vulnerable', autorizacionSerfor: null });
+      expect(v.guia.completada).toBe(3);
+      await expect(new ActualizarGuiaCultivoUseCase(repoCon(ficha())).ejecutar('c1', { manejoResponsable: 'Texto de un usuario cualquiera.' }, { id: 'x', rol: 'UsuarioRegistrado' })).rejects.toThrow(/agronomía/);
+    });
   });
   test('se puede vaciar una guía ya escrita (vuelve a pendiente) y una ficha inexistente da error', async () => {
     const c = ficha(); const uc = new ActualizarGuiaCultivoUseCase(repoCon(c));
