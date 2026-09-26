@@ -8,7 +8,7 @@ de validación por especialistas para todo lo que la comunidad propone.
 |---|---|---|
 | Backend (API REST) | [`hampiyura-api/`](hampiyura-api) | Node.js + TypeScript, Express 5, Prisma, PostgreSQL, arquitectura hexagonal |
 | Frontend (SPA) | [`hampiyura-web/`](hampiyura-web) | React 19 + TypeScript + Vite, React Router, Leaflet |
-| Base de datos | [`docker-compose.yml`](docker-compose.yml) | PostgreSQL 16 (opcional vía Docker) |
+| Todo con Docker | [`docker-compose.yml`](docker-compose.yml) y un `Dockerfile` en cada carpeta | PostgreSQL 16 + API + frontend (nginx): `docker compose up -d --build` |
 | Despliegue permanente | [`deploy/`](deploy) | `hampiyura-api.service` (systemd), `ecosystem.config.cjs` (pm2), `nginx.conf.example`, `update.sh` |
 | Documentación de diseño | [`docs/`](docs) | Arquitectura, requisitos, actas |
 
@@ -21,14 +21,50 @@ de validación por especialistas para todo lo que la comunidad propone.
 | **Node.js** | **20 o superior** (probado con 22 LTS) | incluye `npm` |
 | **PostgreSQL** | 14 o superior (probado con 16) | o Docker, ver más abajo |
 | **git** | cualquiera | |
-| Docker + Docker Compose | opcional | solo para levantar la base de datos sin instalar Postgres |
+| Docker + Docker Compose | opcional | para levantarlo todo sin instalar nada más (sección 2), o solo la base de datos |
 
 En Linux, Prisma necesita `openssl` instalado (`apt install openssl`). El paquete `bcrypt` trae binarios
 precompilados; si tu sistema no los tiene y tiene que compilar, instala `build-essential` y `python3`.
 
 ---
 
-## 2. Puesta en marcha en desarrollo (paso a paso, desde cero)
+## 2. Puesta en marcha con Docker (lo más fácil para probarlo)
+
+Solo necesitas **Docker con Docker Compose** (Docker Desktop en Windows/Mac). No hace falta Node ni PostgreSQL.
+
+```bash
+git clone https://github.com/javier302602/Hampiyura.git
+cd Hampiyura
+cp .env.example .env            # en PowerShell: Copy-Item .env.example .env
+docker compose up -d --build
+```
+
+La primera vez tarda unos minutos (compila la API y el frontend). Cuando termine, abre
+**<http://localhost:8080>**. Ya hay datos: 25 usos medicinales, 3 plantas base y 2 plantas "[DATO DE PRUEBA]".
+
+- **Cuenta Administrador:** `admin@hampiyura.local` / `HampiYura2026Demo` (valores de `.env`; cámbialos si el sitio será público).
+- **API directa:** <http://localhost:3000/api/plantas>. La base de datos queda solo en `127.0.0.1:5432`.
+- Si un puerto está ocupado, cambia `WEB_PORT`, `API_PORT` o `POSTGRES_PORT` en `.env` y repite `docker compose up -d`.
+
+Qué levanta (`docker-compose.yml`): `db` (PostgreSQL 16, con healthcheck), `api` (espera a que `db` esté sana; al
+arrancar aplica las migraciones de Prisma y el seed **solos**) y `web` (nginx con el frontend compilado, que reenvía
+`/api` y `/uploads` a la API). **No hay caché** (Redis u otro): el proyecto no usa ninguno.
+Las imágenes son de **producción** (código compilado, sin recarga en caliente); el secreto JWT se genera solo la primera vez.
+
+```bash
+docker compose logs -f api      # ver el arranque (migraciones y seed)
+docker compose down             # apagar (los datos se conservan)
+docker compose down -v          # apagar y BORRAR datos, fotos subidas y secreto
+docker compose up -d --build    # aplicar cambios del código tras un git pull
+```
+
+**Plan B (sin Docker para la API/frontend):** `docker compose up -d db` levanta solo PostgreSQL y el resto se corre a
+mano con `npm` (sección 2b). Si prefieres tu propio PostgreSQL, crea una base vacía `hampiyura`, apunta `DATABASE_URL`
+a ella y ejecuta `npx prisma migrate deploy` (crea todas las tablas) y `npm run seed` (datos base).
+
+---
+
+## 2b. Puesta en marcha en desarrollo con Node (paso a paso, desde cero)
 
 ```bash
 # 1) Clonar

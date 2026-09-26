@@ -1,10 +1,13 @@
-# Base de datos PostgreSQL para HampiYura (desarrollo local o un servidor pequeño).
-# Solo levanta la BD: el backend y el frontend se ejecutan con Node (ver README.md).
+# HampiYura completo con Docker: base de datos + API + frontend.
 #
-#   docker compose up -d db
+#   cp .env.example .env
+#   docker compose up -d --build        (la primera vez tarda unos minutos: compila API y frontend)
+#   -> abre http://localhost:8080
 #
-# Los valores por defecto coinciden con hampiyura-api/.env.example. En un servidor real cambia la
-# contraseña (POSTGRES_PASSWORD) y usa la misma en DATABASE_URL del .env del backend.
+# Al arrancar, la API aplica las migraciones y el seed sola (ver hampiyura-api/docker-entrypoint.sh).
+# No hay caché (Redis u otro): el proyecto no usa ninguno, así que no se agrega.
+#
+# Solo la base de datos, para desarrollo con Node:   docker compose up -d db
 services:
   db:
     image: postgres:16-alpine
@@ -25,5 +28,41 @@ services:
       timeout: 3s
       retries: 10
 
+  api:
+    build: ./hampiyura-api
+    container_name: hampiyura-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-hampiyura}
+      JWT_SECRET: ${JWT_SECRET:-}
+      SEED_ADMIN_CORREO: ${SEED_ADMIN_CORREO:-}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
+      SEED_ADMIN_NOMBRE: ${SEED_ADMIN_NOMBRE:-Administrador}
+      SEED_DATOS_DE_PRUEBA: ${SEED_DATOS_DE_PRUEBA:-false}
+      PAGO_YAPE_NUMERO: ${PAGO_YAPE_NUMERO:-}
+      PAGO_YAPE_TITULAR: ${PAGO_YAPE_TITULAR:-HampiYura}
+      PAGO_PLIN_NUMERO: ${PAGO_PLIN_NUMERO:-}
+      PAGO_PLIN_TITULAR: ${PAGO_PLIN_TITULAR:-HampiYura}
+    ports:
+      - "127.0.0.1:${API_PORT:-3000}:3000"
+    volumes:
+      - hampiyura-uploads:/app/uploads
+      - hampiyura-state:/app/state
+
+  web:
+    build: ./hampiyura-web
+    container_name: hampiyura-web
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "${WEB_PORT:-8080}:80"
+
 volumes:
   hampiyura-db:
+  hampiyura-uploads:
+  hampiyura-state:
