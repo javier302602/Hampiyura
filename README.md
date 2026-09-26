@@ -40,7 +40,7 @@ docker compose up -d --build
 ```
 
 La primera vez tarda unos minutos (compila la API y el frontend). Cuando termine, abre
-**<http://localhost:8080>**. Ya hay datos: 25 usos medicinales, 3 plantas base y 2 plantas "[DATO DE PRUEBA]".
+**<http://localhost:8080>**. Ya hay datos: 26 usos medicinales, 3 plantas base y 2 plantas "[DATO DE PRUEBA]".
 
 - **Cuenta Administrador:** `admin@hampiyura.local` / `HampiYura2026Demo` (valores de `.env`; cámbialos si el sitio será público).
 - **API directa:** <http://localhost:3000/api/plantas>. La base de datos queda solo en `127.0.0.1:5432`.
