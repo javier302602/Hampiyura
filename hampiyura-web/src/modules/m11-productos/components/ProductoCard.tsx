@@ -27,7 +27,7 @@ function ProductoCard({ producto, onAbrir }: { producto: ProductoVisible; onAbri
           </p>
         )}
         {producto.precioReferencial && (
-          <p style={{ margin: 0, fontWeight: 'var(--font-weight-bold)', color: 'var(--color-accent-hover)' }}>
+          <p style={{ margin: 0, fontWeight: 'var(--font-weight-bold)', color: 'var(--color-accent-text)' }}>
             {producto.precioReferencial}
           </p>
         )}

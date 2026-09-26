@@ -89,9 +89,9 @@ function PublicacionDetailPage({ publicacionId, onVolver, onEliminada }: Props) 
       <h3>Descripción</h3>
       <p>{publicacion.descripcion}</p>
       <h3>Enfermedades que ayuda a tratar</h3>
-      <p>{publicacion.enfermedadesTratadas}</p>
+      <p>{publicacion.enfermedadesTratadas?.trim() || "No especificado en esta publicación."}</p>
       <h3>Forma de preparación</h3>
-      <p>{publicacion.formaPreparacion}</p>
+      <p>{publicacion.formaPreparacion?.trim() || "No especificado en esta publicación (ver la descripción)."}</p>
       <span className="fuente-cita">Fuente: {publicacion.fuente.valor}</span>
 
       <h3>Calificación</h3>

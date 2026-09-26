@@ -58,6 +58,19 @@ docker compose down -v          # apagar y BORRAR datos, fotos subidas y secreto
 docker compose up -d --build    # aplicar cambios del código tras un git pull
 ```
 
+**Contenido de ejemplo (publicaciones y productos).** Para que "Publicaciones" y "Productos" no se vean vacías en una demostración, el arranque
+publica **9 publicaciones y 9 productos de EJEMPLO** desde una cuenta dedicada (`ejemplo@hampiyura.local`, "Cuenta de ejemplo — HampiYura",
+rol Productor; nadie inicia sesión con ella). Todos llevan el prefijo **`[Ejemplo]`** y una nota visible de que son de demostración y no una
+oferta ni un testimonio reales; los productos no tienen contacto real. Es idempotente. Para **no cargarlo**: `CARGAR_CONTENIDO_EJEMPLO=false` en
+`.env`. Para **borrarlo después** (solo toca lo de esa cuenta con prefijo `[Ejemplo]`, nunca contenido real):
+
+```bash
+docker compose exec api npx tsx scripts/borrar-contenido-ejemplo.ts             # simulación: cuenta qué borraría
+docker compose exec api npx tsx scripts/borrar-contenido-ejemplo.ts --aplicar   # borra publicaciones y productos de ejemplo
+docker compose exec api npx tsx scripts/borrar-contenido-ejemplo.ts --aplicar --cuenta   # y también la cuenta de ejemplo
+```
+(Con `CARGAR_CONTENIDO_EJEMPLO=true` volvería a cargarse en el siguiente arranque: ponlo en `false` antes de borrar.)
+
 **¿Ves solo 3 plantas?** Casi seguro la imagen es vieja o el arranque falló al cargar los datos. Comprueba en el log de la API que
 aparezca `datos de plantas cargados`; si aparece `DATOS INCOMPLETOS` o `ERROR: scripts/... FALLÓ`, el error está justo encima (la API
 arranca igual con lo que sí se cargó). Para descartar una imagen o un volumen viejos, empieza limpio:
@@ -210,6 +223,7 @@ npx tsx scripts/cargar-plantas-documentos.ts --aplicar       # 27 plantas y sus 
 npx tsx scripts/cargar-fichas-plantas.ts --aplicar           # foto (con crédito), hábitat, preparaciones y distribución natural
 npx tsx scripts/registrar-validacion-cientifica.ts --aplicar # sello "verificado" en 22 usos Científicos
 npx tsx scripts/cargar-conservacion.ts --aplicar             # estado de conservación (IUCN + D.S. 043-2006-AG)
+npx tsx scripts/cargar-contenido-ejemplo.ts --aplicar        # (opcional) 9 publicaciones y 9 productos de EJEMPLO, prefijo [Ejemplo]
 ```
 
 **Sin administrador la app queda sin moderación**: el rol no se puede autoasignar desde la interfaz.

@@ -21,7 +21,10 @@ npx tsx prisma/seed.ts
 # CARGAR_DATOS_PLANTAS=false los omite (p. ej. en un servidor con datos propios).
 fallos=""
 if [ "${CARGAR_DATOS_PLANTAS:-true}" = "true" ]; then
-  for s in cargar-plantas-documentos cargar-fichas-plantas registrar-validacion-cientifica cargar-conservacion; do
+  # El contenido de EJEMPLO (9 publicaciones + 9 productos, prefijo [Ejemplo], cuenta dedicada) va al final y se puede omitir con CARGAR_CONTENIDO_EJEMPLO=false.
+  lista="cargar-plantas-documentos cargar-fichas-plantas registrar-validacion-cientifica cargar-conservacion"
+  [ "${CARGAR_CONTENIDO_EJEMPLO:-true}" = "true" ] && lista="$lista cargar-contenido-ejemplo"
+  for s in $lista; do
     echo "[hampiyura] cargando datos de plantas: $s ..."
     if ! npx tsx "scripts/$s.ts" --aplicar; then
       echo "[hampiyura] !!!!! ERROR: scripts/$s.ts FALLÓ (la API arranca igual, con datos parciales). Revisa el mensaje de arriba. !!!!!"
