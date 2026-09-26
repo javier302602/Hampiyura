@@ -4,6 +4,8 @@ import { RegistrarUbicacionCultivoInput, RegistrarUbicacionCultivoPort } from '.
 import { MapaCultivoPort } from '../../domain/ports/out/mapa-cultivo.port';
 import { CultivoRepositoryPort } from '../../domain/ports/out/cultivo.repository.port';
 import { EstadoConservacionRepositoryPort } from '../../domain/ports/out/estado-conservacion.repository.port';
+import { PlantaRepositoryPort } from '../../domain/ports/out/planta.repository.port';
+import { estaEnRiesgo } from '../../domain/value-objects/evaluacion-conservacion.vo';
 import { ValidationError } from '../../domain/errors/domain.errors';
 
 // RF-271 + RN-07: nunca se GUARDAN coordenadas exactas de una especie actualmente en riesgo
@@ -14,6 +16,7 @@ export class RegistrarUbicacionCultivoUseCase implements RegistrarUbicacionCulti
     private readonly repo: MapaCultivoPort,
     private readonly cultivos: CultivoRepositoryPort,
     private readonly estadosConservacion: EstadoConservacionRepositoryPort,
+    private readonly plantas?: PlantaRepositoryPort,
   ) {}
   async ejecutar(input: RegistrarUbicacionCultivoInput): Promise<UbicacionCultivo> {
     const cultivo = await this.cultivos.buscarPorId(input.cultivoId);
@@ -23,7 +26,8 @@ export class RegistrarUbicacionCultivoUseCase implements RegistrarUbicacionCulti
     if (input.longitud !== undefined && (input.longitud < -180 || input.longitud > 180)) throw new ValidationError('Longitud fuera de rango (-180 a 180)');
 
     const estado = await this.estadosConservacion.buscarValidadoPorPlanta(cultivo.props.plantaId);
-    const enRiesgo = estado?.estaEnRiesgo() ?? false;
+    // RN-07: riesgo por el registro comunitario (M-10) O por el estado de conservación de referencia (Ronda 31).
+    const enRiesgo = (estado?.estaEnRiesgo() ?? false) || estaEnRiesgo((await this.plantas?.buscarPorId(cultivo.props.plantaId))?.props.evaluacionConservacion);
 
     const ubicacion = new UbicacionCultivo({
       id: randomUUID(),

@@ -4,6 +4,7 @@ import { PlantaRepositoryPort } from '../../domain/ports/out/planta.repository.p
 import { CultivoRepositoryPort } from '../../domain/ports/out/cultivo.repository.port';
 import { EstadoConservacionRepositoryPort } from '../../domain/ports/out/estado-conservacion.repository.port';
 import { UsuarioRepositoryPort } from '../../domain/ports/out/usuario.repository.port';
+import { estaEnRiesgo } from '../../domain/value-objects/evaluacion-conservacion.vo';
 
 // RF-271: vista pública agregada para el mapa de distribución. Enriquece cada ubicación con el
 // nombre de la planta y el método de propagación de su ficha de cultivo (aproximación mínima a
@@ -29,11 +30,12 @@ export class ListarMapaCultivoUseCase implements ListarMapaCultivoPort {
       if (!cultivoPorId.has(u.props.cultivoId)) cultivoPorId.set(u.props.cultivoId, await this.cultivos.buscarPorId(u.props.cultivoId));
       const ficha = cultivoPorId.get(u.props.cultivoId);
       if (!ficha || (!opciones.incluirNoValidadas && ficha.props.estadoValidacion !== 'Validado')) continue;
+      if (!plantaPorId.has(u.props.plantaId)) plantaPorId.set(u.props.plantaId, await this.plantas.buscarPorId(u.props.plantaId));
       if (!riesgoPorPlanta.has(u.props.plantaId)) {
         const estado = await this.estadosConservacion.buscarValidadoPorPlanta(u.props.plantaId);
-        riesgoPorPlanta.set(u.props.plantaId, estado?.estaEnRiesgo() ?? false);
+        // RN-07: riesgo por el registro comunitario (M-10) O por el estado de conservación de referencia (IUCN / D.S. 043-2006-AG, Ronda 31).
+        riesgoPorPlanta.set(u.props.plantaId, (estado?.estaEnRiesgo() ?? false) || estaEnRiesgo(plantaPorId.get(u.props.plantaId)?.props.evaluacionConservacion));
       }
-      if (!plantaPorId.has(u.props.plantaId)) plantaPorId.set(u.props.plantaId, await this.plantas.buscarPorId(u.props.plantaId));
       if (!cultivoPorId.has(u.props.cultivoId)) cultivoPorId.set(u.props.cultivoId, await this.cultivos.buscarPorId(u.props.cultivoId));
       if (!usuarioPorId.has(u.props.autorId)) usuarioPorId.set(u.props.autorId, await this.usuarios.buscarPorId(u.props.autorId));
 

@@ -82,7 +82,7 @@ export const container={
   obtenerFichaCultivo:new ObtenerFichaCultivoUseCase(cultivos),
   actualizarGuiaCultivo:new ActualizarGuiaCultivoUseCase(cultivos),
   listarFichasCultivo:new ListarFichasCultivoUseCase(cultivos),
-  registrarUbicacionCultivo:new RegistrarUbicacionCultivoUseCase(mapaCultivo,cultivos,estadosConservacion),
+  registrarUbicacionCultivo:new RegistrarUbicacionCultivoUseCase(mapaCultivo,cultivos,estadosConservacion,plantas),
   obtenerUbicacionCultivo:new ObtenerUbicacionCultivoUseCase(mapaCultivo),
   listarMapaCultivo:new ListarMapaCultivoUseCase(mapaCultivo,plantas,cultivos,estadosConservacion,usuarios),
   registrarUso:new RegistrarUsoUseCase(usos),

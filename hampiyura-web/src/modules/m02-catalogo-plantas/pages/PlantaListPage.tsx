@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { listarPlantas, type Planta } from '../api/plantas.api';
 import { obtenerImagenPlanta } from '../components/imagen-planta';
+import { etiquetaDeRiesgo } from '../../m10-conservacion/evaluacion-conservacion';
 import PlantCard from '../../../shared/ui/PlantCard';
 import SectionHeader from '../../../shared/ui/SectionHeader';
 import LoadingState from '../../../shared/ui/LoadingState';
@@ -43,6 +44,7 @@ function PlantaListPage({ onSeleccionar }: { onSeleccionar: (plantaId: string) =
               nombreCientifico={planta.nombreCientifico}
               familia={planta.familia}
               imagenUrl={obtenerImagenPlanta(planta)}
+              etiquetaRiesgo={etiquetaDeRiesgo(planta)}
               onAbrir={() => onSeleccionar(planta.id)}
             />
           ))}

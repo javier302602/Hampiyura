@@ -356,3 +356,16 @@ p{font-size:1.1rem;line-height:1.6;max-width:620px;color:var(--color-text)}
 /* Ícono del pin nuevo (iconoPinNuevo() en leaflet-setup.ts) -- círculo en el color de acento de la
    app, para distinguirlo de los pines de referencia (azules, ícono por defecto de Leaflet). */
 .pin-nuevo-ubicacion span{display:block;width:22px;height:22px;border-radius:50%;background:var(--color-accent);border:3px solid var(--color-accent-contrast);box-shadow:0 1px 4px rgba(0,0,0,.4)}
+
+/* Ronda 31 · estado de conservación */
+.plant-card-media{position:relative}
+.plant-card-riesgo{position:absolute;top:.6rem;left:.6rem;z-index:1;display:inline-flex;align-items:center;gap:.3rem;padding:.25em .65em;border-radius:999px;background:#7a1f1f;color:#fff;font-size:.78rem;font-weight:700;border:2px solid #fff}
+.plant-card-nota{margin:.4rem 0 0;font-size:.85rem;color:var(--color-text-muted)}
+.evaluacion-conservacion{margin:1rem 0;padding:1rem 1.1rem;border:1px solid var(--color-border);border-radius:12px;background:var(--color-surface)}
+.evaluacion-conservacion h3{display:flex;align-items:center;gap:.4rem;margin:0 0 .6rem}
+.evaluacion-conservacion-riesgo{border:2px solid #7a1f1f}
+.evaluacion-lista{display:grid;gap:.6rem;margin:.5rem 0}
+.evaluacion-lista dt{font-size:.85rem;color:var(--color-text-muted);font-weight:600}
+.evaluacion-lista dd{margin:.1rem 0 0}
+.evaluacion-aclaracion{display:block;margin-top:.15rem}
+.evaluacion-fuente{display:block;margin-top:.15rem;overflow-wrap:anywhere}

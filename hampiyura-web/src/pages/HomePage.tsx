@@ -6,6 +6,7 @@ import { listarPublicaciones, type Publicacion } from '../modules/m06-publicacio
 import PublicacionCard from '../modules/m06-publicaciones/components/PublicacionCard';
 import Button from '../shared/ui/Button';
 import PlantCard from '../shared/ui/PlantCard';
+import { etiquetaDeRiesgo, plantasEnRiesgo } from '../modules/m10-conservacion/evaluacion-conservacion';
 import SectionHeader from '../shared/ui/SectionHeader';
 import LoadingState from '../shared/ui/LoadingState';
 import ErrorState from '../shared/ui/ErrorState';
@@ -111,12 +112,38 @@ function HomePage({ onIrACatalogo, onIrAPublicaciones, onSeleccionarPlanta, onSe
                 nombreCientifico={p.nombreCientifico}
                 familia={p.familia}
                 imagenUrl={obtenerImagenPlanta(p)}
+                etiquetaRiesgo={etiquetaDeRiesgo(p)}
                 onAbrir={() => onSeleccionarPlanta(p.id)}
               />
             ))}
           </div>
         )}
       </section>
+
+      {/* Se arma SOLA con los datos (cualquier planta con VU/EN/CR confirmado); si no califica ninguna, no se muestra ni vacío. */}
+      {plantas && plantasEnRiesgo(plantas).length > 0 && (
+        <section className="home-section" aria-label="Plantas en riesgo">
+          <SectionHeader
+            eyebrow="Conservación"
+            title="Plantas en riesgo"
+            description="Especies con una categoría de riesgo confirmada (Vulnerable, En Peligro o Peligro Crítico) en la IUCN o en la lista oficial peruana. Cuidarlas también es cuidar el saber que las rodea."
+          />
+          <div className="card-grid">
+            {plantasEnRiesgo(plantas).map((p) => (
+              <PlantCard
+                key={p.id}
+                nombreComun={p.nombreComun}
+                nombreCientifico={p.nombreCientifico}
+                familia={p.familia}
+                imagenUrl={obtenerImagenPlanta(p)}
+                etiquetaRiesgo={etiquetaDeRiesgo(p)}
+                nota={p.evaluacionConservacion?.aclaracionInicio}
+                onAbrir={() => onSeleccionarPlanta(p.id)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="home-section">
         <SectionHeader

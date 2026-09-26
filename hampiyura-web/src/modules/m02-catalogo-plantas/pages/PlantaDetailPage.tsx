@@ -9,6 +9,7 @@ import AlertaConservacion from '../../m10-conservacion/components/AlertaConserva
 import ConservacionSection from '../../m10-conservacion/components/ConservacionSection';
 import FichasCultivoSection from '../../m03-cultivo/components/FichasCultivoSection';
 import RequireRole from '../../../shared/auth/RequireRole';
+import EvaluacionConservacionBloque from '../../m10-conservacion/components/EvaluacionConservacionBloque';
 import SeguirPlanta from "../../m15-planes/components/SeguirPlanta";
 import { obtenerImagenPlanta } from '../components/imagen-planta';
 
@@ -58,7 +59,9 @@ function PlantaDetailPage({ plantaId, onVolver }: Props) {
         <p className="fuente-cita">Foto: {planta.imagenAutor} · {planta.imagenLicencia}{planta.imagenFuenteUrl && <> · <a href={planta.imagenFuenteUrl} target="_blank" rel="noopener noreferrer">Ver origen</a></>}</p>
       )}
       <SeguirPlanta plantaId={planta.id} />
-      <AlertaConservacion conservacion={planta.conservacion} />
+      <EvaluacionConservacionBloque evaluacion={planta.evaluacionConservacion} />
+      {/* Si ya hay estado de conservación de referencia, el aviso genérico "no determinado" de M-10 sobra (y se contradiría); el registro comunitario validado sí se sigue mostrando. */}
+      {(planta.conservacion.disponible || !planta.evaluacionConservacion) && <AlertaConservacion conservacion={planta.conservacion} />}
 
       <h3>Partes utilizadas y usos</h3>
       {partesUso.length === 0 ? (

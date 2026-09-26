@@ -1,6 +1,8 @@
 import { apiRequest } from '../../../shared/api/client';
 import type { EstadoConservacionVisible } from '../../m10-conservacion/api/conservacion.api';
 
+import type { EvaluacionConservacion } from '../../m10-conservacion/evaluacion-conservacion';
+
 export interface Planta {
   id: string;
   nombreComun: string;
@@ -15,6 +17,8 @@ export interface Planta {
   imagenFuenteUrl?: string;
   // Distribución natural documentada (Kew POWO), a nivel de país/región. No es una ubicación de cultivo.
   distribucionNatural?: { zona: string; lat: number; lng: number }[];
+  // Estado de conservación de referencia (IUCN + D.S. 043-2006-AG), con fuente y año.
+  evaluacionConservacion?: EvaluacionConservacion;
 }
 
 // GET /plantas/:id (ObtenerPlantaUseCase) enriquece la ficha con el resumen de conservación de
