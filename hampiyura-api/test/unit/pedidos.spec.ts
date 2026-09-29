@@ -10,8 +10,8 @@ const AHORA = new Date('2026-09-28T12:00:00Z');
 const DIA = 24 * 3600_000;
 const base = (over: Partial<PedidoProps> = {}): PedidoProps => ({
   id: 'p1', productoId: 'prod1', productoNombre: 'Jabón de sangre de grado', compradorId: 'comprador', vendedorId: 'vendedor',
-  cantidad: 2, precioUnitario: 14, total: 28, comisionReferencial: 1.4,
-  entregaNombre: 'Ana', entregaTelefono: '999111222', entregaDireccion: 'Jr. Los Pinos 123, Tingo María',
+  cantidad: 2, precioUnitario: 14, subtotal: 28, costoEnvio: 0, total: 28, comisionReferencial: 1.4,
+  entregaNombre: 'Ana', entregaTelefono: '999111222', entregaDireccion: 'Jr. Los Pinos 123, Tingo María', entregaLatitud: -9.293, entregaLongitud: -75.997,
   cobro: { yape: '999888777' }, estado: 'PendientePago', entregaDias: 5, contratoVersion: 'v1', contratoTexto: 'texto',
   compradorAceptoEn: AHORA, vendedorCompromisoEn: AHORA, eventos: [{ estado: 'PendientePago', fecha: AHORA, actorId: 'comprador' }],
   creadoEn: AHORA, actualizadoEn: AHORA, ...over,
@@ -38,7 +38,7 @@ describe('Cobro de producto y precio', () => {
 
 describe('Contrato de compraventa', () => {
   test('incluye partes, precio, plazo de entrega, garantía de devolución íntegra y deja claro que HampiYura no custodia el dinero', () => {
-    const texto = generarContrato({ fecha: AHORA, comprador: { nombre: 'Ana' }, vendedor: { nombre: 'Beto' }, producto: { nombre: 'Jabón' }, cantidad: 2, precioUnitario: 14, total: 28, entregaDias: 5, medios: ['Yape'] });
+    const texto = generarContrato({ fecha: AHORA, comprador: { nombre: 'Ana' }, vendedor: { nombre: 'Beto' }, producto: { nombre: 'Jabón' }, cantidad: 2, precioUnitario: 14, subtotal: 28, costoEnvio: 0, entregaDias: 5, medios: ['Yape'] });
     expect(texto).toMatch(/Ana/); expect(texto).toMatch(/Beto/); expect(texto).toMatch(/S\/ 28\.00/); expect(texto).toMatch(/5 días/);
     expect(texto).toMatch(/devolver el monto pagado de forma ÍNTEGRA/);
     expect(texto).toMatch(/NO es parte de la compraventa, NO custodia el dinero/);
@@ -120,6 +120,7 @@ function repos() {
   const notificaciones: { destinoId: string; tipo: string; mensaje?: string }[] = [];
   const productoRepo = {
     buscarPorId: async (id: string) => productos[id] ?? null,
+    actualizar: async () => {}, // el mock ya es el mismo objeto en memoria (descontarStock muta sus props directamente)
   };
   const cobroRepo = {
     obtener: async (id: string) => cobros.get(id) ?? null,
@@ -134,10 +135,27 @@ function repos() {
     listarDe: async (usuarioId: string, rol: 'comprador' | 'vendedor') => pedidosMem.filter((p) => (rol === 'comprador' ? p.props.compradorId : p.props.vendedorId) === usuarioId),
     listarPorEstado: async (estado: string) => pedidosMem.filter((p) => p.props.estado === estado),
   };
-  const prod = (id: string, over: any = {}) => { productos[id] = { esVisiblePublicamente: () => true, props: { id, productorId: 'vendedor', nombre: 'Jabón de sangre de grado', precioReferencial: 'S/ 14', ...over } }; };
+  const prod = (id: string, over: any = {}) => {
+    const props = { id, productorId: 'vendedor', nombre: 'Jabón de sangre de grado', precioReferencial: 'S/ 14', stockDisponible: null, ...over };
+    productos[id] = {
+      esVisiblePublicamente: () => true, props,
+      hayStockPara: (c: number) => props.stockDisponible == null || props.stockDisponible >= c,
+      descontarStock: (c: number) => { if (props.stockDisponible != null) props.stockDisponible = Math.max(0, props.stockDisponible - c); },
+      fijarStock: (u: number | null) => { if (u !== null && (!Number.isInteger(u) || u < 0)) throw new Error('El stock debe ser un número entero de 0 a más, o vacío para no gestionarlo'); props.stockDisponible = u; },
+    };
+  };
   const user = (id: string, over: any = {}) => { usuarios[id] = { props: { id, nombre: id, correo: `${id}@x.com`, estado: 'Activo', rol: 'UsuarioRegistrado', ...over } }; };
   return { productoRepo, cobroRepo, usuarioRepo, pedidoRepo, notificador, notificaciones, prod, user, cobros };
 }
+
+function armarPedidosUC() {
+  const r = repos();
+  r.prod('prod1'); r.user('comprador', { nombre: 'Ana' }); r.user('vendedor', { nombre: 'Beto', nombreNegocio: 'Huerta Beto' });
+  r.cobros.set('prod1', { productoId: 'prod1', yape: '999888777', entregaDias: 5, compromisoEn: AHORA });
+  const uc = new PedidosUseCase(r.pedidoRepo as any, r.productoRepo as any, r.cobroRepo as any, r.usuarioRepo as any, r.notificador as any);
+  return { uc, r };
+}
+const entrega = { nombre: 'Ana', telefono: '999111222', direccion: 'Jr. Los Pinos 123, Tingo María', latitud: -9.3, longitud: -76.0 };
 
 describe('Casos de uso de pedidos', () => {
   test('EstadoCompraProductoUseCase: sin cobro configurado, sin precio claro, o de la cuenta de ejemplo -> no comprable, sin exponer los números', async () => {
@@ -164,15 +182,6 @@ describe('Casos de uso de pedidos', () => {
     await uc.ejecutar({ id: 'vendedor', rol: 'UsuarioRegistrado' }, 'prod1', { yape: '999888777', entregaDias: 5, aceptaCompromiso: true });
     expect(r.cobros.get('prod1')).toMatchObject({ yape: '999888777', entregaDias: 5 });
   });
-
-  function armarPedidosUC() {
-    const r = repos();
-    r.prod('prod1'); r.user('comprador', { nombre: 'Ana' }); r.user('vendedor', { nombre: 'Beto', nombreNegocio: 'Huerta Beto' });
-    r.cobros.set('prod1', { productoId: 'prod1', yape: '999888777', entregaDias: 5, compromisoEn: AHORA });
-    const uc = new PedidosUseCase(r.pedidoRepo as any, r.productoRepo as any, r.cobroRepo as any, r.usuarioRepo as any, r.notificador as any);
-    return { uc, r };
-  }
-  const entrega = { nombre: 'Ana', telefono: '999111222', direccion: 'Jr. Los Pinos 123, Tingo María' };
 
   test('crear pedido: exige datos de entrega válidos y aceptar el contrato; calcula el total y la comisión; notifica al vendedor', async () => {
     const { uc, r } = armarPedidosUC();
@@ -237,5 +246,94 @@ describe('Casos de uso de pedidos', () => {
     expect(reclamos).toHaveLength(1);
     await uc.resolverReclamo({ id: 'admin1', rol: 'Administrador' }, p.props.id, 'Se verificó con el vendedor: reembolsó el monto íntegro');
     expect((await uc.obtener({ id: 'admin1', rol: 'Administrador' }, p.props.id)).estado).toBe('Cerrado');
+  });
+});
+
+describe('Ronda 36 · Stock real (baja solo al confirmar el pago)', () => {
+  test('sin stock gestionado (null), se puede pedir cualquier cantidad razonable', async () => {
+    const { uc } = armarPedidosUC();
+    const p = await uc.crear('comprador', { productoId: 'prod1', cantidad: 5, entrega, aceptaContrato: true }, AHORA);
+    expect(p.props.cantidad).toBe(5);
+  });
+  test('no se puede pedir más de lo que hay; con stock en 0, "sin stock disponible"', async () => {
+    const { uc, r } = armarPedidosUC();
+    (await r.productoRepo.buscarPorId('prod1')).props.stockDisponible = 2;
+    await expect(uc.crear('comprador', { productoId: 'prod1', cantidad: 3, entrega, aceptaContrato: true }, AHORA)).rejects.toThrow(/Solo quedan 2 unidad/);
+    (await r.productoRepo.buscarPorId('prod1')).props.stockDisponible = 0;
+    await expect(uc.crear('comprador', { productoId: 'prod1', cantidad: 1, entrega, aceptaContrato: true }, AHORA)).rejects.toThrow(/Sin stock disponible/);
+  });
+  test('el stock NO baja al pedir ni al informar el pago; baja SOLO cuando el vendedor confirma, y nunca queda negativo', async () => {
+    const { uc, r } = armarPedidosUC();
+    (await r.productoRepo.buscarPorId('prod1')).props.stockDisponible = 5;
+    const p = await uc.crear('comprador', { productoId: 'prod1', cantidad: 3, entrega, aceptaContrato: true }, AHORA);
+    expect((await r.productoRepo.buscarPorId('prod1')).props.stockDisponible).toBe(5); // sin cambios al pedir
+    await uc.informarPago({ id: 'comprador', rol: 'UsuarioRegistrado' }, p.props.id, 'Yape', '/uploads/x.png');
+    expect((await r.productoRepo.buscarPorId('prod1')).props.stockDisponible).toBe(5); // sin cambios al informar
+    await uc.confirmarPago({ id: 'vendedor', rol: 'UsuarioRegistrado' }, p.props.id);
+    expect((await r.productoRepo.buscarPorId('prod1')).props.stockDisponible).toBe(2); // baja recién aquí
+    const p2 = await uc.crear('comprador', { productoId: 'prod1', cantidad: 2, entrega, aceptaContrato: true }, AHORA);
+    await uc.informarPago({ id: 'comprador', rol: 'UsuarioRegistrado' }, p2.props.id, 'Yape', '/uploads/y.png');
+    await uc.confirmarPago({ id: 'vendedor', rol: 'UsuarioRegistrado' }, p2.props.id);
+    expect((await r.productoRepo.buscarPorId('prod1')).props.stockDisponible).toBe(0);
+  });
+});
+
+describe('Ronda 36 · EstadoCompraProductoUseCase y ConfigurarCobroUseCase con stock', () => {
+  test('estado-compra muestra el stock público y bloquea con "Sin stock disponible" cuando llega a 0', async () => {
+    const r = repos(); r.prod('prod1', { stockDisponible: 0 }); r.user('vendedor'); await r.cobroRepo.guardar({ productoId: 'prod1', yape: '999888777', entregaDias: 5, compromisoEn: AHORA });
+    const uc = new EstadoCompraProductoUseCase(r.productoRepo as any, r.cobroRepo as any, r.usuarioRepo as any);
+    const e = await uc.ejecutar('prod1');
+    expect(e).toMatchObject({ comprable: false, motivo: 'Sin stock disponible por ahora.', stockDisponible: 0 });
+  });
+  test('solo el dueño del producto puede fijar el stock, y debe ser un entero válido (o null para dejar de gestionarlo)', async () => {
+    const r = repos(); r.prod('prod1');
+    const uc = new ConfigurarCobroUseCase(r.productoRepo as any, r.cobroRepo as any);
+    await expect(uc.fijarStock({ id: 'otro', rol: 'UsuarioRegistrado' }, 'prod1', 10)).rejects.toThrow(/Solo quien public/);
+    await expect(uc.fijarStock({ id: 'vendedor', rol: 'UsuarioRegistrado' }, 'prod1', -1)).rejects.toThrow(/entero/);
+    await uc.fijarStock({ id: 'vendedor', rol: 'UsuarioRegistrado' }, 'prod1', 10);
+    expect((await r.productoRepo.buscarPorId('prod1')).props.stockDisponible).toBe(10);
+    await uc.fijarStock({ id: 'vendedor', rol: 'UsuarioRegistrado' }, 'prod1', null);
+    expect((await r.productoRepo.buscarPorId('prod1')).props.stockDisponible).toBeNull();
+  });
+});
+
+describe('Ronda 37 · Envío calculado por distancia GPS', () => {
+  test('sin coordenadas del producto (el vendedor no marcó su ubicación), el envío no se calcula: costo 0, sin distancia', async () => {
+    const { uc } = armarPedidosUC(); // prod1 no tiene latitud/longitud
+    const p = await uc.crear('comprador', { productoId: 'prod1', cantidad: 2, entrega, aceptaContrato: true }, AHORA);
+    expect(p.props.costoEnvio).toBe(0); expect(p.props.distanciaKm).toBeUndefined(); expect(p.props.total).toBe(p.props.subtotal);
+    expect(p.props.contratoTexto).toMatch(/No se pudo calcular por distancia/);
+  });
+  test('con coordenadas de ambos lados, calcula la distancia real (Haversine) y el costo S\\/5 base + S\\/0.5\\/km', async () => {
+    const { uc, r } = armarPedidosUC();
+    r.prod('prod1', { latitud: -9.293, longitud: -75.997 }); // Tingo María aprox.
+    const cercana = { ...entrega, latitud: -9.30, longitud: -76.00 }; // pocos km de distancia
+    const p = await uc.crear('comprador', { productoId: 'prod1', cantidad: 1, entrega: cercana, aceptaContrato: true }, AHORA);
+    expect(p.props.distanciaKm).toBeGreaterThan(0);
+    expect(p.props.costoEnvio).toBeCloseTo(5 + 0.5 * p.props.distanciaKm!, 2);
+    expect(p.props.total).toBeCloseTo(p.props.subtotal + p.props.costoEnvio, 2);
+    expect(p.props.contratoTexto).toMatch(/Costo de envío: S\/ \d+\.\d{2} \(calculado por la distancia real/);
+  });
+  test('sin marcar la ubicación en el mapa, no se puede crear el pedido', async () => {
+    const { uc } = armarPedidosUC();
+    const sinUbicacion: any = { nombre: 'Ana', telefono: '999111222', direccion: 'Jr. Los Pinos 123, Tingo María' };
+    await expect(uc.crear('comprador', { productoId: 'prod1', cantidad: 1, entrega: sinUbicacion, aceptaContrato: true }, AHORA)).rejects.toThrow(/Marca tu ubicación/);
+  });
+  test('envío largo (>15 km): exige un punto de referencia, y no hay ninguna búsqueda automática de "paradero"', async () => {
+    const { uc, r } = armarPedidosUC();
+    r.prod('prod1', { latitud: -9.293, longitud: -75.997 });
+    const lejos = { ...entrega, latitud: -8.0, longitud: -76.0 }; // ~140 km
+    await expect(uc.crear('comprador', { productoId: 'prod1', cantidad: 1, entrega: lejos, aceptaContrato: true }, AHORA)).rejects.toThrow(/punto de referencia/);
+    const p = await uc.crear('comprador', { productoId: 'prod1', cantidad: 1, entrega: { ...lejos, referencia: 'Paradero de la plaza de armas' }, aceptaContrato: true }, AHORA);
+    expect(p.props.entregaReferencia).toBe('Paradero de la plaza de armas');
+    expect(p.props.distanciaKm).toBeGreaterThan(15);
+  });
+  test('vistaPrevia expone envioLargo y el desglose subtotal/envío/total sin crear nada', async () => {
+    const { uc, r } = armarPedidosUC();
+    r.prod('prod1', { latitud: -9.293, longitud: -75.997 });
+    const lejos = { ...entrega, latitud: -8.0, longitud: -76.0 };
+    const previa = await uc.vistaPrevia('comprador', { productoId: 'prod1', cantidad: 1, entrega: lejos }, AHORA);
+    expect(previa.envioLargo).toBe(true);
+    expect(previa.total).toBeCloseTo(previa.subtotal + previa.costoEnvio, 2);
   });
 });

@@ -6,7 +6,7 @@ import { apiRequest } from '../../../shared/api/client';
 // Guía de cultivo (la redacta un especialista en agronomía): null = pendiente, nunca se rellena por el sistema.
 export interface GuiaCultivo { campos: Record<string, string | null>; completada: number; total: number; actualizadaEn: string | null }
 export type FichaCultivoVisible =
-  | { disponible: true; id: string; plantaId: string; zonaCultivo: string; metodoPropagacion: string; estadoValidacion: string; guia: GuiaCultivo }
+  | { disponible: true; id: string; plantaId: string; autorId: string; zonaCultivo: string; metodoPropagacion: string; epocaCosecha: string; estadoValidacion: string; guia: GuiaCultivo }
   | { disponible: false; id: string; plantaId: string; estadoValidacion: string; mensaje: string; guia: GuiaCultivo };
 
 export function listarFichasPorPlanta(plantaId: string): Promise<FichaCultivoVisible[]> {

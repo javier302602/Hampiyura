@@ -15,8 +15,8 @@ export interface EventoPedido { estado: EstadoPedido; fecha: Date | string; acto
 
 export interface PedidoProps {
   id: string; productoId: string; productoNombre: string; compradorId: string; vendedorId: string;
-  cantidad: number; precioUnitario: number; total: number; comisionReferencial: number;
-  entregaNombre: string; entregaTelefono: string; entregaDireccion: string;
+  cantidad: number; precioUnitario: number; subtotal: number; costoEnvio: number; distanciaKm?: number; total: number; comisionReferencial: number;
+  entregaNombre: string; entregaTelefono: string; entregaDireccion: string; entregaLatitud: number; entregaLongitud: number; entregaReferencia?: string;
   cobro: CobroSnapshot; metodoElegido?: MetodoCobro; comprobanteUrl?: string; numeroOperacion?: string;
   estado: EstadoPedido; entregaDias: number; fechaLimiteEntrega?: Date;
   contratoVersion: string; contratoTexto: string; compradorAceptoEn: Date; vendedorCompromisoEn: Date;

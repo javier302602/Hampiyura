@@ -20,6 +20,8 @@ import MisPedidosPage from './modules/m16-pedidos/pages/MisPedidosPage';
 import ReclamosPedidosPage from './modules/m16-pedidos/pages/ReclamosPedidosPage';
 import ComprarProductoPage from './modules/m16-pedidos/pages/ComprarProductoPage';
 import PedidoDetallePage from './modules/m16-pedidos/pages/PedidoDetallePage';
+import MisContratosCultivoPage from './modules/m17-compra-cultivo/pages/MisContratosCultivoPage';
+import ContratoCultivoDetallePage from './modules/m17-compra-cultivo/pages/ContratoCultivoDetallePage';
 import ProductoDetailPage from './modules/m11-productos/pages/ProductoDetailPage';
 import PublicarProductoPage from './modules/m11-productos/pages/PublicarProductoPage';
 import ResultadosBusquedaPage from './modules/m12-busqueda-recomendaciones/pages/ResultadosBusquedaPage';
@@ -167,6 +169,8 @@ function App() {
         <Route path="/m16-pedidos/reclamos" element={<RequireRole permitido={esAdministrador}><ReclamosPedidosPage /></RequireRole>} />
         <Route path="/m16-pedidos/comprar/:productoId" element={<ComprarProductoPage />} />
         <Route path="/m16-pedidos/:id" element={<PedidoDetallePage />} />
+        <Route path="/m17-compra-cultivo" element={<MisContratosCultivoPage />} />
+        <Route path="/m17-compra-cultivo/:id" element={<ContratoCultivoDetallePage />} />
         <Route path={RUTAS.admin} element={<RequireRole permitido={esValidador}><PanelAdminPage /></RequireRole>} />
         <Route path={RUTAS.adminUsuarios} element={<RequireRole permitido={esAdministrador}><UsuariosAdminPage /></RequireRole>} />
         <Route path="*" element={<Navigate to={RUTAS.home} replace />} />

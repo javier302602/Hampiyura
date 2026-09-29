@@ -384,6 +384,9 @@ model Producto {
   productorId String
   nombre String
   descripcion String?
+  // Ronda 36 (M-16): stock REAL en unidades, opcional. null = el vendedor no lo gestiona (sin límite mostrado). Baja sola
+  // cuando el vendedor confirma el pago de un pedido (nunca al solo pedir, ni con un comprobante todavía sin confirmar).
+  stockDisponible Int?
   plantasIds String[]
   // Frente 3: entrada estructurada (planta/parte usada/estado/cantidad) por cada uso de planta en
   // el producto -- reemplaza los checkboxes de una lista fija. Json porque es una lista de objetos
@@ -506,11 +509,17 @@ model Pedido {
   vendedorId String
   cantidad Int
   precioUnitario Float
+  subtotal Float
+  costoEnvio Float
+  distanciaKm Float?
   total Float
   comisionReferencial Float
   entregaNombre String
   entregaTelefono String
   entregaDireccion String
+  entregaLatitud Float
+  entregaLongitud Float
+  entregaReferencia String?
   cobro Json
   metodoElegido String?
   comprobanteUrl String?
@@ -531,4 +540,33 @@ model Pedido {
   actualizadoEn DateTime @default(now())
   @@index([compradorId])
   @@index([vendedorId])
+}
+
+// M-17: contrato de compra directa de cosecha, ligado a una ficha de cultivo (no a un Producto publicado).
+model ContratoCultivo {
+  id String @id @default(uuid())
+  cultivoId String
+  plantaId String
+  plantaNombre String
+  agricultorId String
+  compradorId String
+  cantidad String
+  montoAcordado Float
+  montoAdelanto Float
+  montoSaldo Float
+  comisionReferencial Float
+  netoAgricultor Float
+  mensajeComprador String?
+  cobroMedio String?
+  cobroNumero String?
+  comprobanteAdelantoUrl String?
+  numeroOperacionAdelanto String?
+  motivoRechazo String?
+  motivoRechazoAdelanto String?
+  estado String
+  eventos Json
+  creadoEn DateTime @default(now())
+  actualizadoEn DateTime @default(now())
+  @@index([compradorId])
+  @@index([agricultorId])
 }

@@ -21,6 +21,7 @@ function PanelComprar({ producto }: { producto: ProductoVisible }) {
       {estado.comprable ? (
         <>
           <p className="panel-comprar-precio">{producto.precioReferencial}</p>
+          {estado.stockDisponible != null && <p className="comentario-meta">Quedan {estado.stockDisponible} unidad{estado.stockDisponible === 1 ? '' : 'es'}.</p>}
           <Button variant="primary" iconLeft={<ShoppingCart size={16} aria-hidden="true" />} onClick={() => navigate(RUTAS_PEDIDOS.comprar(producto.id))}>Comprar</Button>
           <p className="comentario-meta">Pagas directo al vendedor por {estado.medios.join(' o ')}. Entrega en {estado.entregaDias} días, con contrato y garantía de devolución si no cumple.</p>
         </>
@@ -184,7 +185,7 @@ function ProductoDetailPage({ productoId, onVolver, onContactar }: { productoId:
       {(() => { const sesion = getSession(); return sesion && esValidador(sesion.rol) ? <PanelCertificacion producto={producto} onActualizado={cargar} /> : null; })()}
 
       {/* M-16: solo el dueño del producto configura cómo cobra (nunca visible para el resto). */}
-      {(() => { const sesion = getSession(); return sesion && sesion.userId === producto.productorId ? <PanelCobroVendedor productoId={producto.id} /> : null; })()}
+      {(() => { const sesion = getSession(); return sesion && sesion.userId === producto.productorId ? <PanelCobroVendedor productoId={producto.id} stockActual={producto.stockDisponible} onCambioStock={cargar} /> : null; })()}
     </section>
   );
 }

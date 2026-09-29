@@ -6,6 +6,7 @@ import {
   ETIQUETA_ESTADO_PEDIDO, type PedidoDetalle,
 } from '../api/pedidos.api';
 import { subirMedia, leerArchivoComoBase64 } from '../../m06-publicaciones/api/publicaciones.api';
+import CobroQR from '../components/CobroQR';
 import Button from '../../../shared/ui/Button';
 import Badge, { type BadgeVariant } from '../../../shared/ui/Badge';
 import LoadingState from '../../../shared/ui/LoadingState';
@@ -49,8 +50,10 @@ function PedidoDetallePage() {
 
       <dl className="detalle-campos" style={{ maxWidth: 640, marginTop: '1rem' }}>
         <div><dt>Cantidad</dt><dd>{pedido.cantidad}</dd></div>
+        <div><dt>Subtotal</dt><dd>S/ {pedido.subtotal.toFixed(2)}</dd></div>
+        <div><dt>Envío</dt><dd>{pedido.distanciaKm != null ? `S/ ${pedido.costoEnvio.toFixed(2)} (${pedido.distanciaKm.toFixed(1)} km)` : 'No se pudo calcular por distancia: coordinado directamente con el vendedor.'}</dd></div>
         <div><dt>Total</dt><dd>S/ {pedido.total.toFixed(2)}</dd></div>
-        <div><dt>Entrega a</dt><dd>{pedido.entregaNombre} · {pedido.entregaTelefono} · {pedido.entregaDireccion}</dd></div>
+        <div><dt>Entrega a</dt><dd>{pedido.entregaNombre} · {pedido.entregaTelefono} · {pedido.entregaDireccion}{pedido.entregaReferencia ? ` (referencia: ${pedido.entregaReferencia})` : ''}</dd></div>
         <div><dt>Plazo de entrega</dt><dd>{pedido.entregaDias} días{pedido.fechaLimiteEntrega ? ` (hasta el ${fecha(pedido.fechaLimiteEntrega)})` : ''}</dd></div>
         {pedido.metodoElegido && <div><dt>Método de pago</dt><dd>{pedido.metodoElegido}{pedido.numeroOperacion ? ` · N.º de operación: ${pedido.numeroOperacion}` : ''}</dd></div>}
         {pedido.comprobanteUrl && <div><dt>Comprobante</dt><dd><a href={pedido.comprobanteUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-accent-text)' }}>Ver comprobante</a></dd></div>}
@@ -66,9 +69,21 @@ function PedidoDetallePage() {
         {pedido.cobro && (pedido.rolDelSolicitante === 'comprador') && (
           <div className="panel-comprar" style={{ marginTop: '1rem' }}>
             <h3>Cómo pagar</h3>
-            {pedido.cobro.yape && <p>Yape: <strong>{pedido.cobro.yape}</strong></p>}
-            {pedido.cobro.plin && <p>Plin: <strong>{pedido.cobro.plin}</strong></p>}
-            {pedido.cobro.cuenta && <p>Cuenta: <strong>{pedido.cobro.cuenta}</strong></p>}
+            <div className="cobro-medios">
+              {pedido.cobro.yape && (
+                <div>
+                  <p>Yape: <strong>{pedido.cobro.yape}</strong></p>
+                  <CobroQR medio="Yape" numero={pedido.cobro.yape} monto={`S/ ${pedido.total.toFixed(2)}`} vendedor={pedido.vendedorNombre ?? ''} concepto={pedido.productoNombre} />
+                </div>
+              )}
+              {pedido.cobro.plin && (
+                <div>
+                  <p>Plin: <strong>{pedido.cobro.plin}</strong></p>
+                  <CobroQR medio="Plin" numero={pedido.cobro.plin} monto={`S/ ${pedido.total.toFixed(2)}`} vendedor={pedido.vendedorNombre ?? ''} concepto={pedido.productoNombre} />
+                </div>
+              )}
+              {pedido.cobro.cuenta && <p>Cuenta: <strong>{pedido.cobro.cuenta}</strong></p>}
+            </div>
             <p className="comentario-meta">Envía el pago por uno de estos medios y sube abajo la captura del comprobante.</p>
           </div>
         )}

@@ -28,6 +28,8 @@ export interface ProductoProps {
   presentacion?: string;
   cantidad?: string;
   precioReferencial?: string;
+  // Ronda 36 (M-16): stock REAL en unidades. undefined/null = el vendedor no lo gestiona (sin límite mostrado).
+  stockDisponible?: number | null;
   fotografias: string[];
   localidad: string;
   // Frente 6: coordenadas reales del pin soltado en SelectorUbicacionMapa (Frente 3) -- antes se
@@ -73,4 +75,13 @@ export class Producto {
     this.props.documentacionCertificacion = documentacion;
     this.props.etiquetaCertificado = true;
   }
+
+  // Ronda 36 (M-16): el dueño fija/edita el stock; null = deja de gestionarlo (sin límite mostrado).
+  fijarStock(unidades: number | null) {
+    if (unidades !== null && (!Number.isInteger(unidades) || unidades < 0)) throw new ValidationError('El stock debe ser un número entero de 0 a más, o vacío para no gestionarlo');
+    this.props.stockDisponible = unidades;
+  }
+  hayStockPara(cantidad: number): boolean { return this.props.stockDisponible == null || this.props.stockDisponible >= cantidad; }
+  // Se descuenta SOLO cuando el vendedor confirma un pago real (nunca al solo pedir ni con el comprobante sin confirmar). Nunca baja de 0.
+  descontarStock(cantidad: number) { if (this.props.stockDisponible != null) this.props.stockDisponible = Math.max(0, this.props.stockDisponible - cantidad); }
 }

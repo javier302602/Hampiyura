@@ -31,6 +31,12 @@ function ProductoCard({ producto, onAbrir }: { producto: ProductoVisible; onAbri
             {producto.precioReferencial}
           </p>
         )}
+        {/* Ronda 36: stock real y público, visible para todos (undefined/null = el vendedor no lo gestiona). */}
+        {producto.stockDisponible != null && (
+          <p className="comentario-meta" style={{ margin: 0 }}>
+            {producto.stockDisponible > 0 ? `${producto.stockDisponible} disponible${producto.stockDisponible === 1 ? '' : 's'}` : 'Sin stock'}
+          </p>
+        )}
       </div>
     </Card>
   );

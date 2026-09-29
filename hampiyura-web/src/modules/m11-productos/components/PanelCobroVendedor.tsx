@@ -1,16 +1,27 @@
 import { FormEvent, useEffect, useState } from 'react';
-import { obtenerMiCobro, configurarCobro, type CobroProducto } from '../../m16-pedidos/api/pedidos.api';
+import { obtenerMiCobro, configurarCobro, fijarStock, type CobroProducto } from '../../m16-pedidos/api/pedidos.api';
 import Button from '../../../shared/ui/Button';
 
 // M-16 · El vendedor registra a dónde le paga el comprador (Yape/Plin/cuenta) y en cuántos días se compromete a
 // entregar. Solo lo ve el dueño del producto: estos números NUNCA salen en la ficha pública, solo dentro de un pedido.
-function PanelCobroVendedor({ productoId }: { productoId: string }) {
+function PanelCobroVendedor({ productoId, stockActual, onCambioStock }: { productoId: string; stockActual?: number | null; onCambioStock: () => void }) {
   const [cobro, setCobro] = useState<CobroProducto | null | undefined>(undefined); // undefined = cargando
   const [yape, setYape] = useState(''); const [plin, setPlin] = useState(''); const [cuenta, setCuenta] = useState(''); const [entregaDias, setEntregaDias] = useState('5');
   const [acepta, setAcepta] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [guardado, setGuardado] = useState(false);
+
+  const [gestionaStock, setGestionaStock] = useState(stockActual != null);
+  const [stock, setStock] = useState(stockActual != null ? String(stockActual) : '0');
+  const [guardandoStock, setGuardandoStock] = useState(false);
+  const [errorStock, setErrorStock] = useState<string | null>(null);
+  async function guardarStock(e: FormEvent) {
+    e.preventDefault(); setGuardandoStock(true); setErrorStock(null);
+    try { await fijarStock(productoId, gestionaStock ? Number(stock) : null); onCambioStock(); }
+    catch (err) { setErrorStock(err instanceof Error ? err.message : 'No se pudo guardar.'); }
+    finally { setGuardandoStock(false); }
+  }
 
   useEffect(() => {
     obtenerMiCobro(productoId).then((c) => { setCobro(c); if (c) { setYape(c.yape ?? ''); setPlin(c.plin ?? ''); setCuenta(c.cuenta ?? ''); setEntregaDias(String(c.entregaDias)); setAcepta(true); } }).catch(() => setCobro(null));
@@ -55,6 +66,24 @@ function PanelCobroVendedor({ productoId }: { productoId: string }) {
           Me comprometo a entregar en ese plazo o devolver el pago íntegro si no cumplo (ver el contrato que acepta el comprador).
         </label>
         <Button type="submit" variant="primary" loading={guardando} disabled={!acepta}>{cobro ? 'Actualizar' : 'Guardar y habilitar la compra'}</Button>
+      </form>
+
+      <h3 style={{ marginTop: '1.5rem' }}>Stock disponible</h3>
+      <p className="comentario-meta">
+        Si lo gestionas, el número es público (lo ve cualquiera en la ficha) y baja solo cuando confirmas el pago de un pedido; nunca al solo pedir o con un comprobante sin confirmar.
+      </p>
+      {errorStock && <p className="error-formulario">{errorStock}</p>}
+      <form onSubmit={guardarStock} className="formulario" style={{ maxWidth: 320 }}>
+        <label className="mostrar-clave">
+          <input type="checkbox" checked={gestionaStock} onChange={(e) => setGestionaStock(e.target.checked)} />
+          Gestionar el stock de este producto
+        </label>
+        {gestionaStock && (
+          <label>Unidades disponibles
+            <input type="number" min={0} value={stock} onChange={(e) => setStock(e.target.value)} required />
+          </label>
+        )}
+        <Button type="submit" variant="secondary" loading={guardandoStock}>Guardar stock</Button>
       </form>
     </section>
   );

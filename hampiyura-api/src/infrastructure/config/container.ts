@@ -26,6 +26,8 @@ import { tieneSoportePrioritario } from '../../domain/value-objects/plan.vo';
 import { ObtenerDetalleValidacionUseCase } from '../../application/m09-validacion-moderacion/detalle-validacion.use-case';
 import { PedidosUseCase, EstadoCompraProductoUseCase, ConfigurarCobroUseCase } from '../../application/m16-pedidos/pedidos.use-cases';
 import { PrismaCobroProductoRepository, PrismaPedidoRepository } from '../adapters/out/persistence/prisma/repositories/prisma.repositories-pedidos';
+import { ContratosCultivoUseCase } from '../../application/m17-compra-cultivo/contratos-cultivo.use-cases';
+import { PrismaContratoCultivoRepository } from '../adapters/out/persistence/prisma/repositories/prisma.repositories-contratos-cultivo';
 import { MensajeriaUseCase } from '../../application/m15-planes/mensajeria.use-cases';
 import { AlertasUseCase } from '../../application/m15-planes/alertas.use-cases';
 import { ReporteBioeconomiaUseCase } from '../../application/m15-planes/reportes.use-cases';
@@ -63,6 +65,8 @@ const cobrosProducto=new PrismaCobroProductoRepository(prisma); const pedidosRep
 const pedidos=new PedidosUseCase(pedidosRepo,productos,cobrosProducto,usuarios,notificador);
 const estadoCompraProducto=new EstadoCompraProductoUseCase(productos,cobrosProducto,usuarios);
 const configurarCobro=new ConfigurarCobroUseCase(productos,cobrosProducto);
+// Ronda 37 (M-17): compra directa de cosecha, ligada a una ficha de cultivo (no a un producto publicado).
+const contratosCultivo=new ContratosCultivoUseCase(new PrismaContratoCultivoRepository(prisma),cultivos,plantas,usuarios,notificador);
 const mensajeria=new MensajeriaUseCase(new PrismaMensajeriaRepository(prisma),usuarios,accesoContacto,directorioProductores,notificador);
 const alertas=new AlertasUseCase(new PrismaAlertasRepository(prisma),plantas,cultivos,productos,notificador,accesoContacto,usuarios);
 const reporteBioeconomia=new ReporteBioeconomiaUseCase(usuarios,plantas,cultivos,productos,directorioProductores,busquedasRepo,accesoContacto);
@@ -112,6 +116,7 @@ export const container={
   resolverPago:new ResolverPagoUseCase(pagosContacto,notificador,accesoContacto),
   directorioProductores,
   pedidos, estadoCompraProducto, configurarCobro,
+  contratosCultivo,
   mensajeria, alertas, reporteBioeconomia, productoresDisponibles,
   protegerContactoProductos:new ProtegerContactoProductosUseCase(accesoContacto),
   actualizarPerfil:new ActualizarPerfilUseCase(usuarios),

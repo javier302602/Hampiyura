@@ -18,17 +18,23 @@ export interface DatosContrato {
   producto: { nombre: string };
   cantidad: number;
   precioUnitario: number;
-  total: number;
+  subtotal: number;
+  costoEnvio: number;
+  distanciaKm?: number;
   entregaDias: number;
   medios: string[];
-  entrega?: { nombre: string; telefono: string; direccion: string };
+  entrega?: { nombre: string; telefono: string; direccion: string; referencia?: string };
 }
 export const soles = (n: number) => `S/ ${n.toFixed(2)}`;
 
 export function generarContrato(d: DatosContrato): string {
   const fecha = d.fecha.toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric' });
   const vendedor = d.vendedor.nombreNegocio ? `${d.vendedor.nombreNegocio} (${d.vendedor.nombre})` : d.vendedor.nombre;
-  const entrega = d.entrega ? `${d.entrega.nombre}, tel. ${d.entrega.telefono}, ${d.entrega.direccion}` : '(los datos de entrega que indiques en este pedido)';
+  const entrega = d.entrega ? `${d.entrega.nombre}, tel. ${d.entrega.telefono}, ${d.entrega.direccion}${d.entrega.referencia ? ` (referencia: ${d.entrega.referencia})` : ''}` : '(los datos de entrega que indiques en este pedido)';
+  const total = d.subtotal + d.costoEnvio;
+  const envioTexto = d.distanciaKm != null
+    ? `${soles(d.costoEnvio)} (calculado por la distancia real de ${d.distanciaKm.toFixed(1)} km entre el vendedor y el punto de entrega)`
+    : 'No se pudo calcular por distancia (el vendedor no registró su ubicación exacta en el mapa al publicar): coordina el costo de envío directamente con él antes de pagar.';
   return [
     `CONTRATO DE COMPRAVENTA DE PRODUCTO — ${VERSION_CONTRATO}`,
     `${d.pedidoId ? `Pedido ${d.pedidoId.slice(0, 8).toUpperCase()} · ` : ''}Fecha: ${fecha}`,
@@ -38,8 +44,10 @@ export function generarContrato(d: DatosContrato): string {
     `VENDEDOR: ${vendedor}.`,
     'HampiYura participa solo como plataforma tecnológica que pone en contacto a las partes (ver cláusula 6): no es parte de esta compraventa.',
     '',
-    '2. OBJETO Y PRECIO',
-    `El vendedor vende y el comprador compra: ${d.cantidad} × "${d.producto.nombre}", al precio de ${soles(d.precioUnitario)} por unidad. TOTAL A PAGAR: ${soles(d.total)}. El precio incluye el producto tal como está descrito en su ficha; cualquier costo de envío distinto debe acordarse por escrito entre las partes antes de pagar.`,
+    '2. OBJETO, PRECIO Y ENVÍO',
+    `El vendedor vende y el comprador compra: ${d.cantidad} × "${d.producto.nombre}", al precio de ${soles(d.precioUnitario)} por unidad. Subtotal del producto: ${soles(d.subtotal)}.`,
+    `Costo de envío: ${envioTexto}`,
+    `TOTAL A PAGAR: ${soles(total)}.`,
     '',
     '3. PAGO',
     `El comprador paga el total DIRECTAMENTE al vendedor, por ${d.medios.length ? d.medios.join(' o ') : 'el medio de cobro que el vendedor registró'}, y sube el comprobante en el pedido. El vendedor confirma en la plataforma cuando recibe el pago, o lo rechaza indicando el motivo. HampiYura no recibe ni retiene este dinero.`,
@@ -64,7 +72,7 @@ export function generarContrato(d: DatosContrato): string {
     'La información del producto la aporta el vendedor. Los productos con plantas medicinales no sustituyen la consulta con un profesional de la salud ni son un tratamiento verificado.',
     '',
     '10. COMISIÓN Y LEY APLICABLE',
-    `HampiYura cobra al vendedor una comisión de ${PORCENTAJE_COMISION}% sobre esta venta (${soles(Math.round(d.total * PORCENTAJE_COMISION) / 100)}), que el comprador NO paga y que no se descuenta del pago directo. Se aplican las normas peruanas de compraventa y de protección al consumidor.`,
+    `HampiYura cobra al vendedor una comisión de ${PORCENTAJE_COMISION}% sobre el subtotal de esta venta (${soles(Math.round(d.subtotal * PORCENTAJE_COMISION) / 100)}, no sobre el envío), que el comprador NO paga y que no se descuenta del pago directo. Se aplican las normas peruanas de compraventa y de protección al consumidor.`,
     '',
     'ACEPTACIÓN: el comprador acepta este contrato al confirmar el pedido; el vendedor se compromete a cumplirlo (plazo de entrega y devolución) al haber publicado el producto con su medio de cobro y su plazo de entrega. Se conserva un registro con fecha de cada aceptación.',
     'Modelo de contrato de la plataforma, pendiente de revisión legal.',

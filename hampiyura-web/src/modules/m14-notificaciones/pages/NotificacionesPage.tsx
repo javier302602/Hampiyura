@@ -7,9 +7,10 @@ import { listarNotificaciones, marcarTodasLeidas, marcarLeida, eliminarNotificac
 // M-09) siguen sin `entidadTipo`/`entidadId` -- no se retroalimentaron con la referencia que
 // agregó M-08, así que para esos no hay a dónde navegar (limitación real, no un descuido). Los
 // únicos con navegación real hoy son los 2 tipos nuevos de M-08, que sí traen `entidadTipo:'Consulta'`.
-function resolverNavegacion(n: Notificacion): { entidadTipo: 'Consulta' | 'Conversacion' | 'Planta' | 'Pedido'; entidadId: string } | null {
-  // Ronda 30: mensajes directos y alertas de seguimiento también traen referencia. Ronda 35: pedidos de compra directa (M-16).
-  if ((n.entidadTipo === 'Consulta' || n.entidadTipo === 'Conversacion' || n.entidadTipo === 'Planta' || n.entidadTipo === 'Pedido') && n.entidadId) return { entidadTipo: n.entidadTipo, entidadId: n.entidadId };
+function resolverNavegacion(n: Notificacion): { entidadTipo: 'Consulta' | 'Conversacion' | 'Planta' | 'Pedido' | 'ContratoCultivo'; entidadId: string } | null {
+  // Ronda 30: mensajes directos y alertas de seguimiento también traen referencia. Ronda 35: pedidos de compra
+  // directa (M-16). Ronda 37: contratos de compra directa de cosecha (M-17).
+  if ((n.entidadTipo === 'Consulta' || n.entidadTipo === 'Conversacion' || n.entidadTipo === 'Planta' || n.entidadTipo === 'Pedido' || n.entidadTipo === 'ContratoCultivo') && n.entidadId) return { entidadTipo: n.entidadTipo, entidadId: n.entidadId };
   return null;
 }
 
@@ -42,6 +43,7 @@ function NotificacionesPage({ onVolver, onAbrirConsulta }: Props) {
     if (navegacion.entidadTipo === 'Conversacion') navigate(`/m15-planes/mensajes?c=${encodeURIComponent(navegacion.entidadId)}`);
     else if (navegacion.entidadTipo === 'Planta') navigate(`/m02-catalogo-plantas/${encodeURIComponent(navegacion.entidadId)}`);
     else if (navegacion.entidadTipo === 'Pedido') navigate(`/m16-pedidos/${encodeURIComponent(navegacion.entidadId)}`);
+    else if (navegacion.entidadTipo === 'ContratoCultivo') navigate(`/m17-compra-cultivo/${encodeURIComponent(navegacion.entidadId)}`);
     else onAbrirConsulta(navegacion.entidadId);
   }
 

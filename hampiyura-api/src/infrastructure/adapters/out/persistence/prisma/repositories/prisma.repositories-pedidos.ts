@@ -22,13 +22,14 @@ export class PrismaPedidoRepository implements PedidoRepositoryPort {
     return new Pedido({
       ...x, cobro: x.cobro ?? {}, metodoElegido: x.metodoElegido ?? undefined, comprobanteUrl: x.comprobanteUrl ?? undefined, numeroOperacion: x.numeroOperacion ?? undefined,
       fechaLimiteEntrega: x.fechaLimiteEntrega ?? undefined, notaEnvio: x.notaEnvio ?? undefined, motivoRechazoPago: x.motivoRechazoPago ?? undefined,
-      motivoReclamo: x.motivoReclamo ?? undefined, resolucion: x.resolucion ?? undefined, eventos,
+      motivoReclamo: x.motivoReclamo ?? undefined, resolucion: x.resolucion ?? undefined, distanciaKm: x.distanciaKm ?? undefined, entregaReferencia: x.entregaReferencia ?? undefined, eventos,
     } as PedidoProps);
   }
   private datos(p: Pedido) {
-    const { fechaLimiteEntrega, metodoElegido, comprobanteUrl, numeroOperacion, notaEnvio, motivoRechazoPago, motivoReclamo, resolucion, ...resto } = p.props;
+    const { fechaLimiteEntrega, metodoElegido, comprobanteUrl, numeroOperacion, notaEnvio, motivoRechazoPago, motivoReclamo, resolucion, distanciaKm, entregaReferencia, ...resto } = p.props;
     return { ...resto, fechaLimiteEntrega: fechaLimiteEntrega ?? null, metodoElegido: metodoElegido ?? null, comprobanteUrl: comprobanteUrl ?? null, numeroOperacion: numeroOperacion ?? null,
-      notaEnvio: notaEnvio ?? null, motivoRechazoPago: motivoRechazoPago ?? null, motivoReclamo: motivoReclamo ?? null, resolucion: resolucion ?? null } as any;
+      notaEnvio: notaEnvio ?? null, motivoRechazoPago: motivoRechazoPago ?? null, motivoReclamo: motivoReclamo ?? null, resolucion: resolucion ?? null,
+      distanciaKm: distanciaKm ?? null, entregaReferencia: entregaReferencia ?? null } as any;
   }
   async guardar(p: Pedido) { await this.prisma.pedido.create({ data: this.datos(p) }); }
   async actualizar(p: Pedido) { const { id, ...d } = this.datos(p); await this.prisma.pedido.update({ where: { id: p.props.id }, data: d }); }

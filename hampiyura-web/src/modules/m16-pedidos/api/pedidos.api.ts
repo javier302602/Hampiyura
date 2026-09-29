@@ -3,7 +3,8 @@ import { apiRequest } from '../../../shared/api/client';
 // M-16 · Compra directa (Yape/Plin/cuenta) con contrato de compraventa. HampiYura no custodia dinero: solo
 // registra el contrato, el comprobante y la línea de tiempo, y media en los reclamos.
 
-export interface EstadoCompra { comprable: boolean; motivo?: string; esDemostracion: boolean; medios: string[]; entregaDias?: number; precioUnitario?: number }
+// stockDisponible: null/undefined = el vendedor no lo gestiona (sin límite mostrado); un número es real y público para todos.
+export interface EstadoCompra { comprable: boolean; motivo?: string; esDemostracion: boolean; medios: string[]; entregaDias?: number; precioUnitario?: number; stockDisponible?: number | null }
 export function obtenerEstadoCompra(productoId: string): Promise<EstadoCompra> { return apiRequest(`/productos/${encodeURIComponent(productoId)}/estado-compra`); }
 
 export interface CobroProducto { yape?: string; plin?: string; cuenta?: string; entregaDias: number }
@@ -12,9 +13,16 @@ export interface ConfigurarCobroInput { yape?: string; plin?: string; cuenta?: s
 export function configurarCobro(productoId: string, input: ConfigurarCobroInput): Promise<void> {
   return apiRequest(`/productos/${encodeURIComponent(productoId)}/cobro`, { method: 'PUT', body: JSON.stringify(input) });
 }
+// Ronda 36 (M-16): stock real en unidades (null = dejar de gestionarlo). Solo el dueño del producto puede fijarlo.
+export function fijarStock(productoId: string, stockDisponible: number | null): Promise<void> {
+  return apiRequest(`/productos/${encodeURIComponent(productoId)}/stock`, { method: 'PUT', body: JSON.stringify({ stockDisponible }) });
+}
 
-export interface EntregaInput { nombre: string; telefono: string; direccion: string }
-export interface VistaPreviaPedido { contrato: string; total: number; precioUnitario: number; cantidad: number; entregaDias: number; medios: string[]; comisionReferencial: number }
+// latitud/longitud: obligatorias, se marcan en el mismo selector de mapa que usa el vendedor al publicar -- sirven
+// para calcular el envío por la distancia real al vendedor (ver envio.vo.ts en el backend). referencia: solo hace
+// falta si el envío sale "largo" (no hay una base de datos real de paraderos que consultar automáticamente).
+export interface EntregaInput { nombre: string; telefono: string; direccion: string; latitud: number; longitud: number; referencia?: string }
+export interface VistaPreviaPedido { contrato: string; subtotal: number; costoEnvio: number; distanciaKm?: number; envioLargo: boolean; total: number; precioUnitario: number; cantidad: number; entregaDias: number; medios: string[]; comisionReferencial: number }
 export function vistaPreviaPedido(productoId: string, cantidad: number, entrega?: EntregaInput): Promise<VistaPreviaPedido> {
   return apiRequest('/pedidos/vista-previa', { method: 'POST', body: JSON.stringify({ productoId, cantidad, entrega }) });
 }
@@ -33,8 +41,8 @@ export function misPedidos(rol: 'comprador' | 'vendedor'): Promise<PedidoResumen
 export interface EventoPedido { estado: EstadoPedido; fecha: string; actorId: string; nota?: string }
 export interface PedidoDetalle {
   id: string; productoId: string; productoNombre: string; compradorId: string; vendedorId: string; compradorNombre?: string; vendedorNombre?: string;
-  cantidad: number; precioUnitario: number; total: number; comisionReferencial: number;
-  entregaNombre: string; entregaTelefono: string; entregaDireccion: string;
+  cantidad: number; precioUnitario: number; subtotal: number; costoEnvio: number; distanciaKm?: number; total: number; comisionReferencial: number;
+  entregaNombre: string; entregaTelefono: string; entregaDireccion: string; entregaLatitud: number; entregaLongitud: number; entregaReferencia?: string;
   cobro?: CobroProducto; metodoElegido?: string; comprobanteUrl?: string; numeroOperacion?: string;
   estado: EstadoPedido; entregaDias: number; fechaLimiteEntrega?: string; plazoVencido: boolean;
   contratoVersion: string; contratoTexto: string; compradorAceptoEn: string; vendedorCompromisoEn: string;

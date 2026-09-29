@@ -6,7 +6,7 @@ import { AuthenticatedRequest } from '../../middlewares/role.middleware';
 // M-16 · Pedidos de compra directa y datos de cobro del vendedor.
 const u = (req: Request) => (req as AuthenticatedRequest).user;
 const sol = (req: Request) => ({ id: u(req).id, rol: u(req).rol });
-const entregaSchema = z.object({ nombre: z.string(), telefono: z.string(), direccion: z.string() });
+const entregaSchema = z.object({ nombre: z.string(), telefono: z.string(), direccion: z.string(), latitud: z.number(), longitud: z.number(), referencia: z.string().optional() });
 
 // --- Estado de compra de un producto (público: nunca trae los números de cobro) ---
 export async function estadoCompra(req: Request, res: Response) { res.json(await container.estadoCompraProducto.ejecutar(String(req.params.id), u(req)?.id)); }
@@ -16,6 +16,12 @@ export async function obtenerCobro(req: Request, res: Response) { res.json(await
 export async function configurarCobro(req: Request, res: Response) {
   const b = z.object({ yape: z.string().optional(), plin: z.string().optional(), cuenta: z.string().optional(), entregaDias: z.number(), aceptaCompromiso: z.boolean().optional() }).parse(req.body);
   await container.configurarCobro.ejecutar(sol(req), String(req.params.id), b);
+  res.status(204).send();
+}
+// Ronda 36 · M-16: stock real (solo el dueño lo fija; null = deja de gestionarlo).
+export async function fijarStock(req: Request, res: Response) {
+  const { stockDisponible } = z.object({ stockDisponible: z.number().int().min(0).nullable() }).parse(req.body);
+  await container.configurarCobro.fijarStock(sol(req), String(req.params.id), stockDisponible);
   res.status(204).send();
 }
 

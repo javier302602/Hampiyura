@@ -28,6 +28,8 @@ export interface Producto {
   presentacion?: string;
   cantidad?: string;
   precioReferencial?: string;
+  // Ronda 36 (M-16): stock REAL en unidades, público. undefined/null = el vendedor no lo gestiona (sin límite mostrado).
+  stockDisponible?: number | null;
   fotografias: string[];
   localidad: string;
   // Frente 6 (mini-mapa por producto): coordenadas reales del pin soltado en el selector de mapa
