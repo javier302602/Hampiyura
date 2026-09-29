@@ -1,9 +1,35 @@
 import { FormEvent, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ShoppingCart } from 'lucide-react';
 import { obtenerProducto, marcarValidadoDocumentalmente, marcarCertificado, ETIQUETAS_TIPO_PRODUCTOR, type ProductoVisible } from '../api/productos.api';
 import Button from '../../../shared/ui/Button';
 import IndicadoresProducto from '../components/IndicadoresProducto';
+import PanelCobroVendedor from '../components/PanelCobroVendedor';
 import { esValidador, getSession } from '../../../shared/auth/session';
 import MiniMapaUbicacion from '../../m03-cultivo/components/MiniMapaUbicacion';
+import { obtenerEstadoCompra, RUTAS_PEDIDOS, type EstadoCompra } from '../../m16-pedidos/api/pedidos.api';
+
+// M-16 · Comprar directo: botón que lleva al flujo de pedido (entrega + contrato), o el motivo por el que todavía
+// no se puede (sin cobro configurado, precio poco claro, producto de demostración, o es tu propio producto).
+function PanelComprar({ producto }: { producto: ProductoVisible }) {
+  const navigate = useNavigate();
+  const [estado, setEstado] = useState<EstadoCompra | null>(null);
+  useEffect(() => { obtenerEstadoCompra(producto.id).then(setEstado).catch(() => setEstado(null)); }, [producto.id]);
+  if (!estado) return null;
+  return (
+    <div className="panel-comprar" role="region" aria-label="Comprar este producto">
+      {estado.comprable ? (
+        <>
+          <p className="panel-comprar-precio">{producto.precioReferencial}</p>
+          <Button variant="primary" iconLeft={<ShoppingCart size={16} aria-hidden="true" />} onClick={() => navigate(RUTAS_PEDIDOS.comprar(producto.id))}>Comprar</Button>
+          <p className="comentario-meta">Pagas directo al vendedor por {estado.medios.join(' o ')}. Entrega en {estado.entregaDias} días, con contrato y garantía de devolución si no cumple.</p>
+        </>
+      ) : (
+        <p className={estado.esDemostracion ? 'comentario-meta' : 'advertencia-no-verificado'}>{estado.esDemostracion ? '' : '⚠ '}{estado.motivo}</p>
+      )}
+    </div>
+  );
+}
 
 function PanelCertificacion({ producto, onActualizado }: { producto: ProductoVisible; onActualizado: () => void }) {
   const [documentacion, setDocumentacion] = useState('');
@@ -136,6 +162,9 @@ function ProductoDetailPage({ productoId, onVolver, onContactar }: { productoId:
       {producto.presentacion && <span>Presentación: {producto.presentacion}</span>}
       {producto.cantidad && <span>Cantidad: {producto.cantidad}</span>}
       {producto.precioReferencial && <span>Precio referencial: {producto.precioReferencial}</span>}
+
+      <PanelComprar producto={producto} />
+
       <h3>Información del proceso</h3>
       <p>{producto.informacionProceso}</p>
       {producto.fechaElaboracion && <span>Fecha de elaboración: {new Date(producto.fechaElaboracion).toLocaleDateString()}</span>}
@@ -153,6 +182,9 @@ function ProductoDetailPage({ productoId, onVolver, onContactar }: { productoId:
 
       {/* Solo el equipo ve este panel; el resto no debe ver un aviso de "Sin permisos" en una ficha pública. */}
       {(() => { const sesion = getSession(); return sesion && esValidador(sesion.rol) ? <PanelCertificacion producto={producto} onActualizado={cargar} /> : null; })()}
+
+      {/* M-16: solo el dueño del producto configura cómo cobra (nunca visible para el resto). */}
+      {(() => { const sesion = getSession(); return sesion && sesion.userId === producto.productorId ? <PanelCobroVendedor productoId={producto.id} /> : null; })()}
     </section>
   );
 }

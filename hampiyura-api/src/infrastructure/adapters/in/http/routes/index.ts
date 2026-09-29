@@ -17,6 +17,7 @@ import { buscarPlantas } from '../controllers/m12-busqueda-recomendaciones/busqu
 import { crearConsulta, listarBandejaConsultas, listarMisConsultas, obtenerConsulta, agregarMensajeConsulta, cambiarEstadoConsulta, asignarConsulta } from '../controllers/m08-consultas/consultas.controller';
 import { listarPlanes, miPlan, solicitarPago, listarPagos, detallePago, confirmarPago, rechazarPago, listarProductores, obtenerProductor } from '../controllers/m15-planes/planes.controller';
 import { listarConversaciones, mensajesSinLeer, obtenerConversacion, escribirAProductor, responderConversacion, listarAlertas, seguirPlanta, dejarDeSeguir, procesarAlertas, reporteBioeconomia, accesoDisponibles, listarDisponibles, miDisponibilidad, marcarDisponibilidad } from '../controllers/m15-planes/extras.controller';
+import { estadoCompra, obtenerCobro, configurarCobro, vistaPreviaPedido, crearPedido, misPedidos, reclamosPendientes, obtenerPedido, informarPago, confirmarPagoPedido, rechazarPagoPedido, marcarEnviado, confirmarRecepcion, abrirReclamo, resolverReclamo, cancelarPedido } from '../controllers/m16-pedidos/pedidos.controller';
 import { requireAuth, requireValidator, requireAdmin, requireProductor, attachUserIfPresent } from '../middlewares/role.middleware';
 export const router=Router();
 // M-15 · Contacto pagado y planes
@@ -28,6 +29,11 @@ router.get('/mensajes/conversaciones',requireAuth,listarConversaciones); router.
 router.get('/alertas',requireAuth,listarAlertas); router.post('/alertas',requireAuth,seguirPlanta); router.delete('/alertas/:plantaId',requireAuth,dejarDeSeguir); router.post('/alertas/procesar',requireAdmin,procesarAlertas);
 router.get('/reportes/bioeconomia',requireAuth,reporteBioeconomia);
 router.get('/productores-disponibles/acceso',attachUserIfPresent,accesoDisponibles); router.get('/productores-disponibles',requireAuth,listarDisponibles); router.get('/productores-disponibles/mi-estado',requireAuth,miDisponibilidad); router.put('/productores-disponibles/mi-estado',requireAuth,marcarDisponibilidad);
+// Ronda 35 · M-16: compra directa (Yape/Plin/cuenta) con contrato
+router.get('/productos/:id/estado-compra',attachUserIfPresent,estadoCompra); router.get('/productos/:id/cobro',requireAuth,obtenerCobro); router.put('/productos/:id/cobro',requireAuth,configurarCobro);
+router.post('/pedidos/vista-previa',requireAuth,vistaPreviaPedido); router.post('/pedidos',requireAuth,crearPedido); router.get('/pedidos',requireAuth,misPedidos); router.get('/pedidos/reclamos',requireAdmin,reclamosPendientes); router.get('/pedidos/:id',requireAuth,obtenerPedido);
+router.post('/pedidos/:id/pago',requireAuth,informarPago); router.post('/pedidos/:id/confirmar-pago',requireAuth,confirmarPagoPedido); router.post('/pedidos/:id/rechazar-pago',requireAuth,rechazarPagoPedido); router.post('/pedidos/:id/enviado',requireAuth,marcarEnviado);
+router.post('/pedidos/:id/recibido',requireAuth,confirmarRecepcion); router.post('/pedidos/:id/reclamo',requireAuth,abrirReclamo); router.post('/pedidos/:id/resolver',requireAdmin,resolverReclamo); router.post('/pedidos/:id/cancelar',requireAuth,cancelarPedido);
 router.get('/productores',attachUserIfPresent,listarProductores); router.get('/productores/:id',attachUserIfPresent,obtenerProductor);
 router.post('/cuentas/solicitud-tipo-cuenta',requireAuth,solicitarTipoCuenta); router.get('/cuentas/solicitud-tipo-cuenta',requireAuth,obtenerMiTipoCuenta);
 router.post('/cuentas/registro',registrar); router.post('/cuentas/login',login); router.post('/cuentas/activar',activarCuenta); router.post('/cuentas/recuperar-contrasena',solicitarRecuperacion); router.post('/cuentas/restablecer-contrasena',restablecerContraseña); router.post('/cuentas/cambiar-contrasena',requireAuth,cambiarContraseña); router.get('/cuentas/perfil',requireAuth,obtenerPerfil); router.patch('/cuentas/perfil',requireAuth,actualizarPerfil);

@@ -484,3 +484,51 @@ model BusquedaPlanta {
   plantaId String
   fecha DateTime @default(now())
 }
+
+// Ronda 35 (M-16 · pedidos): cómo cobra el vendedor de un producto. Tabla APARTE de Producto a propósito: Producto se expone entero en la API
+// pública y estos números (Yape/Plin/cuenta) solo los ve el comprador DENTRO de su pedido.
+model CobroProducto {
+  productoId String @id
+  yape String?
+  plin String?
+  cuenta String?
+  entregaDias Int
+  compromisoEn DateTime
+  actualizadoEn DateTime @default(now())
+}
+// Pedido de compra directa: el comprador paga al vendedor (Yape/Plin/cuenta), el vendedor confirma y envía, el comprador confirma la recepción.
+// HampiYura NO custodia dinero: registra el contrato aceptado, el comprobante y la línea de tiempo, y media en los reclamos.
+model Pedido {
+  id String @id @default(uuid())
+  productoId String
+  productoNombre String
+  compradorId String
+  vendedorId String
+  cantidad Int
+  precioUnitario Float
+  total Float
+  comisionReferencial Float
+  entregaNombre String
+  entregaTelefono String
+  entregaDireccion String
+  cobro Json
+  metodoElegido String?
+  comprobanteUrl String?
+  numeroOperacion String?
+  estado String
+  entregaDias Int
+  fechaLimiteEntrega DateTime?
+  contratoVersion String
+  contratoTexto String
+  compradorAceptoEn DateTime
+  vendedorCompromisoEn DateTime
+  notaEnvio String?
+  motivoRechazoPago String?
+  motivoReclamo String?
+  resolucion String?
+  eventos Json
+  creadoEn DateTime @default(now())
+  actualizadoEn DateTime @default(now())
+  @@index([compradorId])
+  @@index([vendedorId])
+}

@@ -16,6 +16,10 @@ import MensajesPage from './modules/m15-planes/pages/MensajesPage';
 import AlertasPage from './modules/m15-planes/pages/AlertasPage';
 import ReportesPage from './modules/m15-planes/pages/ReportesPage';
 import ProductoresDisponiblesPage from './modules/m15-planes/pages/ProductoresDisponiblesPage';
+import MisPedidosPage from './modules/m16-pedidos/pages/MisPedidosPage';
+import ReclamosPedidosPage from './modules/m16-pedidos/pages/ReclamosPedidosPage';
+import ComprarProductoPage from './modules/m16-pedidos/pages/ComprarProductoPage';
+import PedidoDetallePage from './modules/m16-pedidos/pages/PedidoDetallePage';
 import ProductoDetailPage from './modules/m11-productos/pages/ProductoDetailPage';
 import PublicarProductoPage from './modules/m11-productos/pages/PublicarProductoPage';
 import ResultadosBusquedaPage from './modules/m12-busqueda-recomendaciones/pages/ResultadosBusquedaPage';
@@ -105,6 +109,7 @@ function App() {
       onIrAPanelAdmin={() => navigate(RUTAS.admin)}
       onIrAUsuariosAdmin={() => navigate(RUTAS.adminUsuarios)}
       onIrAPagosAdmin={() => navigate(`${RUTAS.planes}/pagos`)}
+      onIrAReclamosPedidos={() => navigate('/m16-pedidos/reclamos')}
       onIrAHome={() => navigate(RUTAS.home)}
       onIrACatalogo={() => navigate(RUTAS.catalogo)}
       onIrAProponerPlanta={() => navigate(RUTAS.proponerPlanta)}
@@ -158,6 +163,10 @@ function App() {
         <Route path={`${RUTAS.planes}/productores-disponibles`} element={<ProductoresDisponiblesPage />} />
         <Route path={`${RUTAS.planes}/productores`} element={<ProductoresPage />} />
         <Route path={`${RUTAS.planes}/productores/:productorId`} element={<ProductorPage />} />
+        <Route path="/m16-pedidos" element={<MisPedidosPage />} />
+        <Route path="/m16-pedidos/reclamos" element={<RequireRole permitido={esAdministrador}><ReclamosPedidosPage /></RequireRole>} />
+        <Route path="/m16-pedidos/comprar/:productoId" element={<ComprarProductoPage />} />
+        <Route path="/m16-pedidos/:id" element={<PedidoDetallePage />} />
         <Route path={RUTAS.admin} element={<RequireRole permitido={esValidador}><PanelAdminPage /></RequireRole>} />
         <Route path={RUTAS.adminUsuarios} element={<RequireRole permitido={esAdministrador}><UsuariosAdminPage /></RequireRole>} />
         <Route path="*" element={<Navigate to={RUTAS.home} replace />} />

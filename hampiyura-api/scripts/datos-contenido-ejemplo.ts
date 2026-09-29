@@ -4,7 +4,8 @@
 // "Cuenta de ejemplo — HampiYura" y la aclaración de ejemplo de cada texto se CONSERVAN: nunca se hace pasar por una publicación u oferta real. Lo que el documento no dice (enfermedades tratadas, forma de preparación
 // aparte, tipo de productor, zona, contacto...) queda VACÍO o "No especificado": no se rellena con otra cosa.
 
-export const CUENTA_EJEMPLO = { correo: 'ejemplo@hampiyura.local', nombre: 'Cuenta de ejemplo — HampiYura', rol: 'Productor' } as const;
+import { CORREO_CUENTA_EJEMPLO } from '../src/domain/value-objects/cobro-producto.vo';
+export const CUENTA_EJEMPLO = { correo: CORREO_CUENTA_EJEMPLO, nombre: 'Cuenta de ejemplo — HampiYura', rol: 'Productor' } as const;
 export const PREFIJO_EJEMPLO = '[Ejemplo] '; // prefijo de la versión anterior (Ronda 33): el cargador renombra lo ya cargado
 export const conPrefijoAntiguo = (titulo: string) => PREFIJO_EJEMPLO + titulo;
 export const NOTA_PRODUCTO = 'Producto de ejemplo para demostración — no representa una oferta de venta real ni un productor real.';

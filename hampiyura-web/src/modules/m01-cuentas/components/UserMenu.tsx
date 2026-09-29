@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, ChevronDown, LogOut, Mail, MessageSquare, UserRound, WalletCards } from 'lucide-react';
+import { Bell, ChevronDown, LogOut, Mail, MessageSquare, ShoppingBag, UserRound, WalletCards } from 'lucide-react';
 import { obtenerPerfil, type Perfil } from '../api/cuentas.api';
 import { getSession, clearSession, suscribirseACambiosDeSesion } from '../../../shared/auth/session';
 import useDropdown from '../../../shared/hooks/useDropdown';
@@ -58,6 +58,9 @@ function UserMenu({ onIrALogin, onIrARegistro, onIrAPerfil, onIrAMisConsultas }:
           </button>
           <button role="menuitem" onClick={() => { setAbierto(false); onIrAMisConsultas(); }}>
             <MessageSquare size={16} aria-hidden="true" /> Mis consultas
+          </button>
+          <button role="menuitem" onClick={() => { setAbierto(false); navigate('/m16-pedidos'); }}>
+            <ShoppingBag size={16} aria-hidden="true" /> Mis pedidos
           </button>
           <button role="menuitem" onClick={() => { setAbierto(false); navigate('/m15-planes/mensajes'); }}>
             <Mail size={16} aria-hidden="true" /> Mensajes

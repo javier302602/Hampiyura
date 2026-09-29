@@ -25,6 +25,10 @@ const MENSAJES_POR_TIPO: Record<string, string> = {
   mensaje_directo: 'Tienes un mensaje nuevo en Mensajes.',
   alerta_disponibilidad: 'Hay productos disponibles de una planta que sigues.',
   alerta_temporada: 'Una planta que sigues está en su época de cosecha.',
+  // Ronda 35 · M-16: pedidos de compra directa (el texto con el producto y el monto va en cada aviso).
+  pedido_nuevo: 'Tienes un pedido nuevo.', pedido_pago_informado: 'Un comprador subió su comprobante de pago.', pedido_pago_confirmado: 'El vendedor confirmó tu pago.',
+  pedido_pago_rechazado: 'El vendedor no pudo confirmar tu pago.', pedido_enviado: 'Tu pedido fue enviado.', pedido_recibido: 'El comprador confirmó la recepción.',
+  pedido_reclamo: 'Un comprador abrió un reclamo.', pedido_reclamo_cerrado: 'Un reclamo fue cerrado.', pedido_cancelado: 'Un pedido fue cancelado.',
   pago_rechazado: 'Tu comprobante de pago fue rechazado; revisa el motivo en Mis planes y vuelve a intentarlo.',
 };
 function mensajePara(tipo: string): string { return MENSAJES_POR_TIPO[tipo] ?? `Tienes una notificación nueva: ${tipo}`; }

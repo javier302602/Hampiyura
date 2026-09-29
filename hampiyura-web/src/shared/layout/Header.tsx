@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ChevronDown, Flag, Wallet, FlaskConical, Inbox, LayoutDashboard, Menu, Sprout, TreeDeciduous, Users } from 'lucide-react';
+import { ChevronDown, Flag, Wallet, FlaskConical, Inbox, LayoutDashboard, Menu, ShoppingBag, Sprout, TreeDeciduous, Users } from 'lucide-react';
 import { esAdministrador, esValidador, getSession, suscribirseACambiosDeSesion } from '../auth/session';
 import UserMenu from '../../modules/m01-cuentas/components/UserMenu';
 import SearchBar from '../../modules/m12-busqueda-recomendaciones/components/SearchBar';
@@ -31,6 +31,7 @@ export interface NavCallbacks {
   onIrAPanelAdmin: () => void;
   onIrAUsuariosAdmin: () => void;
   onIrAPagosAdmin: () => void;
+  onIrAReclamosPedidos: () => void;
   onIrAHome: () => void;
   onIrACatalogo: () => void;
   onIrAProponerPlanta: () => void;
@@ -105,6 +106,11 @@ function Header(props: NavCallbacks) {
                   {sesion && esAdministrador(sesion.rol) && (
                     <button role="menuitem" onClick={() => { gestion.setAbierto(false); props.onIrAPagosAdmin(); }}>
                       <Wallet size={16} aria-hidden="true" /> Pagos y planes
+                    </button>
+                  )}
+                  {sesion && esAdministrador(sesion.rol) && (
+                    <button role="menuitem" onClick={() => { gestion.setAbierto(false); props.onIrAReclamosPedidos(); }}>
+                      <ShoppingBag size={16} aria-hidden="true" /> Reclamos de pedidos
                     </button>
                   )}
                 </div>

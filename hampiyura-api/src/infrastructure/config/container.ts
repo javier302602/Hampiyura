@@ -24,6 +24,8 @@ import { SolicitarTipoCuentaUseCase, ObtenerMiTipoCuentaUseCase, SolicitudCuenta
 import { ActualizarGuiaCultivoUseCase } from '../../application/m03-cultivo/guia-cultivo.use-case';
 import { tieneSoportePrioritario } from '../../domain/value-objects/plan.vo';
 import { ObtenerDetalleValidacionUseCase } from '../../application/m09-validacion-moderacion/detalle-validacion.use-case';
+import { PedidosUseCase, EstadoCompraProductoUseCase, ConfigurarCobroUseCase } from '../../application/m16-pedidos/pedidos.use-cases';
+import { PrismaCobroProductoRepository, PrismaPedidoRepository } from '../adapters/out/persistence/prisma/repositories/prisma.repositories-pedidos';
 import { MensajeriaUseCase } from '../../application/m15-planes/mensajeria.use-cases';
 import { AlertasUseCase } from '../../application/m15-planes/alertas.use-cases';
 import { ReporteBioeconomiaUseCase } from '../../application/m15-planes/reportes.use-cases';
@@ -56,6 +58,11 @@ const directorioProductores=new DirectorioProductoresUseCase(usuarios,mapaCultiv
 const solicitudesCuenta=new PrismaSolicitudCuentaRepository(prisma);
 // Ronda 30 (M-15): mensajería, alertas, reportes agregados y "Productores disponibles".
 const busquedasRepo=new PrismaBusquedasRepository(prisma);
+// Ronda 35 (M-16): compra directa con contrato.
+const cobrosProducto=new PrismaCobroProductoRepository(prisma); const pedidosRepo=new PrismaPedidoRepository(prisma);
+const pedidos=new PedidosUseCase(pedidosRepo,productos,cobrosProducto,usuarios,notificador);
+const estadoCompraProducto=new EstadoCompraProductoUseCase(productos,cobrosProducto,usuarios);
+const configurarCobro=new ConfigurarCobroUseCase(productos,cobrosProducto);
 const mensajeria=new MensajeriaUseCase(new PrismaMensajeriaRepository(prisma),usuarios,accesoContacto,directorioProductores,notificador);
 const alertas=new AlertasUseCase(new PrismaAlertasRepository(prisma),plantas,cultivos,productos,notificador,accesoContacto,usuarios);
 const reporteBioeconomia=new ReporteBioeconomiaUseCase(usuarios,plantas,cultivos,productos,directorioProductores,busquedasRepo,accesoContacto);
@@ -104,6 +111,7 @@ export const container={
   listarPagosAdmin:new ListarPagosAdminUseCase(pagosContacto,usuarios),
   resolverPago:new ResolverPagoUseCase(pagosContacto,notificador,accesoContacto),
   directorioProductores,
+  pedidos, estadoCompraProducto, configurarCobro,
   mensajeria, alertas, reporteBioeconomia, productoresDisponibles,
   protegerContactoProductos:new ProtegerContactoProductosUseCase(accesoContacto),
   actualizarPerfil:new ActualizarPerfilUseCase(usuarios),
